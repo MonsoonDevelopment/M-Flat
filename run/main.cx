@@ -1,0 +1,4 @@
+meth main(args)
+    mut a = 5
+    println(a)
+end

@@ -1,0 +1,30 @@
+package me.surge.lexer.token
+
+enum class TokenType {
+    INT,
+    FLOAT,
+    STRING,
+    IDENTIFIER,
+    KEYWORD,
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE,
+    POWER,
+    MODULO,
+    EQUALS,
+    LEFT_PARENTHESES,
+    RIGHT_PARENTHESES,
+    LEFT_SQUARE,
+    RIGHT_SQUARE,
+    EQUALITY,
+    INEQUALITY,
+    LESS_THAN,
+    GREATER_THAN,
+    LESS_THAN_OR_EQUAL_TO,
+    GREATER_THAN_OR_EQUAL_TO,
+    COMMA,
+    ARROW,
+    NEW_LINE,
+    EOF
+}
