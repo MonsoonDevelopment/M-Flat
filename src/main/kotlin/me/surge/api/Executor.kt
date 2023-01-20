@@ -8,6 +8,7 @@ import me.surge.lexer.error.context.Context
 import me.surge.lexer.node.ListNode
 import me.surge.lexer.node.Node
 import me.surge.lexer.symbol.SymbolTable
+import me.surge.lexer.value.ContainerValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.lexer.value.function.FunctionValue
@@ -15,10 +16,11 @@ import me.surge.parse.Parser
 
 class Executor {
 
-    private val globalSymbolTable = SymbolTable()
+    private val globalSymbolTable = SymbolTable("global")
 
     init {
-        loadClass(BuiltIns::class.java)
+        //LoadHelper.loadClass(BuiltIns::class.java, globalSymbolTable)
+        loadClass("std", BuiltIns::class.java)
     }
 
     fun run(file: String, text: String): Pair<Any?, Error?> {
@@ -49,20 +51,29 @@ class Executor {
         return Pair(result.value, result.error)
     }
 
-    fun loadClass(any: Any): Executor {
-        LoadHelper.loadClass(any, globalSymbolTable)
+    fun loadClass(identifier: String, any: Any): Executor {
+        val symbolTable = SymbolTable(identifier)
+
+        LoadHelper.loadClass(any, symbolTable)
+
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true)
 
         return this
     }
 
-    fun loadClass(clazz: Class<*>): Executor {
-        LoadHelper.loadClass(clazz, globalSymbolTable)
+    fun loadClass(identifier: String, clazz: Class<*>): Executor {
+        val symbolTable = SymbolTable(identifier)
+
+        LoadHelper.loadClass(clazz, symbolTable)
+
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true)
 
         return this
     }
 
     fun getFunction(name: String): BaseFunctionValue? {
-        return globalSymbolTable.get(name) as BaseFunctionValue?
+        //println(globalSymbolTable.symbols.map { it.key }.joinToString { it })
+        return globalSymbolTable.symbols[name]!!.first as BaseFunctionValue?
     }
 
     fun getValue(name: String): Value {

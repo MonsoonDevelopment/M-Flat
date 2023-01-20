@@ -1,11 +1,5 @@
 meth main(args) then
-    while true then
-        const in = input()
-
-        if castToBool(in) then
-            println("true!")
-        else
-            println("false!")
-        end
-    end
+    std.println("Hello, world!")
+    mut a = std.input()
+    std.println(a)
 end

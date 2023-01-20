@@ -4,12 +4,27 @@ import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.position.Position
+import me.surge.lexer.value.ContainerValue
 
-class SymbolTable(val parent: SymbolTable? = null) {
+class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
 
     val symbols = hashMapOf<String, Pair<Any, Boolean>>()
 
-    fun get(name: String): Any? {
+    fun get(name: String, tableName: String = ""): Any? {
+        if (this.name == "global") {
+            val value = this.symbols.getOrDefault(tableName, null)
+
+            return if (value != null) {
+                (value.first as ContainerValue<SymbolTable>).value.get(name)
+            } else {
+                null
+            }
+        }
+
+        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
+            return this.parent.get(name, tableName)
+        }
+
         val value = this.symbols.getOrDefault(name, null)
 
         if (value == null && this.parent != null) {

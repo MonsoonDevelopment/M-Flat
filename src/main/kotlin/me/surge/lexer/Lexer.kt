@@ -123,6 +123,11 @@ class Lexer(val file: String, val text: String) {
                     this.advance()
                 }
 
+                '.' -> {
+                    tokens.add(Token(ACCESSOR, start = this.position))
+                    this.advance()
+                }
+
                 else -> {
                     val start = this.position.clone()
                     val char = this.currentChar!!

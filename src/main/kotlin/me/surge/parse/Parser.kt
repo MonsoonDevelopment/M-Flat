@@ -339,6 +339,11 @@ class Parser(val tokens: List<Token>) {
         }
 
         else if (token.type == TokenType.IDENTIFIER) {
+            var identifierToken: Token = token
+            var valueToken: Token = token
+
+            var accessed = false
+
             result.registerAdvancement()
             this.advance()
 
@@ -353,9 +358,19 @@ class Parser(val tokens: List<Token>) {
                 }
 
                 return result.success(VarAssignNode(token, expression!! as Node, declaration = false, final = false))
+            } else if (this.currentToken.type == TokenType.ACCESSOR) {
+                accessed = true
+
+                result.registerAdvancement()
+                this.advance()
+
+                valueToken = this.currentToken
+
+                result.registerAdvancement()
+                this.advance()
             }
 
-            return result.success(VarAccessNode(token))
+            return result.success(VarAccessNode(if (accessed) valueToken else identifierToken, if (accessed) identifierToken else null))
         }
 
         else if (token.type == TokenType.LEFT_PARENTHESES) {

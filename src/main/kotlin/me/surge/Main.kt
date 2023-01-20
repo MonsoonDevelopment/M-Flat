@@ -7,7 +7,7 @@ import java.io.FileReader
 
 fun main(args: Array<String>) {
     val executor = Executor()
-        .loadClass(Testing())
+        .loadClass("testing", Testing())
 
     val file = File("main.cx")
     val reader = FileReader(file)
