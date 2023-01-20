@@ -509,7 +509,7 @@ class Parser(val tokens: List<Token>) {
             return result
         }
 
-        allCases as Pair<ArrayList<Case>, Case?>
+        allCases as Pair<ArrayList<Case>, BaseCase?>
 
         val cases = allCases.first
         val elseCase = allCases.second
@@ -597,7 +597,7 @@ class Parser(val tokens: List<Token>) {
     private fun ifExpressionCases(keyword: String): ParseResult {
         val result = ParseResult()
         val cases = ArrayList<Case>()
-        var elseCase: Case? = null
+        var elseCase: BaseCase? = null
 
         if (!this.currentToken.matches(TokenType.KEYWORD, keyword)) {
             return result.failure(InvalidSyntaxError(
@@ -653,7 +653,7 @@ class Parser(val tokens: List<Token>) {
                     return result
                 }
 
-                allCases as Pair<ArrayList<Case>, Case?>
+                allCases as Pair<ArrayList<Case>, BaseCase?>
 
                 val new = allCases.first
                 elseCase = allCases.second
@@ -976,12 +976,13 @@ class Parser(val tokens: List<Token>) {
             return result.success(MethodDefineNode(
                 name,
                 argumentNames,
+                this.currentToken,
                 body as Node,
                 true
             ))
         }
 
-        if (this.currentToken.type != TokenType.NEW_LINE) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["then"])) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
@@ -992,17 +993,28 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        val body = result.register(this.statements())
+        var body: Node? = null
 
-        if (result.error != null) {
-            return result
+        if (!this.getTokenAfter(TokenType.NEW_LINE)!!.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+            val b = result.register(this.statements())
+
+            if (result.error != null) {
+                return result
+            }
+
+            body = b as Node
+        } else {
+            while (this.currentToken.type == TokenType.NEW_LINE) {
+                result.registerAdvancement()
+                this.advance()
+            }
         }
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.KEYWORDS["end"]}"
+                "Expected ${Constants.KEYWORDS["end"]}, got $currentToken"
             ))
         }
 
@@ -1012,7 +1024,8 @@ class Parser(val tokens: List<Token>) {
         return result.success(MethodDefineNode(
             name,
             argumentNames,
-            body as Node,
+            this.currentToken,
+            body,
             false
         ))
     }
@@ -1052,6 +1065,22 @@ class Parser(val tokens: List<Token>) {
         }
 
         return result.success(left as Node)
+    }
+
+    private fun getTokenAfter(type: TokenType): Token? {
+        val previous = this.tokenIndex
+
+        while (this.currentToken.type == type) {
+            this.advance()
+        }
+
+        val token = this.currentToken
+
+        while (this.tokenIndex != previous) {
+            this.reverse()
+        }
+
+        return token
     }
 
     open class BaseCase(val token: Node, val shouldReturnNull: Boolean)

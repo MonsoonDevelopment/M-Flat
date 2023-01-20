@@ -8,7 +8,7 @@ import me.surge.lexer.value.ValueName
 import me.surge.parse.RuntimeResult
 
 @ValueName("function")
-class FunctionValue(name: String = "<anonymous>", val body: Node, val argumentNames: ArrayList<String>, val shouldAutoReturn: Boolean) : BaseFunctionValue(name) {
+class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentNames: ArrayList<String>, val shouldAutoReturn: Boolean) : BaseFunctionValue(name) {
 
     override fun execute(args: ArrayList<Value>): RuntimeResult {
         val result = RuntimeResult()
@@ -21,15 +21,17 @@ class FunctionValue(name: String = "<anonymous>", val body: Node, val argumentNa
             return result
         }
 
-        val value = result.register(interpreter.visit(this.body, context))
+        if (this.body != null) {
+            val value = result.register(interpreter.visit(this.body, context))
 
-        if (result.shouldReturn() && result.returnValue == null) {
-            return result
+            if (result.shouldReturn() && result.returnValue == null) {
+                return result
+            }
+
+            return result.success((if (shouldAutoReturn) value else null) ?: (result.returnValue ?: NumberValue.NULL))
         }
 
-        val three = NumberValue.NULL
-
-        return result.success((if (shouldAutoReturn) value else null) ?: (result.returnValue ?: three))
+        return result.success(NumberValue.NULL)
     }
 
     override fun clone(): Value {

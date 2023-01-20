@@ -14,6 +14,11 @@ fun main(args: Array<String>) {
 
     val result = executor.run(file.name, reader.readText())
 
+    if (result.second != null) {
+        println(result.second)
+        return
+    }
+
     val trueResult = executor.getFunction("main")?.execute(arrayListOf(ListValue("args", arrayListOf())))
         ?: run {
             println("Couldn't find main function!")

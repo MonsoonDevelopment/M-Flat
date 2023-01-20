@@ -4,7 +4,6 @@ import me.surge.Constants.DIGITS
 import me.surge.Constants.KEYWORDS
 import me.surge.Constants.LETTERS
 import me.surge.Constants.LETTERS_DIGITS
-import me.surge.Constants.OPERATOR_TOKENS
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.IllegalCharError
@@ -170,7 +169,7 @@ class Lexer(val file: String, val text: String) {
         var id = ""
         val start = this.position.clone()
 
-        while (this.currentChar != null && (this.currentChar!! in LETTERS_DIGITS || this.currentChar!! in OPERATOR_TOKENS)) {
+        while (this.currentChar != null && this.currentChar!! in LETTERS_DIGITS) {
             id += this.currentChar
             this.advance()
         }

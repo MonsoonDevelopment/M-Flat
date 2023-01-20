@@ -1,4 +1,11 @@
-meth main(args)
-    mut a = 5
-    println(a)
+meth main(args) then
+    while true then
+        const in = input()
+
+        if castToBool(in) then
+            println("true!")
+        else
+            println("false!")
+        end
+    end
 end

@@ -96,6 +96,14 @@ class BuiltIns {
         return Success(NumberValue("<anonymous is list>", (value is ListValue).binary()))
     }
 
+    fun castToNumber(value: Value): Result {
+        return Success(NumberValue("<anonymous cast>", value.rawValue().toFloat()))
+    }
+
+    fun castToBool(value: Value): Result {
+        return Success(NumberValue("<anonymous cast>", (value.rawValue().lowercase() == "true").binary()))
+    }
+
     fun delete(functionData: FunctionData, name: Value): Result {
         val error = functionData.context.symbolTable!!.removeGlobally(name.name, start = functionData.start, end = functionData.end, context = functionData.context)
 

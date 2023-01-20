@@ -5,11 +5,10 @@ object Constants {
     const val DIGITS = "0123456789"
     const val LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
     const val LETTERS_DIGITS = LETTERS + DIGITS
-    const val OPERATOR_TOKENS = "&?!@"
 
     val KEYWORDS = hashMapOf(
         Pair("var", "mut"),
-        Pair("val", "final"),
+        Pair("val", "const"),
         Pair("and", "and"),
         Pair("or", "or"),
         Pair("not", "not"),
