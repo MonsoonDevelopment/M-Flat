@@ -1,17 +1,16 @@
 package me.surge.api
 
-import me.surge.BuiltIns
+import me.surge.library.Standard
 import me.surge.interpreter.Interpreter
 import me.surge.lexer.Lexer
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
-import me.surge.lexer.node.ListNode
 import me.surge.lexer.node.Node
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.ContainerValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.function.BaseFunctionValue
-import me.surge.lexer.value.function.FunctionValue
+import me.surge.library.BuiltIn
 import me.surge.parse.Parser
 
 class Executor {
@@ -19,8 +18,8 @@ class Executor {
     private val globalSymbolTable = SymbolTable("global")
 
     init {
-        //LoadHelper.loadClass(BuiltIns::class.java, globalSymbolTable)
-        loadClass("std", BuiltIns::class.java)
+        LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
+        loadClass("std", Standard::class.java)
     }
 
     fun run(file: String, text: String): Pair<Any?, Error?> {

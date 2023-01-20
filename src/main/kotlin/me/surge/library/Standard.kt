@@ -1,4 +1,4 @@
-package me.surge
+package me.surge.library
 
 import me.surge.api.annotation.OverrideName
 import me.surge.api.result.Failure
@@ -10,18 +10,7 @@ import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.util.binary
 import kotlin.system.exitProcess
 
-class BuiltIns {
-
-    @OverrideName("null")
-    val NULL = 0
-
-    @OverrideName("true")
-    val TRUE = 1
-
-    @OverrideName("false")
-    val FALSE = 0
-
-    val pi = Math.PI
+class Standard {
 
     fun print(value: Value) {
         print(value.rawValue())

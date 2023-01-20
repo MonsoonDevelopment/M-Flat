@@ -1,5 +1,16 @@
 meth main(args) then
     std.println("Hello, world!")
-    mut a = std.input()
-    std.println(a)
+    testing.test()
+
+    mut i = 0
+
+    while true then
+        std.println(i)
+
+        i = i + 1
+
+        if i == 6 then
+            break
+        end
+    end
 end

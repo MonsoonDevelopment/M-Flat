@@ -14,10 +14,8 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
         if (this.name == "global") {
             val value = this.symbols.getOrDefault(tableName, null)
 
-            return if (value != null) {
-                (value.first as ContainerValue<SymbolTable>).value.get(name)
-            } else {
-                null
+            if (value != null) {
+                return (value.first as ContainerValue<SymbolTable>).value.get(name)
             }
         }
 
@@ -38,6 +36,28 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
         return value.first
     }
 
+    fun getValueAndFinality(name: String, tableName: String = ""): Pair<Any, Boolean>? {
+        if (this.name == "global") {
+            return (this.symbols.getOrDefault(tableName, null)?.first as ContainerValue<SymbolTable>).value.getValueAndFinality(name, tableName)
+        }
+
+        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
+            return this.parent.getValueAndFinality(name, tableName)
+        }
+
+        val value = this.symbols.getOrDefault(name, null)
+
+        if (value == null && this.parent != null) {
+            return this.parent.getValueAndFinality(name)
+        }
+
+        if (value == null) {
+            return null
+        }
+
+        return value
+    }
+
     fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false): Error? {
         val variable = this.get(name)
 
@@ -51,7 +71,7 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
                 )
             }
 
-            if (this.symbols[name]!!.second) {
+            if (this.getValueAndFinality(name)!!.second) {
                 return RuntimeError(
                     start!!,
                     end!!,
@@ -59,6 +79,10 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
                     context!!
                 )
             }
+        }
+
+        if (!this.symbols.containsKey(name) && this.parent != null) {
+            this.parent.set(name, value, final, start, end, context, declaration)
         }
 
         this.symbols[name] = Pair(value, final)
