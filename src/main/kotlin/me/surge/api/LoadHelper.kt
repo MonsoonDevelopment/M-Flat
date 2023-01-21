@@ -11,6 +11,7 @@ import me.surge.lexer.value.*
 import me.surge.lexer.value.function.BuiltInFunction
 import me.surge.parse.RuntimeResult
 import me.surge.util.firstIndexed
+import java.lang.IllegalStateException
 
 object LoadHelper {
 
@@ -111,7 +112,7 @@ object LoadHelper {
                 name,
 
                 { functionData ->
-                    val types = method.parameterTypes.filter { it != FunctionData::class.java }
+                    /* val types = method.parameterTypes.filter { it != FunctionData::class.java }
 
                     val firstNotMatchingType = functionData.arguments.firstIndexed { index, element -> element!!::class.java != types[index] && types[index] != Value::class.java }
 
@@ -124,6 +125,13 @@ object LoadHelper {
                                 ValueName::class.java).name}, expected ${types[functionData.arguments.indexOf(firstNotMatchingType)].simpleName.replace("Value", "").lowercase()}.",
                             functionData.context
                         ))
+                    } */
+
+                    val types = method.parameterTypes.filter { it != FunctionData::class.java }
+                    val converted = arrayListOf<Class<*>>()
+
+                    types.forEach {
+                        converted.add(getEquivalentValue(it))
                     }
 
                     val arguments = arrayListOf<Any>()
@@ -132,7 +140,9 @@ object LoadHelper {
                         arguments.add(functionData)
                     }
 
-                    arguments.addAll(functionData.arguments)
+                    functionData.arguments.forEachIndexed { index, value ->
+                        arguments.add(getEquivalentPrimitive(value, types[index]))
+                    }
 
                     val result = method.invoke(instance, *arguments.toTypedArray())
 
@@ -171,6 +181,58 @@ object LoadHelper {
 
     private fun builtIn(name: String, method: (functionData: FunctionData) -> RuntimeResult, argumentNames: ArrayList<String>): BuiltInFunction {
         return BuiltInFunction(name, method, argumentNames)
+    }
+
+    private fun getEquivalentValue(clazz: Class<*>): Class<*> {
+        if (clazz.superclass == Value::class.java || clazz == Value::class.java) {
+            return clazz
+        }
+
+        when (clazz) {
+            Int::class.java, Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
+                return NumberValue::class.java
+            }
+
+            String::class.java -> {
+                return StringValue::class.java
+            }
+        }
+
+        throw IllegalStateException("No equivalent value found! (Got $clazz)")
+    }
+
+    private fun getEquivalentPrimitive(value: Value, clazz: Class<*>): Any {
+        when (value) {
+            is NumberValue -> {
+                when (clazz) {
+                    Int::class.java -> {
+                        return value.rawValue().toInt()
+                    }
+
+                    Float::class.java -> {
+                        return value.value.toFloat()
+                    }
+
+                    Double::class.java -> {
+                        return value.value.toDouble()
+                    }
+
+                    Long::class.java -> {
+                        return value.value.toLong()
+                    }
+
+                    Short::class.java -> {
+                        return value.value.toShort()
+                    }
+                }
+            }
+
+            is StringValue -> {
+                return value.value
+            }
+        }
+
+        throw IllegalStateException("No equivalent primitive found! (Got $value, $clazz)")
     }
 
 }

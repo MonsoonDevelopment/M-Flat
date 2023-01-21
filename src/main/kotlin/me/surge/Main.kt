@@ -8,6 +8,7 @@ import java.io.FileReader
 fun main(args: Array<String>) {
     val executor = Executor()
         .loadClass("testing", Testing())
+        .loadClass("java_types", JavaTypesTesting())
 
     val file = File("main.cx")
     val reader = FileReader(file)
