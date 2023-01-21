@@ -90,7 +90,7 @@ object LoadHelper {
                         }
                     }
                 },
-                field.getAnnotation(Mutable::class.java) == null
+                field.getAnnotation(Mutable::class.java) == null, declaration = true
             )
         }
 
@@ -158,7 +158,7 @@ object LoadHelper {
                 ArrayList(method.parameters.filter { it.type != FunctionData::class.java }.map { it.name }.toList())
             )
 
-            symbolTable.set(name, function, true)
+            symbolTable.set(name, function, true, declaration = true)
         }
     }
 

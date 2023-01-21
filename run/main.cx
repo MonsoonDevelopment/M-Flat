@@ -1,11 +1,11 @@
 meth main(args) then
-    std.println("Hello, world!")
-    testing.test()
+    std -> println("Hello, world!")
+    testing -> test()
 
     mut i = 0
 
     while true then
-        std.println(i)
+        std -> println(i)
 
         i = i + 1
 
@@ -13,4 +13,10 @@ meth main(args) then
             break
         end
     end
+
+    std::println(testing::integer)
+
+    testing::integer = 5
+
+    std::println(testing::integer)
 end

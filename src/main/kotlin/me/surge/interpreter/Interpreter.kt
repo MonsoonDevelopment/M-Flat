@@ -361,6 +361,14 @@ class Interpreter {
 
         val result = RuntimeResult()
         val name = node.name.value as String
+        var parent = node.parent?.value
+
+        if (parent == null) {
+            parent = ""
+        }
+
+        parent as String
+
         val value = result.register(this.visit(node.value, context))
 
         if (result.shouldReturn()) {
@@ -370,7 +378,7 @@ class Interpreter {
         value as Value
         value.name = name
 
-        val error = context.symbolTable?.set(name, value, final = node.final, start = node.start, end = node.end, context = context, declaration = node.declaration)
+        val error = context.symbolTable?.set(name, value, final = node.final, start = node.start, end = node.end, context = context, declaration = node.declaration, parent)
 
         if (error != null) {
             return result.failure(error)
@@ -387,7 +395,7 @@ class Interpreter {
 
         while (true) {
             val newContext = Context("<while context>", context)
-            newContext.symbolTable = SymbolTable(parent = context.symbolTable)
+            newContext.symbolTable = SymbolTable("<while>", parent = context.symbolTable)
 
             val condition = result.register(this.visit(node.condition, context))
 

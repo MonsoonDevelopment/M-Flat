@@ -123,9 +123,14 @@ class Lexer(val file: String, val text: String) {
                     this.advance()
                 }
 
-                '.' -> {
-                    tokens.add(Token(ACCESSOR, start = this.position))
-                    this.advance()
+                ':' -> {
+                    val result = this.makeAccessor()
+
+                    if (result.second != null) {
+                        return Pair(arrayListOf(), result.second)
+                    }
+
+                    tokens.add(result.first!!)
                 }
 
                 else -> {
@@ -295,6 +300,20 @@ class Lexer(val file: String, val text: String) {
         this.advance()
 
         return Token(DIVIDE, start = start)
+    }
+
+    private fun makeAccessor(): Pair<Token?, Error?> {
+        val start = this.position.clone()
+        this.advance()
+
+        if (this.currentChar == ':') {
+            this.advance()
+            return Pair(Token(ACCESSOR, start = start, end = this.position), null)
+        }
+
+        this.advance()
+
+        return Pair(null, ExpectedCharError(start, this.position, "':' after ':'"))
     }
 
 }

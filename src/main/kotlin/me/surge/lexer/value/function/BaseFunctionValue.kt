@@ -12,7 +12,7 @@ open class BaseFunctionValue(name: String = "<anonymous>") : Value(name) {
 
     fun generateContext(): Context {
         val new = Context(this.name, this.context, this.start)
-        new.symbolTable = SymbolTable(parent = new.parent?.symbolTable)
+        new.symbolTable = SymbolTable("<base function>", parent = new.parent?.symbolTable)
         return new
     }
 

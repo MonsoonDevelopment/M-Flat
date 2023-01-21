@@ -55,7 +55,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true)
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true, declaration = true)
 
         return this
     }
@@ -65,7 +65,7 @@ class Executor {
 
         LoadHelper.loadClass(clazz, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true)
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true, declaration = true)
 
         return this
     }

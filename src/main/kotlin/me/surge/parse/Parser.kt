@@ -184,7 +184,7 @@ class Parser(val tokens: List<Token>) {
                 return result
             }
 
-            return result.success(VarAssignNode(name, expression!! as Node, declaration = true, final = final))
+            return result.success(VarAssignNode(name, null, expression!! as Node, declaration = true, final = final))
         }
 
         val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, Constants.KEYWORDS["and"]), Pair(TokenType.KEYWORD, Constants.KEYWORDS["or"]))))
@@ -347,6 +347,18 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            if (this.currentToken.type == TokenType.ACCESSOR || this.currentToken.type == TokenType.ARROW) {
+                accessed = true
+
+                result.registerAdvancement()
+                this.advance()
+
+                valueToken = this.currentToken
+
+                result.registerAdvancement()
+                this.advance()
+            }
+
             if (this.currentToken.type == TokenType.EQUALS) {
                 result.registerAdvancement()
                 this.advance()
@@ -357,17 +369,7 @@ class Parser(val tokens: List<Token>) {
                     return result
                 }
 
-                return result.success(VarAssignNode(token, expression!! as Node, declaration = false, final = false))
-            } else if (this.currentToken.type == TokenType.ACCESSOR) {
-                accessed = true
-
-                result.registerAdvancement()
-                this.advance()
-
-                valueToken = this.currentToken
-
-                result.registerAdvancement()
-                this.advance()
+                return result.success(VarAssignNode(if (accessed) valueToken else identifierToken, if (accessed) identifierToken else null, expression!! as Node, declaration = false, final = false))
             }
 
             return result.success(VarAccessNode(if (accessed) valueToken else identifierToken, if (accessed) identifierToken else null))

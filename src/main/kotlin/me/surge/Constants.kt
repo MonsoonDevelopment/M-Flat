@@ -5,6 +5,7 @@ object Constants {
     const val DIGITS = "0123456789"
     const val LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
     const val LETTERS_DIGITS = LETTERS + DIGITS
+    const val ALLOWED_SYMBOLS = ":"
 
     val KEYWORDS = hashMapOf(
         Pair("var", "mut"),
@@ -25,6 +26,10 @@ object Constants {
         Pair("return", "return"),
         Pair("continue", "continue"),
         Pair("break", "break")
+    )
+
+    val SYMBOLS = hashMapOf(
+        Pair("accessor", "::")
     )
 
 }

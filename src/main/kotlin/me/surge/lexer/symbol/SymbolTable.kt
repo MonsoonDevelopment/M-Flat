@@ -6,7 +6,7 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.position.Position
 import me.surge.lexer.value.ContainerValue
 
-class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
+class SymbolTable(val name: String, val parent: SymbolTable? = null) {
 
     val symbols = hashMapOf<String, Pair<Any, Boolean>>()
 
@@ -38,7 +38,11 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
 
     fun getValueAndFinality(name: String, tableName: String = ""): Pair<Any, Boolean>? {
         if (this.name == "global") {
-            return (this.symbols.getOrDefault(tableName, null)?.first as ContainerValue<SymbolTable>).value.getValueAndFinality(name, tableName)
+            val table = this.symbols.getOrDefault(tableName, null)
+
+            if (table != null) {
+                return (table.first as ContainerValue<SymbolTable>).value.getValueAndFinality(name, tableName)
+            }
         }
 
         if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
@@ -58,8 +62,8 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
         return value
     }
 
-    fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false): Error? {
-        val variable = this.get(name)
+    fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false, tableName: String = ""): Error? {
+        val variable = this.get(name, tableName)
 
         if (variable != null) {
             if (declaration) {
@@ -71,7 +75,7 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
                 )
             }
 
-            if (this.getValueAndFinality(name)!!.second) {
+            if (this.getValueAndFinality(name, tableName)!!.second) {
                 return RuntimeError(
                     start!!,
                     end!!,
@@ -79,6 +83,18 @@ class SymbolTable(val name: String = "", val parent: SymbolTable? = null) {
                     context!!
                 )
             }
+        }
+
+        if (this.name == "global") {
+            val table = this.symbols.getOrDefault(tableName, null)
+
+            if (table != null) {
+                (table.first as ContainerValue<SymbolTable>).value.set(name, value, final, start, end, context, declaration, tableName)
+            }
+        }
+
+        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
+            this.parent.set(name, value, final, start, end, context, declaration, tableName)
         }
 
         if (!this.symbols.containsKey(name) && this.parent != null) {
