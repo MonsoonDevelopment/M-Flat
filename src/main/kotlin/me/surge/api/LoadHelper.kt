@@ -202,6 +202,10 @@ object LoadHelper {
     }
 
     private fun getEquivalentPrimitive(value: Value, clazz: Class<*>): Any {
+        if (clazz.superclass == Value::class.java || clazz == Value::class.java) {
+            return value
+        }
+
         when (value) {
             is NumberValue -> {
                 when (clazz) {

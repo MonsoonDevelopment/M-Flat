@@ -1,4 +1,4 @@
-meth maina(args) {
+meth main(args) {
     for i = 0 > 5 {
         std::println(i)
     }
@@ -44,10 +44,5 @@ meth maina(args) {
         std::println(c)
     }
 
-    std::println(c)
-}
-
-meth main(args) {
-    java_types::test("Testing")
-    java_types::integer(2)
+    // std::println(c) // will throw an error
 }
