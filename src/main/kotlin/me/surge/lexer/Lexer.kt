@@ -1,9 +1,10 @@
 package me.surge.lexer
 
+import me.surge.Constants.ALLOWED_SYMBOLS
 import me.surge.Constants.DIGITS
-import me.surge.Constants.KEYWORDS
 import me.surge.Constants.LETTERS
 import me.surge.Constants.LETTERS_DIGITS
+import me.surge.Constants.isInKeywords
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.IllegalCharError
@@ -39,6 +40,7 @@ class Lexer(val file: String, val text: String) {
 
                 in DIGITS -> tokens.add(makeNumber())
                 in LETTERS -> tokens.add(makeIdentifier())
+                in ALLOWED_SYMBOLS -> tokens.add(makeSymbol())
 
                 '"' -> {
                     tokens.add(this.makeString())
@@ -123,16 +125,6 @@ class Lexer(val file: String, val text: String) {
                     this.advance()
                 }
 
-                ':' -> {
-                    val result = this.makeAccessor()
-
-                    if (result.second != null) {
-                        return Pair(arrayListOf(), result.second)
-                    }
-
-                    tokens.add(result.first!!)
-                }
-
                 else -> {
                     val start = this.position.clone()
                     val char = this.currentChar!!
@@ -145,6 +137,8 @@ class Lexer(val file: String, val text: String) {
         }
 
         tokens.add(Token(EOF, start = this.position))
+
+        //println(tokens)
 
         return Pair(tokens, null)
     }
@@ -184,8 +178,20 @@ class Lexer(val file: String, val text: String) {
             this.advance()
         }
 
-        val type = if (KEYWORDS.containsValue(id)) KEYWORD else IDENTIFIER
+        val type = if (isInKeywords(id)) KEYWORD else IDENTIFIER
         return Token(type, id, start, this.position)
+    }
+
+    private fun makeSymbol(): Token {
+        var id = ""
+        val start = this.position.clone()
+
+        while (this.currentChar != null && this.currentChar!! in ALLOWED_SYMBOLS) {
+            id += this.currentChar
+            this.advance()
+        }
+
+        return Token(KEYWORD, id, start, this.position)
     }
 
     private fun makeNotEquals(): Pair<Token?, Error?> {
@@ -300,20 +306,6 @@ class Lexer(val file: String, val text: String) {
         this.advance()
 
         return Token(DIVIDE, start = start)
-    }
-
-    private fun makeAccessor(): Pair<Token?, Error?> {
-        val start = this.position.clone()
-        this.advance()
-
-        if (this.currentChar == ':') {
-            this.advance()
-            return Pair(Token(ACCESSOR, start = start, end = this.position), null)
-        }
-
-        this.advance()
-
-        return Pair(null, ExpectedCharError(start, this.position, "':' after ':'"))
     }
 
 }

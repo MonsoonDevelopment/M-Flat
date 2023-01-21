@@ -41,7 +41,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', '<=', '>=', '${Constants.KEYWORDS["and"]}' or '${Constants.KEYWORDS["or"]}'"
+                "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', '<=', '>=', '${Constants.get("and")}' or '${Constants.get("or")}'"
             ))
         }
 
@@ -107,7 +107,7 @@ class Parser(val tokens: List<Token>) {
         val result = ParseResult()
         val start = this.currentToken.start.clone()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["return"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("return"))) {
             result.registerAdvancement()
             this.advance()
 
@@ -120,13 +120,13 @@ class Parser(val tokens: List<Token>) {
             return result.success(ReturnNode(expression as Node, start, this.currentToken.end.clone()))
         }
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["continue"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("continue"))) {
             result.registerAdvancement()
             this.advance()
             return result.success(ContinueNode(start, this.currentToken.end.clone()))
         }
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["break"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("break"))) {
             result.registerAdvancement()
             this.advance()
             return result.success(BreakNode(start, this.currentToken.end.clone()))
@@ -138,7 +138,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["return"]}', '${Constants.KEYWORDS["continue"]}', '${Constants.KEYWORDS["break"]}', '${Constants.KEYWORDS["var"]}', '${Constants.KEYWORDS["if"]}', '${Constants.KEYWORDS["for"]}', '${Constants.KEYWORDS["while"]}', '${Constants.KEYWORDS["function"]}', int, float, identifier, '+', '-', '(', '[' or '${Constants.KEYWORDS["not"]}'"
+                "Expected '${Constants.get("return")}', '${Constants.get("continue")}', '${Constants.get("break")}', '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', '${Constants.get("function")}', int, float, identifier, '+', '-', '(', '[' or '${Constants.get("not")}'"
             ))
         }
 
@@ -148,8 +148,8 @@ class Parser(val tokens: List<Token>) {
     private fun expression(): ParseResult {
         val result = ParseResult()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["var"]) || this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["val"])) {
-            val final = this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["val"])
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("var")) || this.currentToken.matches(TokenType.KEYWORD, Constants.get("val"))) {
+            val final = this.currentToken.matches(TokenType.KEYWORD, Constants.get("val"))
 
             result.registerAdvancement()
             this.advance()
@@ -187,13 +187,13 @@ class Parser(val tokens: List<Token>) {
             return result.success(VarAssignNode(name, null, expression!! as Node, declaration = true, final = final))
         }
 
-        val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, Constants.KEYWORDS["and"]), Pair(TokenType.KEYWORD, Constants.KEYWORDS["or"]))))
+        val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, Constants.get("and")), Pair(TokenType.KEYWORD, Constants.get("or")))))
 
         if (result.error != null) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["var"]}', '${Constants.KEYWORDS["if"]}', '${Constants.KEYWORDS["for"]}', '${Constants.KEYWORDS["while"]}', int, float, identifier, '+', '-', '(' or '${Constants.KEYWORDS["not"]}'"
+                "Expected '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', int, float, identifier, '+', '-', '(' or '${Constants.get("not")}'"
             ))
         }
 
@@ -203,7 +203,7 @@ class Parser(val tokens: List<Token>) {
     private fun comparisonExpression(): ParseResult {
         val result = ParseResult()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["not"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("not"))) {
             val operator = this.currentToken
             result.registerAdvancement()
             this.advance()
@@ -223,7 +223,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected int, float, identifier, '+', '-', '(', '${Constants.KEYWORDS["if"]}', '${Constants.KEYWORDS["for"]}', '${Constants.KEYWORDS["while"]}', '${Constants.KEYWORDS["function"]}' or '${Constants.KEYWORDS["not"]}'"
+                "Expected int, float, identifier, '+', '-', '(', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', '${Constants.get("function")}' or '${Constants.get("not")}'"
             ))
         }
 
@@ -285,7 +285,7 @@ class Parser(val tokens: List<Token>) {
                     return result.failure(InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected ')', '${Constants.KEYWORDS["var"]}', '${Constants.KEYWORDS["if"]}', '${Constants.KEYWORDS["for"]}', '${Constants.KEYWORDS["while"]}', '${Constants.KEYWORDS["function"]}', int, float, identifier, '+', '-', '(', or ''${Constants.KEYWORDS["not"]}'"
+                        "Expected ')', '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', '${Constants.get("function")}', int, float, identifier, '+', '-', '(', or ''${Constants.get("not")}'"
                     ))
                 }
 
@@ -339,7 +339,6 @@ class Parser(val tokens: List<Token>) {
         }
 
         else if (token.type == TokenType.IDENTIFIER) {
-            var identifierToken: Token = token
             var valueToken: Token = token
 
             var accessed = false
@@ -347,7 +346,7 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
-            if (this.currentToken.type == TokenType.ACCESSOR || this.currentToken.type == TokenType.ARROW) {
+            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
                 accessed = true
 
                 result.registerAdvancement()
@@ -369,10 +368,10 @@ class Parser(val tokens: List<Token>) {
                     return result
                 }
 
-                return result.success(VarAssignNode(if (accessed) valueToken else identifierToken, if (accessed) identifierToken else null, expression!! as Node, declaration = false, final = false))
+                return result.success(VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false))
             }
 
-            return result.success(VarAccessNode(if (accessed) valueToken else identifierToken, if (accessed) identifierToken else null))
+            return result.success(VarAccessNode(if (accessed) valueToken else token, if (accessed) token else null))
         }
 
         else if (token.type == TokenType.LEFT_PARENTHESES) {
@@ -407,7 +406,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(listExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.KEYWORDS["if"])) {
+        else if (token.matches(TokenType.KEYWORD, Constants.get("if"))) {
             val ifExpression = result.register(this.ifExpression())
 
             if (result.error != null) {
@@ -417,7 +416,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(ifExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.KEYWORDS["for"])) {
+        else if (token.matches(TokenType.KEYWORD, Constants.get("for"))) {
             val forExpression = result.register(this.forExpression())
 
             if (result.error != null) {
@@ -427,7 +426,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(forExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.KEYWORDS["while"])) {
+        else if (token.matches(TokenType.KEYWORD, Constants.get("while"))) {
             val whileExpression = result.register(this.whileExpression())
 
             if (result.error != null) {
@@ -437,7 +436,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(whileExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.KEYWORDS["function"])) {
+        else if (token.matches(TokenType.KEYWORD, Constants.get("function"))) {
             val definition = result.register(this.functionDefinition())
 
             if (result.error != null) {
@@ -480,7 +479,7 @@ class Parser(val tokens: List<Token>) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ']', '${Constants.KEYWORDS["var"]}', '${Constants.KEYWORDS["if"]}', '${Constants.KEYWORDS["for"]}', '${Constants.KEYWORDS["while"]}', ${Constants.KEYWORDS["fun"]}, int, float, identifier, '+', '-', '*', '/', '(', '[' or '${Constants.KEYWORDS["not"]}'"
+                    "Expected ']', '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', ${Constants.get("function")}, int, float, identifier, '+', '-', '*', '/', '(', '[' or '${Constants.get("not")}'"
                 ))
             }
 
@@ -520,7 +519,7 @@ class Parser(val tokens: List<Token>) {
 
     private fun ifExpression(): ParseResult {
         val result = ParseResult()
-        val allCases = result.register(this.ifExpressionCases(Constants.KEYWORDS["if"]!!))
+        val allCases = result.register(this.ifExpressionCases(Constants.get("if")))
 
         if (result.error != null) {
             return result
@@ -535,14 +534,25 @@ class Parser(val tokens: List<Token>) {
     }
 
     private fun ifExpressionB(): ParseResult {
-        return this.ifExpressionCases(Constants.KEYWORDS["elif"]!!)
+        return this.ifExpressionCases(Constants.get("elif")!!)
     }
 
     private fun ifExpressionC(): ParseResult {
         val result = ParseResult()
         var elseCase: BaseCase? = null
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["else"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("else"))) {
+            result.registerAdvancement()
+            this.advance()
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected '${Constants.get("then")}'"
+                ))
+            }
+
             result.registerAdvancement()
             this.advance()
 
@@ -558,14 +568,14 @@ class Parser(val tokens: List<Token>) {
 
                 elseCase = BaseCase(statements as Node, true)
 
-                if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+                if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
                     result.registerAdvancement()
                     this.advance()
                 } else {
                     return result.failure(InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.KEYWORDS["end"]}'"
+                        "Expected '${Constants.get("end")}'"
                     ))
                 }
             } else {
@@ -587,7 +597,7 @@ class Parser(val tokens: List<Token>) {
         var cases = arrayListOf<Case>()
         val elseCase: BaseCase?
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["elif"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("elif"))) {
             val allCases = result.register(this.ifExpressionB())
 
             if (result.error != null) {
@@ -635,11 +645,11 @@ class Parser(val tokens: List<Token>) {
 
         condition as Node
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["then"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.KEYWORDS["then"]}"
+                "Expected ${Constants.get("then")}"
             ))
         }
 
@@ -660,7 +670,7 @@ class Parser(val tokens: List<Token>) {
 
             cases.add(Case(condition, statements, true))
 
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
                 result.registerAdvancement()
                 this.advance()
             } else {
@@ -702,17 +712,20 @@ class Parser(val tokens: List<Token>) {
             cases.addAll(newCases)
         }
 
+        result.registerAdvancement()
+        this.advance()
+
         return result.success(Pair(cases, elseCase))
     }
 
     private fun forExpression(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["for"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("for"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["for"]}'"
+                "Expected '${Constants.get("for")}'"
             ))
         }
 
@@ -748,11 +761,11 @@ class Parser(val tokens: List<Token>) {
             return result
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["to"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("to"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["to"]}'"
+                "Expected '${Constants.get("to")}'"
             ))
         }
 
@@ -767,7 +780,18 @@ class Parser(val tokens: List<Token>) {
 
         var step: Node? = null
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["step"])) {
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("step"))) {
+            result.registerAdvancement()
+            this.advance()
+
+            if (this.currentToken.type != TokenType.EQUALS) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected '='"
+                ))
+            }
+
             result.registerAdvancement()
             this.advance()
 
@@ -780,11 +804,11 @@ class Parser(val tokens: List<Token>) {
             step = s as Node
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["then"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["then"]}'"
+                "Expected '${Constants.get("then")}'"
             ))
         }
 
@@ -803,11 +827,11 @@ class Parser(val tokens: List<Token>) {
 
             body as Node
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ${Constants.KEYWORDS["end"]}"
+                    "Expected ${Constants.get("end")}"
                 ))
             }
 
@@ -829,11 +853,11 @@ class Parser(val tokens: List<Token>) {
     private fun whileExpression(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["while"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("while"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["while"]}'"
+                "Expected '${Constants.get("while")}'"
             ))
         }
 
@@ -846,11 +870,11 @@ class Parser(val tokens: List<Token>) {
             return result
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["then"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.KEYWORDS["then"]}'"
+                "Expected '${Constants.get("then")}'"
             ))
         }
 
@@ -867,11 +891,11 @@ class Parser(val tokens: List<Token>) {
                 return result
             }
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.KEYWORDS["end"]}'"
+                    "Expected '${Constants.get("end")}'"
                 ))
             }
 
@@ -893,13 +917,15 @@ class Parser(val tokens: List<Token>) {
     private fun functionDefinition(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["function"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("function"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.KEYWORDS["function"]}"
+                "Expected ${Constants.get("function")}"
             ))
         }
+
+        skipNewLines(result)
 
         result.registerAdvancement()
         this.advance()
@@ -930,6 +956,8 @@ class Parser(val tokens: List<Token>) {
                 ))
             }
         }
+
+        skipNewLines(result)
 
         result.registerAdvancement()
         this.advance()
@@ -980,6 +1008,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         if (this.currentToken.type == TokenType.ARROW) {
             result.registerAdvancement()
             this.advance()
@@ -999,11 +1029,13 @@ class Parser(val tokens: List<Token>) {
             ))
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["then"])) {
+        skipNewLines(result)
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '->' or new line"
+                "Expected '->' or ${Constants.get("then")}"
             ))
         }
 
@@ -1012,7 +1044,7 @@ class Parser(val tokens: List<Token>) {
 
         var body: Node? = null
 
-        if (!this.getTokenAfter(TokenType.NEW_LINE)!!.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+        if (!this.getTokenAfter(TokenType.NEW_LINE)!!.matches(TokenType.KEYWORD, Constants.get("end"))) {
             val b = result.register(this.statements())
 
             if (result.error != null) {
@@ -1027,11 +1059,11 @@ class Parser(val tokens: List<Token>) {
             }
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.KEYWORDS["end"])) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.KEYWORDS["end"]}, got $currentToken"
+                "Expected ${Constants.get("end")}, got $currentToken"
             ))
         }
 
@@ -1042,7 +1074,7 @@ class Parser(val tokens: List<Token>) {
             name,
             argumentNames,
             this.currentToken,
-            body,
+            body as Node?,
             false
         ))
     }
@@ -1084,7 +1116,7 @@ class Parser(val tokens: List<Token>) {
         return result.success(left as Node)
     }
 
-    private fun getTokenAfter(type: TokenType): Token? {
+    private fun getTokenAfter(type: TokenType): Token {
         val previous = this.tokenIndex
 
         while (this.currentToken.type == type) {
@@ -1098,6 +1130,13 @@ class Parser(val tokens: List<Token>) {
         }
 
         return token
+    }
+
+    private fun skipNewLines(result: ParseResult) {
+        while (this.currentToken.type == TokenType.NEW_LINE) {
+            result.registerAdvancement()
+            this.advance()
+        }
     }
 
     open class BaseCase(val token: Node, val shouldReturnNull: Boolean)

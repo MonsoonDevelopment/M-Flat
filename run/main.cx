@@ -1,22 +1,48 @@
-meth main(args) then
-    std -> println("Hello, world!")
-    testing -> test()
+meth main(args) {
+    for i = 0 > 5 {
+        std::println(i)
+    }
+
+    for i = 0 > 6 step = 2 {
+        std::println(i)
+    }
+
+    std::println("Hello, world!")
+    testing::test()
 
     mut i = 0
 
-    while true then
-        std -> println(i)
+    while true {
+        std::println(i)
 
         i = i + 1
 
-        if i == 6 then
+        if i == 6 {
             break
-        end
-    end
+        }
+    }
 
     std::println(testing::integer)
 
     testing::integer = 5
 
     std::println(testing::integer)
-end
+
+    const a = std::stringToBool(std::input())
+    const b = std::stringToBool(std::input())
+
+    if a {
+        std::println("A")
+    elseif b {
+        std::println("B")
+    else {
+        std::println("Neither")
+    }
+
+    if true {
+        mut c = true
+        std::println(c)
+    }
+
+    std::println(c)
+}

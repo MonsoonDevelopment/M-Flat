@@ -54,9 +54,9 @@ class Interpreter {
 
         val transform: Pair<Value?, Error?>
 
-        if (node.token.matches(TokenType.KEYWORD, Constants.KEYWORDS["and"])) {
+        if (node.token.matches(TokenType.KEYWORD, Constants.get("and"))) {
             transform = left.andedBy(right)
-        } else if (node.token.matches(TokenType.KEYWORD, Constants.KEYWORDS["or"])) {
+        } else if (node.token.matches(TokenType.KEYWORD, Constants.get("or"))) {
             transform = left.oredBy(right)
         } else {
             transform = when (node.token.type) {
@@ -109,33 +109,34 @@ class Interpreter {
 
         end as NumberValue
 
-        val step: NumberValue
-
-        if (node.step != null) {
+        val step: NumberValue = if (node.step != null) {
             val s = result.register(this.visit(node.step, context))
 
             if (result.shouldReturn()) {
                 return result
             }
 
-            step = s as NumberValue
+            s as NumberValue
         } else {
-            step = NumberValue(node.name.value.toString() + "step", 1)
+            NumberValue(node.name.value.toString() + "step", 1)
         }
 
-        var i = start.value.toInt()
+        var i = start.value.toFloat()
 
         val condition: () -> Boolean = if (step.value.toInt() >= 0) {
-            { i < end.value.toInt() }
+            { i < end.value.toFloat() }
         } else {
-            { i > end.value.toInt() }
+            { i > end.value.toFloat() }
         }
 
-        while (condition()) {
-            context.symbolTable!!.set(node.name.value as String, NumberValue(node.name.value.toString() + "i", i))
-            i += step.value.toInt()
+        val forLoopContext = Context("for loop context", parent = context)
+        forLoopContext.symbolTable = SymbolTable("anonymousfor", context.symbolTable)
 
-            val value = result.register(this.visit(node.body, context))
+        while (condition()) {
+            forLoopContext.symbolTable!!.set(node.name.value as String, NumberValue(node.name.value.toString(), i), forced = true)
+            i += step.value.toFloat()
+
+            val value = result.register(this.visit(node.body, forLoopContext))
 
             if (result.shouldReturn() && !result.shouldContinue && !result.shouldBreak) {
                 return result
@@ -152,7 +153,7 @@ class Interpreter {
             elements.add(value!!)
         }
 
-        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous for list>", elements).setContext(context).setPosition(node.start, node.end))
+        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous for list>", elements).setContext(forLoopContext).setPosition(node.start, node.end))
     }
 
     fun visitIfNode(node: Node, context: Context): RuntimeResult {
@@ -170,7 +171,10 @@ class Interpreter {
             conditionValue as NumberValue
 
             if (conditionValue.isTrue()) {
-                val expressionValue = result.register(this.visit(case.token, context))
+                val newContext = Context("if", context)
+                newContext.symbolTable = SymbolTable("if symbol table", context.symbolTable)
+
+                val expressionValue = result.register(this.visit(case.token, newContext))
 
                 if (result.shouldReturn()) {
                     return result
@@ -181,7 +185,10 @@ class Interpreter {
         }
 
         if (node.elseCase != null) {
-            val expressionValue = result.register(this.visit(node.elseCase.token, context))
+            val newContext = Context("else", context)
+            newContext.symbolTable = SymbolTable("else symbol table", context.symbolTable)
+
+            val expressionValue = result.register(this.visit(node.elseCase.token, newContext))
 
             if (result.shouldReturn()) {
                 return result
@@ -315,7 +322,7 @@ class Interpreter {
             val transform = number.multedBy(NumberValue("", -1))
             number = transform.first!!
             error = transform.second
-        } else if (node.token.matches(TokenType.KEYWORD, Constants.KEYWORDS["not"])) {
+        } else if (node.token.matches(TokenType.KEYWORD, Constants.get("not"))) {
             val transform = number.notted()
             number = transform.first!!
             error = transform.second

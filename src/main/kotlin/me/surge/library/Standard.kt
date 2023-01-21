@@ -24,8 +24,8 @@ class Standard {
         return Success(StringValue("<anonymous input>", readlnOrNull()!!))
     }
 
-    fun inputMessage(text: StringValue): Success {
-        print(text)
+    fun inputMessage(message: StringValue): Success {
+        print(message)
         return input()
     }
 
@@ -77,19 +77,19 @@ class Standard {
         return Success(NumberValue("<anonymous is string>", (value is StringValue).binary()))
     }
 
-    fun isFunction(value: Value): Result {
-        return Success(NumberValue("<anonymous is function>", (value is BaseFunctionValue).binary()))
+    fun isMethod(value: Value): Result {
+        return Success(NumberValue("<anonymous is method>", (value is BaseFunctionValue).binary()))
     }
 
     fun isList(value: Value): Result {
         return Success(NumberValue("<anonymous is list>", (value is ListValue).binary()))
     }
 
-    fun castToNumber(value: Value): Result {
+    fun stringToNumber(value: Value): Result {
         return Success(NumberValue("<anonymous cast>", value.rawValue().toFloat()))
     }
 
-    fun castToBool(value: Value): Result {
+    fun stringToBool(value: Value): Result {
         return Success(NumberValue("<anonymous cast>", (value.rawValue().lowercase() == "true").binary()))
     }
 

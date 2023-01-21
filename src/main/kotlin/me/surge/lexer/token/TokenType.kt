@@ -26,6 +26,5 @@ enum class TokenType {
     COMMA,
     ARROW,
     NEW_LINE,
-    ACCESSOR,
     EOF
 }

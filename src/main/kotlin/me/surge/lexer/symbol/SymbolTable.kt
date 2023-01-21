@@ -62,7 +62,7 @@ class SymbolTable(val name: String, val parent: SymbolTable? = null) {
         return value
     }
 
-    fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false, tableName: String = ""): Error? {
+    fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false, tableName: String = "", forced: Boolean = false): Error? {
         val variable = this.get(name, tableName)
 
         if (variable != null) {
@@ -93,15 +93,23 @@ class SymbolTable(val name: String, val parent: SymbolTable? = null) {
             }
         }
 
-        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
-            this.parent.set(name, value, final, start, end, context, declaration, tableName)
+        val local = symbols[name]
+
+        if (local == null) {
+            if (declaration || forced) {
+                this.symbols[name] = Pair(value, final)
+            } else if (parent != null) {
+                this.parent.set(name, value, final, start, end, context, false, tableName)
+            }
+        } else {
+            this.symbols[name] = Pair(value, final)
         }
 
-        if (!this.symbols.containsKey(name) && this.parent != null) {
-            this.parent.set(name, value, final, start, end, context, declaration)
-        }
-
-        this.symbols[name] = Pair(value, final)
+        /* if ((!this.symbols.containsKey(name) && declaration || this.symbols.containsKey(name) && !declaration) || forced) {
+            this.symbols[name] = Pair(value, final)
+        } else if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
+            return this.parent.set(name, value, final, start, end, context, declaration, tableName)
+        } */
 
         return null
     }
