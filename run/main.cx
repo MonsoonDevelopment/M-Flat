@@ -59,9 +59,9 @@ meth main(args) {
 
     if (a) {
         std::println("A")
-    elseif (b) {
+    } elseif (b) {
         std::println("B")
-    else {
+    } else {
         std::println("Neither")
     }
 

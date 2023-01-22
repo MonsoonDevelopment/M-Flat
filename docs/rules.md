@@ -49,15 +49,15 @@ You can add additional expressions using `elseif` and `else`:
 ```
 if ([condition]) {
     [contents]
-elseif ([condition 2]) {
+} elseif ([condition 2]) {
     [contents]
-else {
+} else {
     [contents]
 }
 ```
 
-It's worth noting that `}` is only needed at the very end of the entire
-statement, not at the end of the contents of each segment.
+It's worth noting that if you have `elseif` or `else`, they have to be on the same line as
+the last `}`.
 
 # <u> Loops </u>
 You can run loops through either `for` or `while`.

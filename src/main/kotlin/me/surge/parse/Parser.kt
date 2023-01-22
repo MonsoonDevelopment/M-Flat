@@ -648,6 +648,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
             return result.failure(ExpectedCharError(
                 this.currentToken.start,
@@ -693,6 +695,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             val statements = result.register(this.statements())
 
             if (result.error != null) {
@@ -703,10 +707,18 @@ class Parser(val tokens: List<Token>) {
 
             cases.add(Case(condition, statements, true))
 
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
-                result.registerAdvancement()
-                this.advance()
-            } else {
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return result.failure(ExpectedCharError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected '${Constants.get("end")}'"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("elif")) || this.currentToken.matches(TokenType.KEYWORD, Constants.get("else"))) {
                 val allCases = result.register(this.ifExpressionBorC())
 
                 if (result.error != null) {

@@ -21,7 +21,7 @@ Features:
 - [x] List Iteration
 - [ ] Indexed List Iteration
 - [ ] Indexed Loops
-- [ ] Structs
+- [x] Structs
 - [ ] Operators
 - [ ] GUI / LWJGL Implementation
 - [ ] List Indexing
