@@ -1,6 +1,14 @@
-struct a (a, b, c)
+struct Lliw {
+    red,
+    green,
+    blue,
+    alpha
+}
 
 meth main(args) {
+    const lliw = Lliw(74, 255, 255, 255)
+    std::println(lliw::red)
+
     const list = [4, 7, 2, 5, 3]
 
     for (a in list) {

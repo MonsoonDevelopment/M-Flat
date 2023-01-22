@@ -26,7 +26,8 @@ object Constants {
         Pair("return", "return"),
         Pair("continue", "continue"),
         Pair("break", "break"),
-        Pair("in", "in")
+        Pair("in", "in"),
+        Pair("struct", "struct")
     )
 
     private val SYMBOLS = hashMapOf(

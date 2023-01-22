@@ -447,6 +447,16 @@ class Parser(val tokens: List<Token>) {
             return result.success(definition as Node)
         }
 
+        else if (token.matches(TokenType.KEYWORD, Constants.get("struct"))) {
+            val definition = result.register(this.structDefinition())
+
+            if (result.error !=  null) {
+                return result
+            }
+
+            return result.success(definition as Node)
+        }
+
         return result.failure(InvalidSyntaxError(
             token.start,
             token.end,
@@ -1067,10 +1077,10 @@ class Parser(val tokens: List<Token>) {
             ))
         }
 
-        skipNewLines(result)
-
         result.registerAdvancement()
         this.advance()
+
+        skipNewLines(result)
 
         val name: Token?
 
@@ -1079,6 +1089,8 @@ class Parser(val tokens: List<Token>) {
 
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
                 return result.failure(InvalidSyntaxError(
@@ -1099,10 +1111,10 @@ class Parser(val tokens: List<Token>) {
             }
         }
 
-        skipNewLines(result)
-
         result.registerAdvancement()
         this.advance()
+
+        skipNewLines(result)
 
         val argumentNames = arrayListOf<Token>()
 
@@ -1112,9 +1124,13 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             while (this.currentToken.type == TokenType.COMMA) {
                 result.registerAdvancement()
                 this.advance()
+
+                skipNewLines(result)
 
                 if (this.currentToken.type != TokenType.IDENTIFIER) {
                     return result.failure(InvalidSyntaxError(
@@ -1128,6 +1144,8 @@ class Parser(val tokens: List<Token>) {
 
                 result.registerAdvancement()
                 this.advance()
+
+                skipNewLines(result)
             }
 
             if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
@@ -1184,6 +1202,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         val body = result.register(this.statements())
 
         if (result.error != null) {
@@ -1203,6 +1223,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         return result.success(MethodDefineNode(
             name,
             argumentNames,
@@ -1210,6 +1232,119 @@ class Parser(val tokens: List<Token>) {
             body,
             false
         ))
+    }
+
+    private fun structDefinition(): ParseResult {
+        val result = ParseResult()
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("struct"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '${Constants.get("function")}'"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        if (this.currentToken.type != TokenType.IDENTIFIER) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected identifier"
+            ))
+        }
+
+        val name = this.currentToken
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '${Constants.get("then")}'"
+            ))
+        }
+
+        skipNewLines(result)
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        val argumentNames = arrayListOf<Token>()
+
+        if (this.currentToken.type == TokenType.IDENTIFIER) {
+            argumentNames.add(this.currentToken)
+
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+
+            while (this.currentToken.type == TokenType.COMMA) {
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                if (this.currentToken.type != TokenType.IDENTIFIER) {
+                    return result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected identifier"
+                    ))
+                }
+
+                argumentNames.add(this.currentToken)
+
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+            }
+
+            skipNewLines(result)
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected ',' or '${Constants.get("end")}'"
+                ))
+            }
+        } else {
+            skipNewLines(result)
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected identifier or '${Constants.get("end")}'"
+                ))
+            }
+        }
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ${Constants.get("end")}, got $currentToken"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        return result.success(StructDefineNode(name, argumentNames, this.currentToken))
     }
 
     private fun binaryOperation(function: Supplier<ParseResult>, ops: Array<Any>, functionB: Supplier<ParseResult>? = null): ParseResult {
@@ -1247,22 +1382,6 @@ class Parser(val tokens: List<Token>) {
         }
 
         return result.success(left as Node)
-    }
-
-    private fun getTokenAfter(type: TokenType): Token {
-        val previous = this.tokenIndex
-
-        while (this.currentToken.type == type) {
-            this.advance()
-        }
-
-        val token = this.currentToken
-
-        while (this.tokenIndex != previous) {
-            this.reverse()
-        }
-
-        return token
     }
 
     private fun skipNewLines(result: ParseResult) {

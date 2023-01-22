@@ -24,3 +24,5 @@ Features:
 - [ ] Structs
 - [ ] Operators
 - [ ] GUI / LWJGL Implementation
+- [ ] List Indexing
+- [ ] String Indexing

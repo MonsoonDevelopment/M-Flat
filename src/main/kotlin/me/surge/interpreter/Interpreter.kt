@@ -8,6 +8,7 @@ import me.surge.lexer.node.*
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.token.TokenType
 import me.surge.lexer.value.*
+import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.lexer.value.function.FunctionValue
 import me.surge.parse.RuntimeResult
 import java.lang.IllegalStateException
@@ -568,6 +569,24 @@ class Interpreter {
 
     fun visitBreakNode(node: Node, context: Context): RuntimeResult {
         return RuntimeResult().successBreak()
+    }
+
+    fun visitStructDefineNode(node: Node, context: Context): RuntimeResult {
+        node as StructDefineNode
+
+        val result = RuntimeResult()
+
+        val argumentNames = ArrayList<String>()
+
+        for (argumentName in node.argumentTokens) {
+            argumentNames.add(argumentName.value as String)
+        }
+
+        val functionValue = StructValue(node.name.value as String, argumentNames)
+
+        context.symbolTable!!.set(node.name.value, functionValue, SymbolTable.EntryData(immutable = true, declaration = true, node.start, node.end, context = context, forced = true))
+
+        return result.success(functionValue)
     }
 
 }
