@@ -19,11 +19,11 @@ Features:
 - [x] Branch Control Statements (break, continue, return)
 - [x] Comments
 - [x] List Iteration
+- [x] Structs
+- [x] File Importing
 - [ ] Indexed List Iteration
 - [ ] Indexed Loops
-- [x] Structs
 - [ ] Operators
 - [ ] GUI / LWJGL Implementation
 - [ ] List Indexing
 - [ ] String Indexing
-- [x] File Importing
