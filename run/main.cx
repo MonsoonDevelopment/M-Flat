@@ -27,10 +27,6 @@ meth main(args) {
     const lliw = Lliw(74, 255, 255, 255)
     std::println(lliw::red)
 
-    std::println(lliw::getRed())
-
-    std::println(lliw::getGreen())
-
     const list = [4, 7, 2, 5, 3]
 
     for (a in list) {

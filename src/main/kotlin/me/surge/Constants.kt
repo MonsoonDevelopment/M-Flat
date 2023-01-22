@@ -38,7 +38,9 @@ object Constants {
         Pair("then", "{"),
         Pair("end", "}"),
         Pair("accessor", "::"),
-        Pair("to", ">")
+        Pair("to", ">"),
+        Pair("open comment", "/*"),
+        Pair("close comment", "*/")
     )
 
     fun get(identifier: String): String {

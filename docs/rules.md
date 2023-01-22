@@ -127,3 +127,53 @@ The syntax should look like this:
 
 mut a = 5 // a comment can be after anything
 ```
+
+# <u> Structs </u>
+You can define structs with the `struct` keyword.
+The syntax should look like this:
+
+```
+struct [name] {
+    [properties]
+}
+```
+
+### <u> Implementation </u>
+If you want to implement methods into a struct, you can use the `impl` keyword.
+The syntax should look like this:
+
+```
+impl [struct name] {
+    [contents]
+}
+```
+
+The struct needs to have been declared before the implementation, otherwise errors will be thrown.
+
+The `this` variable is reserved for an instance of the struct, so you can modify or get the properties.
+
+Here's an example (note - "Lliw" is Welsh for colo(u)r, to avoid arguments):
+
+```
+struct Lliw {
+    red,
+    green,
+    blue
+}
+
+impl Lliw {
+    fun average() {
+        return (this::red + this::green + this::blue) / 3
+    }
+}
+
+meth main(args) {
+    const lliw = Lliw(32, 178, 254)
+    
+    // access raw value
+    std::println(lliw::red)
+    
+    // access method
+    std::println(lliw::average())
+}
+```

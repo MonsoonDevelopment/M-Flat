@@ -14,7 +14,7 @@ class StructValue(name: String, val argumentNames: ArrayList<String>) : BaseFunc
         val functionResult = RuntimeResult()
 
         if (this.context == null) {
-            this.context = Context(this.name)
+            this.context = this.generateContext()
         }
 
         val table = SymbolTable(this.context?.symbolTable)

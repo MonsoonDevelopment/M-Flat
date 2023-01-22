@@ -312,3 +312,35 @@ Output:
 ```
 Process finished with exit code 0
 ```
+
+<hr>
+
+### `type(value)`
+#### Returns string
+Gets and returns the type of the value
+
+Example:
+```
+std::println(std::type("example"))
+```
+
+Output:
+```
+string
+```
+
+<hr>
+
+### `equalsIgnoreCase(a, b)`
+#### Returns number
+Checks if two strings are equal, case-insensitively.
+
+Example:
+```
+std::println(std::equalsIgnoreCase("eXaMpLe", "ExAmPlE"))
+```
+
+Output:
+```
+1
+```
