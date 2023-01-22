@@ -467,6 +467,16 @@ class Parser(val tokens: List<Token>) {
             return result.success(implementation as Node)
         }
 
+        else if (token.matches(TokenType.KEYWORD, Constants.get("use"))) {
+            val use = result.register(this.use())
+
+            if (result.error != null) {
+                return result
+            }
+
+            return result.success(use as Node)
+        }
+
         return result.failure(InvalidSyntaxError(
             token.start,
             token.end,
@@ -1443,6 +1453,36 @@ class Parser(val tokens: List<Token>) {
             ListNode(bodyNodes, this.currentToken.start, this.currentToken.end),
             this.currentToken
         ))
+    }
+
+    private fun use(): ParseResult {
+        val result = ParseResult()
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("use"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '${Constants.get("use")}'"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        if (this.currentToken.type != TokenType.STRING) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected string"
+            ))
+        }
+
+        val value = this.currentToken
+
+        result.registerAdvancement()
+        this.advance()
+
+        return result.success(ImportNode(value, this.currentToken.start, this.currentToken.end))
     }
 
     private fun binaryOperation(function: Supplier<ParseResult>, ops: Array<Any>, functionB: Supplier<ParseResult>? = null): ParseResult {

@@ -41,11 +41,52 @@ class Executor {
             return Pair(null, ast.error)
         }
 
-        val interpreter = Interpreter()
+        val interpreter = Interpreter(this)
         val context = Context("<program>")
         context.symbolTable = globalSymbolTable
 
         val result = interpreter.visit(ast.node!! as Node, context)
+
+        return Pair(result.value, result.error)
+    }
+
+    fun use(file: String, text: String): Pair<Any?, Error?> {
+        val lexer = Lexer(file, text)
+        val tokens = lexer.makeTokens()
+
+        if (tokens.first.size == 1) {
+            return Pair("NULL INPUT", null)
+        }
+
+        if (tokens.second != null) {
+            return Pair(null, tokens.second)
+        }
+
+        val parser = Parser(tokens.first)
+        val ast = parser.parse()
+
+        if (ast.node == null) {
+            return Pair(null, ast.error)
+        }
+
+        val interpreter = Interpreter(this)
+        val context = Context(file)
+        context.symbolTable = SymbolTable(globalSymbolTable)
+
+        val result = interpreter.visit(ast.node!! as Node, context)
+
+        globalSymbolTable.set(
+            file,
+            ContainerValue(file, context.symbolTable),
+            SymbolTable.EntryData(
+                immutable = true,
+                declaration = true,
+                null,
+                null,
+                context,
+                forced = true
+            )
+        )
 
         return Pair(result.value, result.error)
     }

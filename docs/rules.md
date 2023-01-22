@@ -177,3 +177,17 @@ meth main(args) {
     std::println(lliw::average())
 }
 ```
+
+# <u> Importing </u>
+You can import structs and functions from other files using the `use` keyword.
+The syntax should look like this:
+
+```
+use "[path]"
+```
+
+So, if I wanted to access the structs and methods inside the `secondary` class, I would use:
+
+```
+use "secondary"
+```

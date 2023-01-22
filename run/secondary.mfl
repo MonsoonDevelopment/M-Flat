@@ -1,0 +1,10 @@
+struct Person {
+    name,
+    age
+}
+
+impl Person {
+    meth say_name() {
+        std::println("My name is " + this::name + ", and I am " + this::age + " years old!")
+    }
+}

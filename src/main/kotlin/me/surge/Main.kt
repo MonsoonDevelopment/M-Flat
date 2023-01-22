@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
         .loadClass("testing", Testing())
         .loadClass("java_types", JavaTypesTesting())
 
-    val file = File("main.cx")
+    val file = File("main.mfl")
     val reader = FileReader(file)
 
     val result = executor.run(file.name, reader.readText())

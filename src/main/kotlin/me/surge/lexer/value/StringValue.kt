@@ -1,14 +1,15 @@
 package me.surge.lexer.value
 
 import me.surge.lexer.error.Error
+import me.surge.util.binary
 import me.surge.util.multiply
 
 @ValueName("string")
 class StringValue(name: String, val value: String) : Value(name) {
 
     override fun addedTo(other: Value): Pair<Value?, Error?> {
-        return if (other is StringValue) {
-            Pair(StringValue(name, this.value + other.value).setContext(this.context), null)
+        return if (other is StringValue || other is NumberValue) {
+            Pair(StringValue(name, this.value + other.rawValue()).setContext(this.context), null)
         } else {
             super.addedTo(other)
         }
@@ -19,6 +20,14 @@ class StringValue(name: String, val value: String) : Value(name) {
             Pair(StringValue(name, this.value.multiply(other.value.toInt())).setContext(this.context), null)
         } else {
             super.addedTo(other)
+        }
+    }
+
+    override fun compareEquality(other: Value): Pair<Value?, Error?> {
+        return if (other is StringValue) {
+            Pair(NumberValue("", (this.rawValue() == other.rawValue()).binary()), null)
+        } else {
+            super.compareEquality(other)
         }
     }
 

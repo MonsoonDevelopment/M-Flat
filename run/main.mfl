@@ -1,3 +1,5 @@
+use "secondary"
+
 struct Lliw {
     red,
     green,
@@ -26,6 +28,9 @@ impl Lliw {
 meth main(args) {
     const lliw = Lliw(74, 255, 255, 255)
     std::println(lliw::red)
+
+    const person = secondary::Person("John Doe", 23)
+    person::say_name()
 
     const list = [4, 7, 2, 5, 3]
 

@@ -26,3 +26,4 @@ Features:
 - [ ] GUI / LWJGL Implementation
 - [ ] List Indexing
 - [ ] String Indexing
+- [x] File Importing

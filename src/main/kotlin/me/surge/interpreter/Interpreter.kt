@@ -1,6 +1,7 @@
 package me.surge.interpreter
 
 import me.surge.Constants
+import me.surge.api.Executor
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.RuntimeError
@@ -11,9 +12,11 @@ import me.surge.lexer.value.*
 import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.lexer.value.function.FunctionValue
 import me.surge.parse.RuntimeResult
+import java.io.File
 import java.lang.IllegalStateException
+import java.nio.charset.Charset
 
-class Interpreter {
+class Interpreter(val executor: Executor? = null) {
 
     fun visit(node: Node, context: Context): RuntimeResult {
         val method = this::class.java.getDeclaredMethod("visit${node.javaClass.name.split(".").last()}", Node::class.java, Context::class.java)
@@ -596,15 +599,6 @@ class Interpreter {
 
         val struct = context.symbolTable!!.get(node.name.value as String) as StructValue
 
-        /* val implementationContext = Context("implementation", context)
-        implementationContext.symbolTable = SymbolTable(struct.value as SymbolTable)
-
-        val res = result.register(this.visit(node.body, implementationContext))
-
-        if (result.shouldReturn()) {
-            return result
-        } */
-
         val res = struct.setImplementation(node.body, context, result, this)
 
         if (result.shouldReturn()) {
@@ -612,6 +606,26 @@ class Interpreter {
         }
 
         return result.success(struct)
+    }
+
+    fun visitImportNode(node: Node, context: Context): RuntimeResult {
+        node as ImportNode
+
+        val file = File(node.name.value as String + ".mfl")
+
+        if (file.exists()) {
+            this.executor!!.use(node.name.value, file.readText(Charset.defaultCharset()))
+            return RuntimeResult().success(null)
+        } else {
+            return RuntimeResult().failure(RuntimeError(
+                node.start,
+                node.end,
+                "Failed to import '${node.name.value}'",
+                context
+            ))
+        }
+
+        // this.executor.run()
     }
 
 }
