@@ -1,6 +1,7 @@
 package me.surge.parse
 
 import me.surge.Constants
+import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*
 import me.surge.lexer.token.Token
@@ -637,6 +638,17 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
+            return result.failure(ExpectedCharError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '('"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
         val condition = result.register(this.expression())
 
         if (result.error != null) {
@@ -644,6 +656,17 @@ class Parser(val tokens: List<Token>) {
         }
 
         condition as Node
+
+        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+            return result.failure(ExpectedCharError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ')'"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
@@ -729,6 +752,18 @@ class Parser(val tokens: List<Token>) {
             ))
         }
 
+        // BEGIN EXPRESSION
+        result.registerAdvancement()
+        this.advance()
+
+        if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '('"
+            ))
+        }
+
         result.registerAdvancement()
         this.advance()
 
@@ -743,6 +778,80 @@ class Parser(val tokens: List<Token>) {
         val name = this.currentToken
         result.registerAdvancement()
         this.advance()
+
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("in"))) {
+            result.registerAdvancement()
+            this.advance()
+
+            if (this.currentToken.type != TokenType.IDENTIFIER) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected identifier"
+                ))
+            }
+
+            val list = this.currentToken
+
+            result.registerAdvancement()
+            this.advance()
+
+            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected ')'"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected '${Constants.get("then")}'"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            if (this.currentToken.type == TokenType.NEW_LINE) {
+                result.registerAdvancement()
+                this.advance()
+
+                val body = result.register(this.statements())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                body as Node
+
+                if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                    return result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected ${Constants.get("end")}"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+
+                return result.success(IterationNode(name, list, body, true))
+            }
+
+            val body = result.register(this.statement())
+
+            if (result.error != null) {
+                return result
+            }
+
+            return result.success(IterationNode(name, list, body as Node, false))
+        }
 
         if (this.currentToken.type != TokenType.EQUALS) {
             return result.failure(InvalidSyntaxError(
@@ -804,6 +913,17 @@ class Parser(val tokens: List<Token>) {
             step = s as Node
         }
 
+        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ')'"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
@@ -864,11 +984,33 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
+            return result.failure(ExpectedCharError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '('"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
         val condition = result.register(this.expression())
 
         if (result.error != null) {
             return result
         }
+
+        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+            return result.failure(ExpectedCharError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ')'"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
@@ -1042,22 +1184,13 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        var body: Node? = null
+        val body = result.register(this.statements())
 
-        if (!this.getTokenAfter(TokenType.NEW_LINE)!!.matches(TokenType.KEYWORD, Constants.get("end"))) {
-            val b = result.register(this.statements())
-
-            if (result.error != null) {
-                return result
-            }
-
-            body = b as Node
-        } else {
-            while (this.currentToken.type == TokenType.NEW_LINE) {
-                result.registerAdvancement()
-                this.advance()
-            }
+        if (result.error != null) {
+            return result
         }
+
+        body as Node
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
             return result.failure(InvalidSyntaxError(
@@ -1074,7 +1207,7 @@ class Parser(val tokens: List<Token>) {
             name,
             argumentNames,
             this.currentToken,
-            body as Node?,
+            body,
             false
         ))
     }

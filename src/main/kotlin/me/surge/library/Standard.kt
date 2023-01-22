@@ -1,6 +1,5 @@
 package me.surge.library
 
-import me.surge.api.annotation.OverrideName
 import me.surge.api.result.Failure
 import me.surge.api.result.Result
 import me.surge.api.result.Success
@@ -105,6 +104,14 @@ class Standard {
 
     fun exit(status: NumberValue): Result {
         exitProcess(status.value.toInt())
+    }
+
+    fun type(value: Value): Result {
+        return Success(StringValue("anonymous", value.rawName))
+    }
+
+    fun equalsIgnoreCase(a: StringValue, b: StringValue): Result {
+        return Success(NumberValue("anonymous", (a.rawValue().lowercase() == b.rawValue().lowercase()).binary()))
     }
 
 }

@@ -14,6 +14,8 @@ open class Value(var name: String) {
     var end: Position? = null
     var context: Context? = null
 
+    val rawName = this::class.java.getAnnotation(ValueName::class.java).name
+
     fun setPosition(start: Position? = null, end: Position? = null): Value {
         this.start = start
         this.end = end

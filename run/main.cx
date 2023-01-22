@@ -1,9 +1,25 @@
 meth main(args) {
-    for i = 0 > 5 {
+    const list = [4, 7, 2, 5, 3]
+
+    for (i in list) {
         std::println(i)
     }
 
-    for i = 0 > 6 step = 2 {
+    const list2 = ["string1", "string2", "string3"]
+
+    for (i in list2) {
+        if (std::equalsIgnoreCase(i, "string2")) {
+            continue
+        }
+
+        std::println(i)
+    }
+
+    for (i = 0 > 5) {
+        std::println(i)
+    }
+
+    for (i = 0 > 6 step = 2) {
         std::println(i)
     }
 
@@ -12,12 +28,12 @@ meth main(args) {
 
     mut i = 0
 
-    while true {
+    while (true) {
         std::println(i)
 
         i = i + 1
 
-        if i == 6 {
+        if (i == 6) {
             break
         }
     }
@@ -31,15 +47,15 @@ meth main(args) {
     const a = std::stringToBool(std::input())
     const b = std::stringToBool(std::input())
 
-    if a {
+    if (a) {
         std::println("A")
-    elseif b {
+    elseif (b) {
         std::println("B")
     else {
         std::println("Neither")
     }
 
-    if true {
+    if (true) {
         mut c = true
         std::println(c)
     }

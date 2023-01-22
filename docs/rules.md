@@ -40,16 +40,16 @@ You can check a condition with an `if` statement.
 
 The syntax should look like the following:
 ```
-if [condition] {
+if ([condition]) {
     [contents]
 }
 ```
 
 You can add additional expressions using `elseif` and `else`:
 ```
-if [condition] {
+if ([condition]) {
     [contents]
-elseif [condition 2] {
+elseif ([condition 2]) {
     [contents]
 else {
     [contents]
@@ -65,7 +65,7 @@ You can run loops through either `for` or `while`.
 ### <u> For Loops </u>
 The syntax should look like this:
 ```
-for [index name] = [start] > [end] {
+for ([index name] = [start] > [end]) {
     [contents]
 }
 ```
@@ -74,7 +74,7 @@ for [index name] = [start] > [end] {
 
 You can define the step as well, simply add `step = [value]` after the range:
 ```
-for [index name] = [start] > [end] step = [step] {
+for ([index name] = [start] > [end] step = [step]) {
     [contents]
 }
 ```
@@ -82,7 +82,7 @@ for [index name] = [start] > [end] step = [step] {
 ### <u> While Loops </u>
 The syntax should look like this:
 ```
-while [condition] {
+while ([condition]) {
     [contents]
 }
 ```
@@ -107,7 +107,7 @@ This means that any variables declared within braces will only
 be available in those braces. For example:
 
 ```
-if true {
+if (true) {
     mut a = true
     
     // accessible here

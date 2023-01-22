@@ -18,5 +18,7 @@ Features:
 - [x] Built-in Functions
 - [x] Branch Control Statements (break, continue, return)
 - [x] Comments
-- [ ] List Iteration
+- [x] List Iteration
+- [ ] Indexed List Iteration
+- [ ] Indexed Loops
 - [ ] Basic OOP

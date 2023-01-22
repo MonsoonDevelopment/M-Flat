@@ -200,6 +200,48 @@ class Interpreter {
         return result.success(NumberValue.NULL)
     }
 
+    fun visitIterationNode(node: Node, context: Context): RuntimeResult {
+        node as IterationNode
+
+        val result = RuntimeResult()
+        val elements = ArrayList<Value>()
+
+        val list = context.symbolTable!!.get(node.list.value as String) as ListValue
+
+        val start = NumberValue(node.name.value as String + "start", 0)
+        val end = NumberValue(node.name.value + "end", list.elements.size)
+
+        var i = start.value.toFloat()
+
+        val condition: () -> Boolean = { i < end.value.toFloat() }
+
+        val iterationContext = Context("iteration loop context", parent = context)
+        iterationContext.symbolTable = SymbolTable("anonymousiteration", context.symbolTable)
+
+        while (condition()) {
+            iterationContext.symbolTable!!.set(node.name.value, list.elements[i.toInt()], forced = true)
+            i += 1
+
+            val value = result.register(this.visit(node.body, iterationContext))
+
+            if (result.shouldReturn() && !result.shouldContinue && !result.shouldBreak) {
+                return result
+            }
+
+            if (result.shouldContinue) {
+                continue
+            }
+
+            if (result.shouldBreak) {
+                break
+            }
+
+            elements.add(value!!)
+        }
+
+        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous iteration list>", elements).setContext(iterationContext).setPosition(node.start, node.end))
+    }
+
     fun visitMethodDefineNode(node: Node, context: Context): RuntimeResult {
         node as MethodDefineNode
 
