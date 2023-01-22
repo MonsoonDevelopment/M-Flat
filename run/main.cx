@@ -1,3 +1,5 @@
+struct a (a, b, c)
+
 meth main(args) {
     const list = [4, 7, 2, 5, 3]
 
