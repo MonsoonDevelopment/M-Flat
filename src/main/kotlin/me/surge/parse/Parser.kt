@@ -370,6 +370,21 @@ class Parser(val tokens: List<Token>) {
                 }
 
                 return result.success(VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false))
+            } else if (this.currentToken.type == TokenType.ADD || this.currentToken.type == TokenType.SUBTRACT_BY || this.currentToken.type == TokenType.MULTIPLY_BY || this.currentToken.type == TokenType.DIVIDE_BY) {
+                val type = this.currentToken.type
+
+                result.registerAdvancement()
+                this.advance()
+
+                val expression = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                val node = VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false, mutate = type)
+
+                return result.success(node)
             }
 
             return result.success(VarAccessNode(if (accessed) valueToken else token, if (accessed) token else null))

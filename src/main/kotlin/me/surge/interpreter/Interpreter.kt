@@ -490,9 +490,67 @@ class Interpreter(val executor: Executor? = null) {
             container as ContainerValue<*>
             container.value as SymbolTable
 
-            error = container.value.set(name, value, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+            val original = container.value.get(name)
+            var newValue = value
+
+            if (original != null) {
+                original as NumberValue
+
+                when (node.mutate) {
+                    null -> {}
+
+                    TokenType.ADD -> {
+                        newValue = original.addedTo(newValue).first
+                    }
+
+                    TokenType.SUBTRACT_BY -> {
+                        newValue = original.subbedBy(newValue).first
+                    }
+
+                    TokenType.MULTIPLY_BY -> {
+                        newValue = original.multedBy(newValue).first
+                    }
+
+                    TokenType.DIVIDE_BY -> {
+                        newValue = original.divedBy(newValue).first
+                    }
+
+                    else -> {}
+                }
+            }
+
+            error = container.value.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
         } else {
-            context.symbolTable?.set(name, value, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+            val original = context.symbolTable?.get(name)
+            var newValue = value
+
+            if (original != null) {
+                original as NumberValue
+
+                when (node.mutate) {
+                    null -> {}
+
+                    TokenType.ADD -> {
+                        newValue = original.addedTo(newValue).first
+                    }
+
+                    TokenType.SUBTRACT_BY -> {
+                        newValue = original.subbedBy(newValue).first
+                    }
+
+                    TokenType.MULTIPLY_BY -> {
+                        newValue = original.multedBy(newValue).first
+                    }
+
+                    TokenType.DIVIDE_BY -> {
+                        newValue = original.divedBy(newValue).first
+                    }
+
+                    else -> {}
+                }
+            }
+
+            context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
         }
 
         if (error != null) {

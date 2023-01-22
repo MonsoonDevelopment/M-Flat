@@ -32,6 +32,11 @@ meth main(args) {
     const person = secondary::Person("John Doe", 23)
     person::say_name()
 
+    mut a = 6
+    std::println(a)
+    a /= 3
+    std::println(a)
+
     const list = [4, 7, 2, 5, 3]
 
     for (a in list) {

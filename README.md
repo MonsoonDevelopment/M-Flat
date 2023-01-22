@@ -5,7 +5,7 @@ Documentation for the standard library is found [here](./docs/standard.md)
 
 Features:
 - [x] Basic Arithmetic Operations (+, -, *, /)
-- [x] Advanced Arithmetic Operations (^, %)
+- [x] Advanced Arithmetic Operations (^, %, +=, -=, *=, /=)
 - [x] Comparison Operations (<, >, <=, >=)
 - [x] Logical Operations (!, ?, &)
 - [x] Mutable Variables (mut)

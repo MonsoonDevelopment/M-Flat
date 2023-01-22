@@ -46,22 +46,13 @@ class Lexer(val file: String, val text: String) {
                     tokens.add(this.makeString())
                 }
 
-                '+' -> {
-                    tokens.add(Token(PLUS, start = this.position))
-                    this.advance()
-                }
+                '+' -> tokens.add(this.plus())
+                '-' -> tokens.add(this.minus())
 
-                '-' -> {
-                    tokens.add(this.makeMinusOrArrow())
-                }
-
-                '*' -> {
-                    tokens.add(Token(MULTIPLY, start = this.position))
-                    this.advance()
-                }
+                '*' -> tokens.add(this.multiply())
 
                 '/' -> {
-                    val token = this.makeCommentOrDivide()
+                    val token = this.divide()
 
                     if (token != null) {
                         tokens.add(token)
@@ -136,10 +127,9 @@ class Lexer(val file: String, val text: String) {
             }
         }
 
-        tokens.add(Token(EOF, start = this.position))
-
         //println(tokens)
 
+        tokens.add(Token(EOF, start = this.position))
         return Pair(tokens, null)
     }
 
@@ -247,7 +237,20 @@ class Lexer(val file: String, val text: String) {
         return Token(type, start, this.position)
     }
 
-    private fun makeMinusOrArrow(): Token {
+    private fun plus(): Token {
+        var type = PLUS
+        val start = this.position.clone()
+        this.advance()
+
+        if (this.currentChar!! == '=') {
+            this.advance()
+            type = ADD
+        }
+
+        return Token(type, start = start, end = this.position)
+    }
+
+    private fun minus(): Token {
         var type = MINUS
         val start = this.position.clone()
         this.advance()
@@ -255,9 +258,47 @@ class Lexer(val file: String, val text: String) {
         if (this.currentChar!! == '>') {
             this.advance()
             type = ARROW
+        } else if (this.currentChar!! == '=') {
+            this.advance()
+            type = SUBTRACT_BY
         }
 
         return Token(type, start = start, end = this.position)
+    }
+
+    private fun multiply(): Token {
+        var type = MULTIPLY
+        val start = this.position.clone()
+        this.advance()
+
+        if (this.currentChar!! == '=') {
+            this.advance()
+            type = MULTIPLY_BY
+        }
+
+        return Token(type, start = start, end = this.position)
+    }
+
+    private fun divide(): Token? {
+        val start = this.position.clone()
+        this.advance()
+
+        var type = DIVIDE
+
+        if (this.currentChar!! == '/') {
+            while (this.currentChar != null && this.currentChar != '\n') {
+                this.advance()
+            }
+
+            return null
+        } else if (this.currentChar!! == '=') {
+            this.advance()
+            type = DIVIDE_BY
+        }
+
+        this.advance()
+
+        return Token(type, start = start)
     }
 
     private fun makeString(): Token {
@@ -289,23 +330,6 @@ class Lexer(val file: String, val text: String) {
 
         this.advance()
         return Token(STRING, result, start, this.position)
-    }
-
-    private fun makeCommentOrDivide(): Token? {
-        val start = this.position.clone()
-        this.advance()
-
-        if (this.currentChar!! == '/') {
-            while (this.currentChar != null && this.currentChar != '\n') {
-                this.advance()
-            }
-
-            return null
-        }
-
-        this.advance()
-
-        return Token(DIVIDE, start = start)
     }
 
 }
