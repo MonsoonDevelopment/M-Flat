@@ -91,7 +91,7 @@ object LoadHelper {
                         }
                     }
                 },
-                field.getAnnotation(Mutable::class.java) == null, declaration = true
+                SymbolTable.EntryData(field.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null)
             )
         }
 
@@ -112,21 +112,6 @@ object LoadHelper {
                 name,
 
                 { functionData ->
-                    /* val types = method.parameterTypes.filter { it != FunctionData::class.java }
-
-                    val firstNotMatchingType = functionData.arguments.firstIndexed { index, element -> element!!::class.java != types[index] && types[index] != Value::class.java }
-
-                    if (firstNotMatchingType != null) {
-                        return@builtIn RuntimeResult().failure(
-                            RuntimeError(
-                            functionData.start,
-                            functionData.end,
-                            "Invalid argument (${functionData.arguments.indexOf(firstNotMatchingType)}) type! Got ${(firstNotMatchingType as Value)::class.java.getAnnotation(
-                                ValueName::class.java).name}, expected ${types[functionData.arguments.indexOf(firstNotMatchingType)].simpleName.replace("Value", "").lowercase()}.",
-                            functionData.context
-                        ))
-                    } */
-
                     val types = method.parameterTypes.filter { it != FunctionData::class.java }
                     val converted = arrayListOf<Class<*>>()
 
@@ -168,7 +153,7 @@ object LoadHelper {
                 ArrayList(method.parameters.filter { it.type != FunctionData::class.java }.map { it.name }.toList())
             )
 
-            symbolTable.set(name, function, true, declaration = true)
+            symbolTable.set(name, function, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
         }
     }
 

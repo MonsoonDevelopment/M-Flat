@@ -4,146 +4,103 @@ import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.position.Position
-import me.surge.lexer.value.ContainerValue
+import me.surge.lexer.value.Value
 
-class SymbolTable(val name: String, val parent: SymbolTable? = null) {
+class SymbolTable(val parent: SymbolTable? = null) {
 
-    val symbols = hashMapOf<String, Pair<Any, Boolean>>()
+    val symbols = arrayListOf<Symbol>()
 
-    fun get(name: String, tableName: String = ""): Any? {
-        if (this.name == "global") {
-            val value = this.symbols.getOrDefault(tableName, null)
-
-            if (value != null) {
-                return (value.first as ContainerValue<SymbolTable>).value.get(name)
-            }
+    fun get(identifier: String): Value? {
+        if (!symbols.any { it.identifier == identifier } && parent != null) {
+            return parent.get(identifier)
         }
 
-        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
-            return this.parent.get(name, tableName)
-        }
-
-        val value = this.symbols.getOrDefault(name, null)
-
-        if (value == null && this.parent != null) {
-            return this.parent.get(name)
-        }
-
-        if (value == null) {
-            return null
-        }
-
-        return value.first
+        return symbols.firstOrNull { it.identifier == identifier }?.value
     }
 
-    fun getValueAndFinality(name: String, tableName: String = ""): Pair<Any, Boolean>? {
-        if (this.name == "global") {
-            val table = this.symbols.getOrDefault(tableName, null)
-
-            if (table != null) {
-                return (table.first as ContainerValue<SymbolTable>).value.getValueAndFinality(name, tableName)
-            }
+    fun getSymbol(identifier: String): Symbol? {
+        if (!symbols.any { it.identifier == identifier } && parent != null) {
+            return parent.getSymbol(identifier)
         }
 
-        if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
-            return this.parent.getValueAndFinality(name, tableName)
-        }
-
-        val value = this.symbols.getOrDefault(name, null)
-
-        if (value == null && this.parent != null) {
-            return this.parent.getValueAndFinality(name)
-        }
-
-        if (value == null) {
-            return null
-        }
-
-        return value
+        return symbols.firstOrNull { it.identifier == identifier }
     }
 
-    fun set(name: String, value: Any, final: Boolean = false, start: Position? = null, end: Position? = null, context: Context? = null, declaration: Boolean = false, tableName: String = "", forced: Boolean = false): Error? {
-        val variable = this.get(name, tableName)
+    fun set(identifier: String, value: Value, entry: EntryData): Error? {
+        val existingValue = get(identifier)
 
-        if (variable != null) {
-            if (declaration) {
+        // value already exists
+        if (existingValue != null && !entry.forced) {
+            if (entry.declaration) {
                 return RuntimeError(
-                    start!!,
-                    end!!,
-                    "Attempted to declare variable with existing name",
-                    context!!
+                    entry.start!!,
+                    entry.end!!,
+                    "'$identifier' was already defined!",
+                    entry.context!!
                 )
-            }
-
-            if (this.getValueAndFinality(name, tableName)!!.second) {
+            } else if (getSymbol(identifier)!!.immutable) {
                 return RuntimeError(
-                    start!!,
-                    end!!,
-                    "Attempted to write to final variable",
-                    context!!
+                    entry.start!!,
+                    entry.end!!,
+                    "'$identifier' is an immutable variable!",
+                    entry.context!!
                 )
             }
         }
 
-        if (this.name == "global") {
-            val table = this.symbols.getOrDefault(tableName, null)
-
-            if (table != null) {
-                (table.first as ContainerValue<SymbolTable>).value.set(name, value, final, start, end, context, declaration, tableName)
-            }
+        if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null) {
+            return this.parent.set(identifier, value, entry)
         }
 
-        val local = symbols[name]
-
-        if (local == null) {
-            if (declaration || forced) {
-                this.symbols[name] = Pair(value, final)
-            } else if (parent != null) {
-                this.parent.set(name, value, final, start, end, context, false, tableName)
-            }
+        if (existingValue == null && entry.declaration) {
+            this.symbols.add(Symbol(identifier, value, entry.immutable))
+        } else if (existingValue != null && !entry.declaration || entry.forced) {
+            this.symbols.first { it.identifier == identifier }.value = value
         } else {
-            this.symbols[name] = Pair(value, final)
+            return RuntimeError(
+                entry.start!!,
+                entry.end!!,
+                "'$identifier' was not defined!",
+                entry.context!!
+            )
         }
-
-        /* if ((!this.symbols.containsKey(name) && declaration || this.symbols.containsKey(name) && !declaration) || forced) {
-            this.symbols[name] = Pair(value, final)
-        } else if (this.parent != null && tableName.isNotEmpty() && this.name != tableName) {
-            return this.parent.set(name, value, final, start, end, context, declaration, tableName)
-        } */
 
         return null
     }
 
-    fun remove(name: String, start: Position? = null, end: Position? = null, context: Context? = null): Error? {
-        return if (this.symbols.containsKey(name)) {
-            this.symbols.remove(name)
+    fun remove(identifier: String, start: Position? = null, end: Position? = null, context: Context? = null): Error? {
+        return if (this.symbols.any { it.identifier == identifier }) {
+            this.symbols.removeIf { it.identifier == identifier }
             null
         } else {
             RuntimeError(
                 start!!,
                 end!!,
-                "Attempted to remove '$name', which wasn't defined.",
+                "Attempted to remove '$identifier', which wasn't defined.",
                 context!!
             )
         }
     }
 
-    fun removeGlobally(name: String, start: Position? = null, end: Position? = null, context: Context? = null): Error? {
-        if (this.symbols.containsKey(name)) {
-            this.symbols.remove(name)
+    fun removeGlobally(identifier: String, start: Position? = null, end: Position? = null, context: Context? = null): Error? {
+        if (this.symbols.any { it.identifier == identifier }) {
+            this.symbols.removeIf { it.identifier == identifier }
             return null
         } else {
             if (this.parent != null) {
-                return this.parent.removeGlobally(name, start, end, context)
+                return this.parent.removeGlobally(identifier, start, end, context)
             }
 
             return RuntimeError(
                 start!!,
                 end!!,
-                "Attempted to remove '$name', which wasn't defined.",
+                "Attempted to remove '$identifier', which wasn't defined.",
                 context!!
             )
         }
     }
+
+    data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
+    data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false)
 
 }

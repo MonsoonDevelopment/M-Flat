@@ -15,7 +15,7 @@ import me.surge.parse.Parser
 
 class Executor {
 
-    private val globalSymbolTable = SymbolTable("global")
+    private val globalSymbolTable = SymbolTable()
 
     init {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
@@ -51,32 +51,31 @@ class Executor {
     }
 
     fun loadClass(identifier: String, any: Any): Executor {
-        val symbolTable = SymbolTable(identifier)
+        val symbolTable = SymbolTable()
 
         LoadHelper.loadClass(any, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true, declaration = true)
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
         return this
     }
 
     fun loadClass(identifier: String, clazz: Class<*>): Executor {
-        val symbolTable = SymbolTable(identifier)
+        val symbolTable = SymbolTable()
 
         LoadHelper.loadClass(clazz, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), final = true, declaration = true)
+        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
         return this
     }
 
-    fun getFunction(name: String): BaseFunctionValue? {
-        //println(globalSymbolTable.symbols.map { it.key }.joinToString { it })
-        return globalSymbolTable.symbols[name]!!.first as BaseFunctionValue?
+    fun getFunction(identifier: String): BaseFunctionValue? {
+        return globalSymbolTable.get(identifier) as BaseFunctionValue?
     }
 
-    fun getValue(name: String): Value {
-        return globalSymbolTable.get(name) as Value
+    fun getValue(identifier: String): Value? {
+        return globalSymbolTable.get(identifier) as Value?
     }
 
 }

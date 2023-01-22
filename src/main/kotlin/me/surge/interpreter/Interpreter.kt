@@ -7,10 +7,7 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.*
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.token.TokenType
-import me.surge.lexer.value.ListValue
-import me.surge.lexer.value.NumberValue
-import me.surge.lexer.value.StringValue
-import me.surge.lexer.value.Value
+import me.surge.lexer.value.*
 import me.surge.lexer.value.function.FunctionValue
 import me.surge.parse.RuntimeResult
 import java.lang.IllegalStateException
@@ -130,10 +127,11 @@ class Interpreter {
         }
 
         val forLoopContext = Context("for loop context", parent = context)
-        forLoopContext.symbolTable = SymbolTable("anonymousfor", context.symbolTable)
+        forLoopContext.symbolTable = SymbolTable(context.symbolTable)
 
         while (condition()) {
-            forLoopContext.symbolTable!!.set(node.name.value as String, NumberValue(node.name.value.toString(), i), forced = true)
+            forLoopContext.symbolTable!!.set(node.name.value as String, NumberValue(node.name.value.toString(), i), SymbolTable.EntryData(immutable = true, declaration = true, start = node.start, end = node.end, context = context, forced = true))
+
             i += step.value.toFloat()
 
             val value = result.register(this.visit(node.body, forLoopContext))
@@ -172,7 +170,7 @@ class Interpreter {
 
             if (conditionValue.isTrue()) {
                 val newContext = Context("if", context)
-                newContext.symbolTable = SymbolTable("if symbol table", context.symbolTable)
+                newContext.symbolTable = SymbolTable(context.symbolTable)
 
                 val expressionValue = result.register(this.visit(case.token, newContext))
 
@@ -186,7 +184,7 @@ class Interpreter {
 
         if (node.elseCase != null) {
             val newContext = Context("else", context)
-            newContext.symbolTable = SymbolTable("else symbol table", context.symbolTable)
+            newContext.symbolTable = SymbolTable(context.symbolTable)
 
             val expressionValue = result.register(this.visit(node.elseCase.token, newContext))
 
@@ -216,10 +214,26 @@ class Interpreter {
         val condition: () -> Boolean = { i < end.value.toFloat() }
 
         val iterationContext = Context("iteration loop context", parent = context)
-        iterationContext.symbolTable = SymbolTable("anonymousiteration", context.symbolTable)
+        iterationContext.symbolTable = SymbolTable(context.symbolTable)
 
         while (condition()) {
-            iterationContext.symbolTable!!.set(node.name.value, list.elements[i.toInt()], forced = true)
+            val error = iterationContext.symbolTable!!.set(
+                node.name.value,
+                list.elements[i.toInt()],
+                SymbolTable.EntryData(
+                    immutable = true,
+                    declaration = true,
+                    start = node.start,
+                    end = node.end,
+                    context = context,
+                    forced = true
+                )
+            )
+
+            if (error != null) {
+                return result.failure(error)
+            }
+
             i += 1
 
             val value = result.register(this.visit(node.body, iterationContext))
@@ -259,7 +273,7 @@ class Interpreter {
             .setPosition(node.start, node.end)
 
         if (node.name != null) {
-            val error = context.symbolTable!!.set(name, functionValue, final = true, start = node.start, end = node.end, context = context, declaration = true)
+            val error = context.symbolTable!!.set(name, functionValue, SymbolTable.EntryData(immutable = true, declaration = true, start = node.start, end = node.end, context = context))
 
             if (error != null) {
                 return result.failure(error)
@@ -271,6 +285,7 @@ class Interpreter {
 
     fun visitMethodCallNode(node: Node, context: Context): RuntimeResult {
         node as MethodCallNode
+        node.target as VarAccessNode
 
         val result = RuntimeResult()
         val args = ArrayList<Value>()
@@ -380,7 +395,7 @@ class Interpreter {
     fun visitVarAccessNode(node: Node, context: Context): RuntimeResult {
         node as VarAccessNode
 
-        val result = RuntimeResult()
+        /* val result = RuntimeResult()
         val name = node.name.value as String
         var parent = node.parent?.value
 
@@ -390,7 +405,7 @@ class Interpreter {
 
         parent as String
 
-        var value = context.symbolTable!!.get(name, parent)
+        var value = context.symbolTable!!.get(parent.ifEmpty { name })
             ?: return result.failure(RuntimeError(
                 node.start,
                 node.end,
@@ -402,21 +417,51 @@ class Interpreter {
             value = value.clone().setPosition(node.start, node.end)
         }
 
-        return result.success(value as Value)
+        return result.success(value) */
+
+        val result = RuntimeResult()
+
+        val name = node.name.value as String
+        val parent = node.parent?.value as String?
+
+        val value: Value
+
+        if (parent != null) {
+            val container = context.symbolTable!!.get(parent)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "Container '$parent' is not defined",
+                    context
+                ))
+
+            value = ((container as ContainerValue<*>).value as SymbolTable).get(name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'$name' is not defined in container '$parent'!",
+                    context
+                ))
+        } else {
+            value = context.symbolTable!!.get(name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'$name' is not defined in container '$parent'!",
+                    context
+                ))
+        }
+
+        return result.success(value)
     }
 
     fun visitVarAssignNode(node: Node, context: Context): RuntimeResult {
         node as VarAssignNode
 
         val result = RuntimeResult()
+
         val name = node.name.value as String
-        var parent = node.parent?.value
-
-        if (parent == null) {
-            parent = ""
-        }
-
-        parent as String
+        val parent = node.parent?.value as String?
 
         val value = result.register(this.visit(node.value, context))
 
@@ -427,7 +472,24 @@ class Interpreter {
         value as Value
         value.name = name
 
-        val error = context.symbolTable?.set(name, value, final = node.final, start = node.start, end = node.end, context = context, declaration = node.declaration, parent)
+        var error: Error? = null
+
+        if (parent != null) {
+            val container = context.symbolTable!!.get(parent)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "Container '$parent' is not defined",
+                    context
+                ))
+
+            container as ContainerValue<*>
+            container.value as SymbolTable
+
+            error = container.value.set(name, value, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+        } else {
+            context.symbolTable?.set(name, value, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+        }
 
         if (error != null) {
             return result.failure(error)
@@ -444,7 +506,7 @@ class Interpreter {
 
         while (true) {
             val newContext = Context("<while context>", context)
-            newContext.symbolTable = SymbolTable("<while>", parent = context.symbolTable)
+            newContext.symbolTable = SymbolTable(parent = context.symbolTable)
 
             val condition = result.register(this.visit(node.condition, context))
 

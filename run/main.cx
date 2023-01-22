@@ -1,8 +1,8 @@
 meth main(args) {
     const list = [4, 7, 2, 5, 3]
 
-    for (i in list) {
-        std::println(i)
+    for (a in list) {
+        std::println(a)
     }
 
     const list2 = ["string1", "string2", "string3"]
@@ -26,14 +26,14 @@ meth main(args) {
     std::println("Hello, world!")
     testing::test()
 
-    mut i = 0
+    mut n = 0
 
     while (true) {
-        std::println(i)
+        std::println(n)
 
-        i = i + 1
+        n = n + 1
 
-        if (i == 6) {
+        if (n == 6) {
             break
         }
     }
