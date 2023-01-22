@@ -589,4 +589,29 @@ class Interpreter {
         return result.success(functionValue)
     }
 
+    fun visitStructImplementationNode(node: Node, context: Context): RuntimeResult {
+        node as StructImplementationNode
+
+        val result = RuntimeResult()
+
+        val struct = context.symbolTable!!.get(node.name.value as String) as StructValue
+
+        /* val implementationContext = Context("implementation", context)
+        implementationContext.symbolTable = SymbolTable(struct.value as SymbolTable)
+
+        val res = result.register(this.visit(node.body, implementationContext))
+
+        if (result.shouldReturn()) {
+            return result
+        } */
+
+        val res = struct.setImplementation(node.body, context, result, this)
+
+        if (result.shouldReturn()) {
+            return result
+        }
+
+        return result.success(struct)
+    }
+
 }
