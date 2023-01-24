@@ -550,7 +550,7 @@ class Interpreter(val executor: Executor? = null) {
                 }
             }
 
-            context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+            error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
         }
 
         if (error != null) {

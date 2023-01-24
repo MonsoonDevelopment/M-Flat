@@ -6,7 +6,7 @@ class Position(var index: Int, var line: Int, var column: Int, var file: String,
         this.index++
         this.column++
 
-        if (character != null && character in System.lineSeparator()) {
+        if (character != null && character == '\n') {
             this.line++
             this.column = 0
         }

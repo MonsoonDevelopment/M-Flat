@@ -27,25 +27,16 @@ class SymbolTable(val parent: SymbolTable? = null) {
     }
 
     fun set(identifier: String, value: Value, entry: EntryData): Error? {
-        val existingValue = get(identifier)
+        val existingValue = getSymbol(identifier)
 
         // value already exists
-        if (existingValue != null && !entry.forced) {
-            if (entry.declaration) {
-                return RuntimeError(
-                    entry.start!!,
-                    entry.end!!,
-                    "'$identifier' was already defined!",
-                    entry.context!!
-                )
-            } else if (getSymbol(identifier)!!.immutable) {
-                return RuntimeError(
-                    entry.start!!,
-                    entry.end!!,
-                    "'$identifier' is an immutable variable!",
-                    entry.context!!
-                )
-            }
+        if (existingValue != null && entry.declaration && !entry.forced) {
+            return RuntimeError(
+                entry.start!!,
+                entry.end!!,
+                "'$identifier' was already defined!",
+                entry.context!!
+            )
         }
 
         if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null) {
@@ -60,7 +51,7 @@ class SymbolTable(val parent: SymbolTable? = null) {
             return RuntimeError(
                 entry.start!!,
                 entry.end!!,
-                "'$identifier' was not defined!",
+                "'$identifier' is not defined!",
                 entry.context!!
             )
         }
