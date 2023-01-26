@@ -155,6 +155,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             if (this.currentToken.type != TokenType.IDENTIFIER) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
@@ -168,6 +170,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             if (this.currentToken.type != TokenType.EQUALS) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
@@ -178,6 +182,8 @@ class Parser(val tokens: List<Token>) {
 
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             val expression = result.register(this.expression())
 
@@ -270,9 +276,15 @@ class Parser(val tokens: List<Token>) {
             return result
         }
 
+        val index = this.tokenIndex
+
+        skipNewLines(result)
+
         if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             val argumentNodes = arrayListOf<Node>()
 
@@ -296,6 +308,8 @@ class Parser(val tokens: List<Token>) {
                     result.registerAdvancement()
                     this.advance()
 
+                    skipNewLines(result)
+
                     val node = result.register(this.expression())
 
                     if (result.error != null) {
@@ -304,6 +318,8 @@ class Parser(val tokens: List<Token>) {
 
                     argumentNodes.add(node as Node)
                 }
+
+                skipNewLines(result)
 
                 if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
                     return result.failure(InvalidSyntaxError(
@@ -318,6 +334,8 @@ class Parser(val tokens: List<Token>) {
             }
 
             return result.success(MethodCallNode(atom as Node, argumentNodes))
+        } else {
+            this.reverse(this.tokenIndex - index)
         }
 
         return result.success(atom as Node)

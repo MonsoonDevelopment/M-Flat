@@ -26,7 +26,17 @@ impl Lliw {
 }
 
 meth main(args) {
-    const lliw = Lliw(74, 255, 255, 255)
+    const
+    lliw
+    =
+    Lliw
+    (
+    74,
+    255,
+    255,
+    255
+    )
+
     std::println(lliw::red)
 
     const person = secondary::Person("John Doe", 23)
@@ -82,12 +92,12 @@ meth main(args) {
 
     std::println(testing::integer)
 
-    const a = std::stringToBool(std::input())
-    const b = std::stringToBool(std::input())
+    const inpA = std::stringToBool(std::input())
+    const inpB = std::stringToBool(std::input())
 
-    if (a) {
+    if (inpA) {
         std::println("A")
-    } elseif (b) {
+    } elseif (inpB) {
         std::println("B")
     } else {
         std::println("Neither")
