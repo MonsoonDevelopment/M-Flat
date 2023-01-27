@@ -6,6 +6,7 @@ import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*
 import me.surge.lexer.token.Token
 import me.surge.lexer.token.TokenType
+import me.surge.lexer.value.ListValue
 import java.util.function.Supplier
 
 class Parser(val tokens: List<Token>) {
@@ -82,11 +83,12 @@ class Parser(val tokens: List<Token>) {
                 moreStatements = false
             }
 
-            if (!moreStatements || this.currentToken.type == TokenType.EOF) {
+            if (!moreStatements) {
                 break
             }
 
-            val statement = result.tryRegister(this.expression())
+            val expr = this.statement()
+            val statement = result.tryRegister(expr)
 
             if (statement == null) {
                 this.reverse(result.reverseCount)
@@ -1275,8 +1277,6 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        skipNewLines(result)
-
         val body = result.register(this.statements())
 
         if (result.error != null) {
@@ -1295,8 +1295,6 @@ class Parser(val tokens: List<Token>) {
 
         result.registerAdvancement()
         this.advance()
-
-        skipNewLines(result)
 
         return result.success(MethodDefineNode(
             name,
@@ -1462,21 +1460,14 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        skipNewLines(result)
+        val body = result.register(this.statements())
 
-        val bodyNodes = arrayListOf<Node>()
-
-        while (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
-            val body = result.register(this.statements())
-
-            if (result.error != null) {
-                return result
-            }
-
-            body as Node
-
-            bodyNodes.add(body)
+        if (result.error != null) {
+            println(result.error)
+            return result
         }
+
+        body as Node
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
             return result.failure(ExpectedCharError(
@@ -1491,7 +1482,7 @@ class Parser(val tokens: List<Token>) {
 
         return result.success(StructImplementationNode(
             name,
-            ListNode(bodyNodes, this.currentToken.start, this.currentToken.end),
+            body,
             this.currentToken
         ))
     }

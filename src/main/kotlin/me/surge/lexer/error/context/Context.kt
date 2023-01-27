@@ -7,4 +7,10 @@ data class Context(val displayName: String, val parent: Context? = null, val par
 
     var symbolTable: SymbolTable? = null
 
+    fun createChildSymbolTable(): Context {
+        this.symbolTable = SymbolTable(parent!!.symbolTable)
+
+        return this
+    }
+
 }

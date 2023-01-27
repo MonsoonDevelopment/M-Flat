@@ -25,19 +25,15 @@ impl Lliw {
     }
 }
 
-meth main(args) {
-    const
-    lliw
-    =
-    Lliw
-    (
-    74,
-    255,
-    255,
-    255
-    )
+meth test_func() {
+    return 5
+}
 
-    std::println(lliw::red)
+meth main(args) {
+    const lliw = Lliw(74, 255, 255, 255)
+
+    std::println(lliw::getRed())
+    std::println(lliw::test_func())
 
     const person = secondary::Person("John Doe", 23)
     person::say_name()
