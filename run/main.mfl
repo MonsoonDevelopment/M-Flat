@@ -30,7 +30,7 @@ meth test_func() {
 }
 
 meth main(args) {
-    const lliw = Lliw(74, 255, 255, 255)
+    const lliw = Lliw(74, 255, 255, 255
 
     std::println(lliw::getRed())
     std::println(lliw::test_func())
