@@ -212,8 +212,11 @@ class Parser(val tokens: List<Token>) {
 
         if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("not"))) {
             val operator = this.currentToken
+
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             val node = result.register(this.comparisonExpression()) as Node
 
@@ -252,6 +255,9 @@ class Parser(val tokens: List<Token>) {
         if (token.type in arrayOf(TokenType.PLUS, TokenType.MINUS)) {
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
+
             val factor = result.register(this.factor())
 
             if (result.error != null) {
@@ -365,21 +371,37 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            var index = this.tokenIndex
+
+            skipNewLines(result)
+
             if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
                 accessed = true
 
                 result.registerAdvancement()
                 this.advance()
 
+                skipNewLines(result)
+
                 valueToken = this.currentToken
 
                 result.registerAdvancement()
                 this.advance()
+
+                skipNewLines(result)
+            } else {
+                this.reverse(this.tokenIndex - index)
             }
+
+            index = this.tokenIndex
+
+            skipNewLines(result)
 
             if (this.currentToken.type == TokenType.EQUALS) {
                 result.registerAdvancement()
                 this.advance()
+
+                skipNewLines(result)
 
                 val expression = result.register(this.expression())
 
@@ -403,6 +425,8 @@ class Parser(val tokens: List<Token>) {
                 val node = VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false, mutate = type)
 
                 return result.success(node)
+            } else {
+                this.reverse(this.tokenIndex - index)
             }
 
             return result.success(VarAccessNode(if (accessed) valueToken else token, if (accessed) token else null))
@@ -534,8 +558,6 @@ class Parser(val tokens: List<Token>) {
         this.advance()
 
         skipNewLines(result)
-
-        println(this.currentToken)
 
         if (this.currentToken.type == TokenType.RIGHT_SQUARE) {
             result.registerAdvancement()
@@ -1522,6 +1544,8 @@ class Parser(val tokens: List<Token>) {
 
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             val right = result.register(funcB.get())
 
