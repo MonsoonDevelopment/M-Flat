@@ -806,6 +806,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
@@ -816,6 +818,8 @@ class Parser(val tokens: List<Token>) {
 
         result.registerAdvancement()
         this.advance()
+
+        skipNewLines(result)
 
         if (this.currentToken.type != TokenType.IDENTIFIER) {
             return result.failure(InvalidSyntaxError(
@@ -829,9 +833,13 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("in"))) {
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             if (this.currentToken.type != TokenType.IDENTIFIER) {
                 return result.failure(InvalidSyntaxError(
@@ -846,6 +854,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
@@ -856,6 +866,8 @@ class Parser(val tokens: List<Token>) {
 
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
 
             if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
                 return result.failure(InvalidSyntaxError(
@@ -868,39 +880,26 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
-            if (this.currentToken.type == TokenType.NEW_LINE) {
-                result.registerAdvancement()
-                this.advance()
-
-                val body = result.register(this.statements())
-
-                if (result.error != null) {
-                    return result
-                }
-
-                body as Node
-
-                if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
-                    return result.failure(InvalidSyntaxError(
-                        this.currentToken.start,
-                        this.currentToken.end,
-                        "Expected ${Constants.get("end")}"
-                    ))
-                }
-
-                result.registerAdvancement()
-                this.advance()
-
-                return result.success(IterationNode(name, list, body, true))
-            }
-
-            val body = result.register(this.statement())
+            val body = result.register(this.statements())
 
             if (result.error != null) {
                 return result
             }
 
-            return result.success(IterationNode(name, list, body as Node, false))
+            body as Node
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected ${Constants.get("end")}"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            return result.success(IterationNode(name, list, body, true))
         }
 
         if (this.currentToken.type != TokenType.EQUALS) {
@@ -914,11 +913,15 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         val start = result.register(this.expression())
 
         if (result.error != null) {
             return result
         }
+
+        skipNewLines(result)
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("to"))) {
             return result.failure(InvalidSyntaxError(
@@ -931,6 +934,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         val end = result.register(this.expression())
 
         if (result.error != null) {
@@ -938,6 +943,8 @@ class Parser(val tokens: List<Token>) {
         }
 
         var step: Node? = null
+
+        skipNewLines(result)
 
         if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("step"))) {
             result.registerAdvancement()
@@ -974,6 +981,8 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
@@ -985,39 +994,28 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        if (this.currentToken.type == TokenType.NEW_LINE) {
-            result.registerAdvancement()
-            this.advance()
+        skipNewLines(result)
 
-            val body = result.register(this.statements())
-
-            if (result.error != null) {
-                return result
-            }
-
-            body as Node
-
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
-                return result.failure(InvalidSyntaxError(
-                    this.currentToken.start,
-                    this.currentToken.end,
-                    "Expected ${Constants.get("end")}"
-                ))
-            }
-
-            result.registerAdvancement()
-            this.advance()
-
-            return result.success(ForNode(name, start as Node, end as Node, step, body, true))
-        }
-
-        val body = result.register(this.statement())
+        val body = result.register(this.statements())
 
         if (result.error != null) {
             return result
         }
 
-        return result.success(ForNode(name, start as Node, end as Node, step, body as Node, false))
+        body as Node
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ${Constants.get("end")}"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        return result.success(ForNode(name, start as Node, end as Node, step, body, true))
     }
 
     private fun whileExpression(): ParseResult {
