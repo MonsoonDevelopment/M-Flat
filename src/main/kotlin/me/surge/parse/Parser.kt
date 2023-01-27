@@ -533,6 +533,10 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
+        skipNewLines(result)
+
+        println(this.currentToken)
+
         if (this.currentToken.type == TokenType.RIGHT_SQUARE) {
             result.registerAdvancement()
             this.advance()
@@ -549,9 +553,13 @@ class Parser(val tokens: List<Token>) {
 
             elementNodes.add(node as Node)
 
+            skipNewLines(result)
+
             while (this.currentToken.type == TokenType.COMMA) {
                 result.registerAdvancement()
                 this.advance()
+
+                skipNewLines(result)
 
                 val node = result.register(this.expression())
 
@@ -561,6 +569,8 @@ class Parser(val tokens: List<Token>) {
 
                 elementNodes.add(node as Node)
             }
+
+            skipNewLines(result)
 
             if (this.currentToken.type != TokenType.RIGHT_SQUARE) {
                 return result.failure(InvalidSyntaxError(
