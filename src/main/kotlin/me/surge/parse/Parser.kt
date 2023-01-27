@@ -6,7 +6,6 @@ import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*
 import me.surge.lexer.token.Token
 import me.surge.lexer.token.TokenType
-import me.surge.lexer.value.ListValue
 import java.util.function.Supplier
 
 class Parser(val tokens: List<Token>) {
@@ -89,6 +88,10 @@ class Parser(val tokens: List<Token>) {
 
             val expr = this.statement()
             val statement = result.tryRegister(expr)
+
+            if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return expr
+            }
 
             if (statement == null) {
                 this.reverse(result.reverseCount)
