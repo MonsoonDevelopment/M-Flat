@@ -982,6 +982,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             if (this.currentToken.type != TokenType.EQUALS) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
@@ -993,6 +995,8 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
+            skipNewLines(result)
+
             val s = result.register(this.expression())
 
             if (result.error != null) {
@@ -1000,6 +1004,8 @@ class Parser(val tokens: List<Token>) {
             }
 
             step = s as Node
+
+            skipNewLines(result)
         }
 
         if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
