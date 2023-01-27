@@ -95,11 +95,16 @@ meth main(args) {
     const inpA = std::stringToBool(std::input())
     const inpB = std::stringToBool(std::input())
 
-    if (inpA) {
+    if (inpA)
+    {
         std::println("A")
-    } elseif (inpB) {
+    }
+    elseif (inpB)
+    {
         std::println("B")
-    } else {
+    }
+    else
+    {
         std::println("Neither")
     }
 
