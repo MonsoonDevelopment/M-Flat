@@ -1,4 +1,4 @@
-container Flight() {
+container Flight {
     const name = "Flight"
     const description = "Allows you to fly"
 

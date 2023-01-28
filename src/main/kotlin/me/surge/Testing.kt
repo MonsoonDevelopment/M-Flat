@@ -16,4 +16,8 @@ object Testing {
         println("called from test function")
     }
 
+    fun test2(): Boolean {
+        return false
+    }
+
 }

@@ -149,6 +149,18 @@ object LoadHelper {
                             RuntimeResult().failure(result.error!!)
                         }
 
+                        is Boolean -> {
+                            RuntimeResult().success(BooleanValue(name, result))
+                        }
+
+                        is Number -> {
+                            RuntimeResult().success(NumberValue(name, result))
+                        }
+
+                        is String -> {
+                            RuntimeResult().success(StringValue(name, result))
+                        }
+
                         else -> {
                             RuntimeResult().success(NumberValue.NULL)
                         }
