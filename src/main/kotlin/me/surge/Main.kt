@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
         .loadClass("testing", Testing::class.java)
         .loadClass("java_types", JavaTypesTesting::class.java)
 
-    val file = File("modules.mfl")
+    val file = File("main.mfl")
     val reader = FileReader(file)
 
     val result = executor.run(file.name, reader.readText())
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    /* val trueResult = executor.getFunction("main")?.execute(arrayListOf(ListValue("args", arrayListOf())))
+    val trueResult = executor.getFunction("main")?.execute(arrayListOf(ListValue("args", arrayListOf())))
         ?: run {
             println("Couldn't find main function!")
             return
@@ -30,9 +30,9 @@ fun main(args: Array<String>) {
 
     if (trueResult.error != null) {
         println(trueResult.error.toString())
-    } */
+    }
 
-    val trueResult = executor.getFunction("loadModules")?.execute(arrayListOf())
+    /* val trueResult = executor.getFunction("loadModules")?.execute(arrayListOf())
         ?: run {
             println("Couldn't find load function!")
             return
@@ -55,5 +55,5 @@ fun main(args: Array<String>) {
 
             table.get("onUpdate")?.execute()
         }
-    }
+    } */
 }
