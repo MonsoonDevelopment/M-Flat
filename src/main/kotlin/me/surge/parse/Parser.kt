@@ -405,7 +405,66 @@ class Parser(val tokens: List<Token>) {
         else if (token.type == TokenType.STRING) {
             result.registerAdvancement()
             this.advance()
-            return result.success(StringNode(token))
+
+            var start: Node? = null
+            var end: Node? = null
+
+            if (this.currentToken.type == TokenType.LEFT_SQUARE) {
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                val startExpression = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                start = startExpression as Node
+
+                val index = this.tokenIndex
+                skipNewLines(result)
+
+                if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("index splitter"))) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type == TokenType.RIGHT_SQUARE) {
+                        end = EndNode(this.currentToken.start, this.currentToken.end)
+                    } else {
+                        val endExpression = result.register(this.expression())
+
+                        if (result.error != null) {
+                            return result
+                        }
+
+                        end = endExpression as Node
+
+                        skipNewLines(result)
+                    }
+
+                    if (this.currentToken.type != TokenType.RIGHT_SQUARE) {
+                        return result.failure(ExpectedCharError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected ']', got ${this.currentToken}!"
+                        ))
+                    }
+
+                    result.registerAdvancement()
+                    this.advance()
+                } else {
+                    end = start
+                    this.reverse(this.tokenIndex - index)
+                    result.registerAdvancement()
+                    this.advance()
+                }
+            }
+
+            return result.success(StringNode(token, start, end))
         }
 
         else if (token.type == TokenType.IDENTIFIER) {

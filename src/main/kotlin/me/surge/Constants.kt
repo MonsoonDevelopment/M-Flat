@@ -40,8 +40,7 @@ object Constants {
         Pair("end", "}"),
         Pair("accessor", "::"),
         Pair("to", ">"),
-        Pair("open comment", "/*"),
-        Pair("close comment", "*/")
+        Pair("index splitter", ":")
     )
 
     fun get(identifier: String): String {

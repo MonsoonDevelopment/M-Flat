@@ -349,7 +349,66 @@ class Interpreter(val executor: Executor? = null) {
     fun visitStringNode(node: Node, context: Context): RuntimeResult {
         node as StringNode
 
-        return RuntimeResult().success(StringValue(node.toString(), node.token.value as String)
+        val result = RuntimeResult()
+
+        var value = node.token.value as String
+
+        if (node.indexStart != null) {
+            val startValue = result.register(this.visit(node.indexStart, context))
+
+            if (result.shouldReturn()) {
+                return result
+            }
+
+            var end: Int = if (node.indexEnd is EndNode) {
+                value.length
+            } else {
+                val endValue = result.register(this.visit(node.indexEnd!!, context))
+
+                if (result.shouldReturn()) {
+                    return result
+                }
+
+                (endValue as NumberValue).value.toInt()
+            }
+
+            val start = (startValue as NumberValue).value.toInt()
+
+            if (end == start) {
+                end++
+            }
+
+            if (start < 0 || start >= value.length + 1) {
+                return result.failure(RuntimeError(
+                    node.indexStart.start,
+                    node.indexStart.end,
+                    "Start index out of bounds! Got $start when the minimum index is 0, and the maximum index is ${value.length}!",
+                    context
+                ))
+            }
+
+            if (end < 0 || end >= value.length + 1) {
+                return result.failure(RuntimeError(
+                    node.indexStart.start,
+                    node.indexStart.end,
+                    "End index out of bounds! Got $end when the minimum index is 0, and the maximum index is ${value.length}!",
+                    context
+                ))
+            }
+
+            if (end < start) {
+                return result.failure(RuntimeError(
+                    node.indexEnd.start,
+                    node.indexEnd.end,
+                    "Start index is greater than end index! Got $end, when the start index is $start!",
+                    context
+                ))
+            }
+
+            value = value.substring(start, end)
+        }
+
+        return result.success(StringValue(node.toString(), value)
             .setContext(context)
             .setPosition(node.start, node.end))
     }
