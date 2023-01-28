@@ -626,21 +626,15 @@ class Interpreter(val executor: Executor? = null) {
     fun visitImportNode(node: Node, context: Context): RuntimeResult {
         node as ImportNode
 
-        val file = File(node.name.value as String + ".mfl")
+        val result = RuntimeResult()
 
-        if (file.exists()) {
-            this.executor!!.use(node.name.value, file.readText(Charset.defaultCharset()))
-            return RuntimeResult().success(null)
-        } else {
-            return RuntimeResult().failure(RuntimeError(
-                node.start,
-                node.end,
-                "Failed to import '${node.name.value}'",
-                context
-            ))
+        result.register(this.executor!!.useImplementation(node.name.value as String, node.start, node.end, context))
+
+        if (result.shouldReturn()) {
+            return result
         }
 
-        // this.executor.run()
+        return result.success(null)
     }
 
 }

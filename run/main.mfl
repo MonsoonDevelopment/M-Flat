@@ -1,4 +1,5 @@
 use "secondary"
+use "maths"
 
 struct Lliw {
     red,
@@ -34,6 +35,12 @@ meth test_func() {
 }
 
 meth main(args) {
+    std::println(maths::sin(3.0))
+    std::println(maths::randomFloat() * 3)
+    std::println(maths::randomInt(45))
+}
+
+meth maina(args) {
     const lliw = Lliw(74, 255, 255, 255)
 
     std::println(lliw::getRed())
