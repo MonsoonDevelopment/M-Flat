@@ -302,8 +302,6 @@ class Interpreter(val executor: Executor? = null) {
             args.add(value as Value)
         }
 
-        node.target.args = args
-
         var targetValue = result.register(this.visit(node.target, context))
 
         if (result.shouldReturn()) {
@@ -324,6 +322,45 @@ class Interpreter(val executor: Executor? = null) {
 
         if (node.child != null) {
             returnValue = result.register(this.visit(node.child!!, context))
+        }
+
+        if (node.index != null) {
+            if (returnValue is ListValue) {
+                val index = result.register(this.visit(node.index, context))
+
+                if (result.shouldReturn()) {
+                    return result
+                }
+
+                if (index !is NumberValue) {
+                    return result.failure(RuntimeError(
+                        node.index.start,
+                        node.index.end,
+                        "Value isn't a number!",
+                        context
+                    ))
+                }
+
+                val indexValue = index.value.toInt()
+
+                if (indexValue >= returnValue.elements.size || indexValue < 0) {
+                    return result.failure(RuntimeError(
+                        node.index.start,
+                        node.index.end,
+                        "Index out of bounds: $indexValue",
+                        context
+                    ))
+                }
+
+                returnValue = returnValue.elements[indexValue]
+            } else {
+                return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'${returnValue!!.name}' is not indexable!",
+                    context
+                ))
+            }
         }
 
         returnValue = returnValue!!.clone().setPosition(node.start, node.end).setContext(context)
@@ -513,6 +550,45 @@ class Interpreter(val executor: Executor? = null) {
                 "'$name' is not defined!",
                 context
             ))
+        }
+
+        if (node.index != null) {
+            if (value is ListValue) {
+                val index = result.register(this.visit(node.index!!, context))
+
+                if (result.shouldReturn()) {
+                    return result
+                }
+
+                if (index !is NumberValue) {
+                    return result.failure(RuntimeError(
+                        node.index!!.start,
+                        node.index!!.end,
+                        "Value isn't a number!",
+                        context
+                    ))
+                }
+
+                val indexValue = index.value.toInt()
+
+                if (indexValue >= value.elements.size || indexValue < 0) {
+                    return result.failure(RuntimeError(
+                        node.index!!.start,
+                        node.index!!.end,
+                        "Index out of bounds: $indexValue",
+                        context
+                    ))
+                }
+
+                value = value.elements[indexValue]
+            } else {
+                return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'${value!!.name}' is not indexable!",
+                    context
+                ))
+            }
         }
 
         value = value!!.clone().setPosition(node.start, node.end).setContext(context)

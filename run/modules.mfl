@@ -7,6 +7,10 @@ container Flight {
     }
 }
 
+meth test() {
+    return [1, 2, [3, 4, 5]]
+}
+
 meth main(args) {
     const flight = Flight()
 
@@ -16,4 +20,6 @@ meth main(args) {
     for (number = 0 to 6, step = 2) {
         std::println(number)
     }
+
+    std::println(test()[2][0])
 }

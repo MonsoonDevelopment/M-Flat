@@ -25,5 +25,5 @@ Features:
 - [ ] Indexed Loops
 - [ ] Operators
 - [ ] GUI / LWJGL Implementation
-- [ ] List Indexing
+- [x] List Indexing
 - [x] String Indexing

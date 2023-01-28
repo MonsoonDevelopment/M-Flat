@@ -367,7 +367,35 @@ class Parser(val tokens: List<Token>) {
                 child = sub
             }
 
-            return result.success(MethodCallNode(atom as Node, argumentNodes, child))
+            var indexNode: Node? = null
+
+            if (this.currentToken.type == TokenType.LEFT_SQUARE) {
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                val index = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                indexNode = index as Node
+
+                if (this.currentToken.type != TokenType.RIGHT_SQUARE) {
+                    return result.failure(InvalidSyntaxError(
+                        indexNode.start,
+                        indexNode.end,
+                        "Expected ']'"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+            }
+
+            return result.success(MethodCallNode(atom as Node, argumentNodes, child, indexNode))
         } else {
             this.reverse(this.tokenIndex - index)
         }
@@ -510,7 +538,35 @@ class Parser(val tokens: List<Token>) {
                 this.reverse(this.tokenIndex - index)
             }
 
-            return result.success(VarAccessNode(token))
+            var indexNode: Node? = null
+
+            if (this.currentToken.type == TokenType.LEFT_SQUARE) {
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                val index = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                indexNode = index as Node
+
+                if (this.currentToken.type != TokenType.RIGHT_SQUARE) {
+                    return result.failure(InvalidSyntaxError(
+                        indexNode.start,
+                        indexNode.end,
+                        "Expected ']'"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+            }
+
+            return result.success(VarAccessNode(token, indexNode))
         }
 
         else if (token.type == TokenType.LEFT_PARENTHESES) {
