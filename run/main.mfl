@@ -64,11 +64,11 @@ meth main(args) {
         std::println(i)
     }
 
-    for (i = 0 > 5) {
+    for (i = 0 to 5) {
         std::println(i)
     }
 
-    for (i = 0 > 6 step = 2) {
+    for (i = 0 to 6, step = 2) {
         std::println(i)
     }
 

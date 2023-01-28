@@ -1049,34 +1049,47 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("step"))) {
+        if (this.currentToken.type == TokenType.COMMA) {
             result.registerAdvancement()
             this.advance()
 
-            skipNewLines(result)
+            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("step"))) {
+                result.registerAdvancement()
+                this.advance()
 
-            if (this.currentToken.type != TokenType.EQUALS) {
+                skipNewLines(result)
+
+                if (this.currentToken.type != TokenType.EQUALS) {
+                    return result.failure(
+                        InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected '='"
+                        )
+                    )
+                }
+
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                val s = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                step = s as Node
+
+                skipNewLines(result)
+            } else {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '='"
+                    "Expected '${Constants.get("step")}'"
                 ))
             }
-
-            result.registerAdvancement()
-            this.advance()
-
-            skipNewLines(result)
-
-            val s = result.register(this.expression())
-
-            if (result.error != null) {
-                return result
-            }
-
-            step = s as Node
-
-            skipNewLines(result)
         }
 
         if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
@@ -1596,7 +1609,11 @@ class Parser(val tokens: List<Token>) {
         }
     }
 
-    open class BaseCase(val token: Node, val shouldReturnNull: Boolean)
+    open class BaseCase(val token: Node, val shouldReturnNull: Boolean) {
+        override fun toString(): String {
+            return "<Case: $token>"
+        }
+    }
     class Case(val node: Node, token: Node, shouldReturnNull: Boolean) : BaseCase(token, shouldReturnNull)
 
 }

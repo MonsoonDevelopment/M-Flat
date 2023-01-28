@@ -65,7 +65,7 @@ You can run loops through either `for` or `while`.
 ### <u> For Loops </u>
 The syntax should look like this:
 ```
-for ([index name] = [start] > [end]) {
+for ([index name] = [start] to [end]) {
     [contents]
 }
 ```
@@ -74,7 +74,7 @@ for ([index name] = [start] > [end]) {
 
 You can define the step as well, simply add `step = [value]` after the range:
 ```
-for ([index name] = [start] > [end] step = [step]) {
+for ([index name] = [start] to [end], step = [step]) {
     [contents]
 }
 ```

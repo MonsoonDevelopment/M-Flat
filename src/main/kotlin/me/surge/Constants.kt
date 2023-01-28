@@ -22,7 +22,8 @@ object Constants {
         Pair("break", "break"),
         Pair("in", "in"),
         Pair("use", "use"),
-        Pair("container", "container")
+        Pair("container", "container"),
+        Pair("to", "to")
     )
 
     private val SYMBOLS = hashMapOf(
@@ -32,7 +33,6 @@ object Constants {
         Pair("then", "{"),
         Pair("end", "}"),
         Pair("accessor", "::"),
-        Pair("to", ">"),
         Pair("index splitter", ":")
     )
 
