@@ -170,7 +170,7 @@ class Interpreter(val executor: Executor? = null) {
                 return result
             }
 
-            conditionValue as NumberValue
+            conditionValue as BooleanValue
 
             if (conditionValue.isTrue()) {
                 val newContext = Context("if", context)
@@ -533,7 +533,7 @@ class Interpreter(val executor: Executor? = null) {
                 return result
             }
 
-            condition as NumberValue
+            condition as BooleanValue
 
             if (!condition.isTrue()) {
                 break

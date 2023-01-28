@@ -41,12 +41,12 @@ open class Value(var name: String) {
 
     open fun execute(args: ArrayList<Value>): RuntimeResult = RuntimeResult().failure(this.illegalOperation())
 
-    open fun compareEquality(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
-    open fun compareInequality(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
-    open fun compareLessThan(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
-    open fun compareGreaterThan(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
-    open fun compareLessThanOrEqualTo(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
-    open fun compareGreaterThanOrEqualTo(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareEquality(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareInequality(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareLessThan(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareGreaterThan(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareLessThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
+    open fun compareGreaterThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(other))
 
     fun illegalOperation(other: Any? = null): RuntimeError {
         var other = other

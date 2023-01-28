@@ -58,72 +58,52 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         }
     }
 
-    override fun compareEquality(other: Value): Pair<Value?, Error?> {
+    override fun compareEquality(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() == other.value.toFloat() else this.value.toInt() == other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() == other.value.toFloat() else this.value.toInt() == other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
     }
 
-    override fun compareInequality(other: Value): Pair<Value?, Error?> {
+    override fun compareInequality(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() != other.value.toFloat() else this.value.toInt() != other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() != other.value.toFloat() else this.value.toInt() != other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
     }
 
-    override fun compareLessThan(other: Value): Pair<Value?, Error?> {
+    override fun compareLessThan(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() < other.value.toFloat() else this.value.toInt() < other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() < other.value.toFloat() else this.value.toInt() < other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
     }
 
-    override fun compareGreaterThan(other: Value): Pair<Value?, Error?> {
+    override fun compareGreaterThan(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() > other.value.toFloat() else this.value.toInt() > other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() > other.value.toFloat() else this.value.toInt() > other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
     }
 
-    override fun compareLessThanOrEqualTo(other: Value): Pair<Value?, Error?> {
+    override fun compareLessThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() <= other.value.toFloat() else this.value.toInt() <= other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() <= other.value.toFloat() else this.value.toInt() <= other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
     }
 
-    override fun compareGreaterThanOrEqualTo(other: Value): Pair<Value?, Error?> {
+    override fun compareGreaterThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toFloat() >= other.value.toFloat() else this.value.toInt() >= other.value.toInt()).binary()).setContext(this.context), null)
+            Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() >= other.value.toFloat() else this.value.toInt() >= other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
             Pair(null, illegalOperation(other))
         }
-    }
-
-    override fun andedBy(other: Value): Pair<Value?, Error?> {
-        return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toInt().boolean() && other.value.toInt().boolean() else this.value.toInt().boolean() && other.value.toInt().boolean()).binary()).setContext(this.context), null)
-        } else {
-            Pair(null, illegalOperation(other))
-        }
-    }
-
-    override fun oredBy(other: Value): Pair<Value?, Error?> {
-        return if (other is NumberValue) {
-            Pair(NumberValue(name, (if (this.value is Float) this.value.toInt().boolean() || other.value.toInt().boolean() else this.value.toInt().boolean() || other.value.toInt().boolean()).binary()).setContext(this.context), null)
-        } else {
-            Pair(null, illegalOperation(other))
-        }
-    }
-
-    override fun notted(): Pair<Value?, Error?> {
-        return Pair(NumberValue(name, if (this.value == 0) 1 else 0).setContext(this.context), null)
     }
 
     override fun clone(): NumberValue {

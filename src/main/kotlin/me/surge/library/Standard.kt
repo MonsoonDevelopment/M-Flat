@@ -69,19 +69,19 @@ class Standard {
     }
 
     fun isNumber(value: Value): Result {
-        return Success(NumberValue("<anonymous is number>", (value is NumberValue).binary()))
+        return Success(BooleanValue("<anonymous is number>", value is NumberValue))
     }
 
     fun isString(value: Value): Result {
-        return Success(NumberValue("<anonymous is string>", (value is StringValue).binary()))
+        return Success(BooleanValue("<anonymous is string>", value is StringValue))
     }
 
     fun isMethod(value: Value): Result {
-        return Success(NumberValue("<anonymous is method>", (value is BaseFunctionValue).binary()))
+        return Success(BooleanValue("<anonymous is method>", value is BaseFunctionValue))
     }
 
     fun isList(value: Value): Result {
-        return Success(NumberValue("<anonymous is list>", (value is ListValue).binary()))
+        return Success(BooleanValue("<anonymous is list>", value is ListValue))
     }
 
     fun stringToNumber(value: Value): Result {
@@ -89,7 +89,7 @@ class Standard {
     }
 
     fun stringToBool(value: Value): Result {
-        return Success(NumberValue("<anonymous cast>", (value.rawValue().lowercase() == "true").binary()))
+        return Success(BooleanValue("<anonymous cast>", value.rawValue().lowercase() == "true"))
     }
 
     fun delete(functionData: FunctionData, name: Value): Result {
@@ -111,7 +111,7 @@ class Standard {
     }
 
     fun equalsIgnoreCase(a: StringValue, b: StringValue): Result {
-        return Success(NumberValue("anonymous", (a.rawValue().lowercase() == b.rawValue().lowercase()).binary()))
+        return Success(BooleanValue("anonymous", a.rawValue().lowercase() == b.rawValue().lowercase()))
     }
 
 }

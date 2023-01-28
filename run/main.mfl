@@ -34,13 +34,13 @@ meth test_func() {
     return 5
 }
 
-meth main(args) {
+meth maina(args) {
     std::println(maths::sin(3.0))
     std::println(maths::randomFloat() * 3)
     std::println(maths::randomInt(45))
 }
 
-meth maina(args) {
+meth main(args) {
     const lliw = Lliw(74, 255, 255, 255)
 
     std::println(lliw::getRed())

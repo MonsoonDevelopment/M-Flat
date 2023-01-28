@@ -23,9 +23,9 @@ class StringValue(name: String, val value: String) : Value(name) {
         }
     }
 
-    override fun compareEquality(other: Value): Pair<Value?, Error?> {
+    override fun compareEquality(other: Value): Pair<BooleanValue?, Error?> {
         return if (other is StringValue) {
-            Pair(NumberValue("", (this.rawValue() == other.rawValue()).binary()), null)
+            Pair(BooleanValue(name, this.rawValue() == other.rawValue()), null)
         } else {
             super.compareEquality(other)
         }

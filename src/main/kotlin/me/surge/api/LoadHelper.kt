@@ -80,7 +80,7 @@ object LoadHelper {
                     }
 
                     Boolean::class.java -> {
-                        NumberValue(name, if (field.getBoolean(instance)) 1 else 0)
+                        BooleanValue(name, field.getBoolean(instance))
                     }
 
                     else -> {
@@ -181,6 +181,10 @@ object LoadHelper {
             String::class.java -> {
                 return StringValue::class.java
             }
+
+            Boolean::class.java -> {
+                return BooleanValue::class.java
+            }
         }
 
         throw IllegalStateException("No equivalent value found! (Got $clazz)")
@@ -217,6 +221,10 @@ object LoadHelper {
             }
 
             is StringValue -> {
+                return value.value
+            }
+
+            is BooleanValue -> {
                 return value.value
             }
         }
