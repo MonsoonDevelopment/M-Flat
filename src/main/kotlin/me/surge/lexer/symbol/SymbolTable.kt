@@ -103,6 +103,20 @@ class SymbolTable(val parent: SymbolTable? = null) {
         return list
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other !is SymbolTable) {
+            return false
+        }
+
+        this.symbols.forEachIndexed { index, symbol ->
+            if (other.symbols[index] != symbol) {
+                return false
+            }
+        }
+
+        return true
+    }
+
     data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
     data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false)
 

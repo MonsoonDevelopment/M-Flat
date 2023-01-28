@@ -407,62 +407,9 @@ class Interpreter(val executor: Executor? = null) {
     fun visitVarAccessNode(node: Node, context: Context): RuntimeResult {
         node as VarAccessNode
 
-        /* val result = RuntimeResult()
-        val name = node.name.value as String
-        var parent = node.parent?.value
-
-        if (parent == null) {
-            parent = ""
-        }
-
-        parent as String
-
-        var value = context.symbolTable!!.get(parent.ifEmpty { name })
-            ?: return result.failure(RuntimeError(
-                node.start,
-                node.end,
-                "$name is not defined!",
-                context
-            ))
-
-        if (value is NumberValue) {
-            value = value.clone().setPosition(node.start, node.end)
-        }
-
-        return result.success(value) */
-
         val result = RuntimeResult()
 
         val name = node.name.value as String
-        /* val parent = node.parent?.value as String?
-
-        val value: Value
-
-        if (parent != null) {
-            val container = context.symbolTable!!.get(parent)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "Container '$parent' is not defined",
-                    context
-                ))
-
-            value = ((container as ContainerValue<*>).value as SymbolTable).get(name)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'$name' is not defined in container '$parent'!",
-                    context
-                ))
-        } else {
-            value = context.symbolTable!!.get(name)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'$name' is not defined in container '$parent'!",
-                    context
-                ))
-        } */
 
         var value: Value? = context.symbolTable!!.get(name)
                 ?: return result.failure(RuntimeError(
@@ -473,72 +420,6 @@ class Interpreter(val executor: Executor? = null) {
                 ))
 
         if (node.child != null && value !is BaseFunctionValue) {
-            /* val parent = result.register(this.visit(node, context))
-
-            if (result.error != null) {
-                return result
-            } */
-
-            /* val parent = context.symbolTable!!.get(name)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'$name' is not defined!",
-                    context
-                ))
-
-            if (parent !is ContainerValue<*>) {
-                return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'${parent.name}' is not a container!",
-                    context
-                ))
-            }
-
-            parent.value as SymbolTable
-
-            val cnxt = Context(parent.name, context)
-            cnxt.symbolTable = SymbolTable(context.symbolTable) //parent.value
-
-            parent.value.symbols.forEach {
-                cnxt.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = true, declaration = true, node.start, node.end, context, forced = true))
-            }
-
-            println(parent.value.symbols)
-
-            val child = result.register(this.visit(node.child!!, cnxt))
-
-            if (result.error != null) {
-                return result
-            }
-
-            return result.success(
-                parent.value.get(child!!.name)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'${child.name}' is not defined in container '$parent'!",
-                    context
-                )))
-
-            val child = result.register(this.visit(node.child!!, parent.context!!))
-
-            if (result.error != null) {
-                return result
-            }
-
-            return result.success(child!!) */
-
-            /*if (value is BaseFunctionValue) {
-                println(value::class.java.simpleName)
-                val res = value.execute(node.args)
-
-                println(res.value)
-
-                parent = res.value!!
-            }*/
-
             if (value !is ContainerValue<*>) {
                 return result.failure(RuntimeError(
                     node.start,
@@ -549,8 +430,6 @@ class Interpreter(val executor: Executor? = null) {
             }
 
             val childContext = Context(value.name, context, node.start)
-            //childContext.symbolTable = parent.value as SymbolTable
-            //childContext.symbolTable = SymbolTable(parent.value as SymbolTable)
 
             childContext.symbolTable = SymbolTable(context.symbolTable)
 
@@ -558,11 +437,15 @@ class Interpreter(val executor: Executor? = null) {
                 childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true))
             }
 
-            // because this calls the method...
             val child = result.register(this.visit(node.child!!, childContext))
 
             if (result.error != null) {
                 return result
+            }
+
+            if (node.child is VarAssignNode) {
+                node.child as VarAssignNode
+                (value.value as SymbolTable).set((node.child!! as VarAssignNode).name.value as String, child!!, SymbolTable.EntryData(immutable = (node.child!! as VarAssignNode).final, declaration = (node.child!! as VarAssignNode).declaration, node.start, node.end, childContext))
             }
 
             value = child
@@ -586,7 +469,6 @@ class Interpreter(val executor: Executor? = null) {
         val result = RuntimeResult()
 
         val name = node.name.value as String
-        //val parent = node.parent?.value as String?
 
         val value = result.register(this.visit(node.value, context))
 
@@ -597,163 +479,42 @@ class Interpreter(val executor: Executor? = null) {
         value as Value
         value.name = name
 
-        var error: Error? = null
+        val original = context.symbolTable?.get(name)
+        var newValue = value
 
-        /*if (parent != null) {
-            val container = context.symbolTable!!.get(parent)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "Container '$parent' is not defined",
-                    context
-                ))
+        if (original != null) {
+            original as NumberValue
 
-            container as ContainerValue<*>
-            container.value as SymbolTable
+            when (node.mutate) {
+                null -> {}
 
-            val original = container.value.get(name)
-            var newValue = value
-
-            if (original != null) {
-                original as NumberValue
-
-                when (node.mutate) {
-                    null -> {}
-
-                    TokenType.ADD -> {
-                        newValue = original.addedTo(newValue).first
-                    }
-
-                    TokenType.SUBTRACT_BY -> {
-                        newValue = original.subbedBy(newValue).first
-                    }
-
-                    TokenType.MULTIPLY_BY -> {
-                        newValue = original.multedBy(newValue).first
-                    }
-
-                    TokenType.DIVIDE_BY -> {
-                        newValue = original.divedBy(newValue).first
-                    }
-
-                    else -> {}
+                TokenType.ADD -> {
+                    newValue = original.addedTo(newValue).first
                 }
-            }
 
-            error = container.value.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
-        } else {
-            val original = context.symbolTable?.get(name)
-            var newValue = value
-
-            if (original != null) {
-                original as NumberValue
-
-                when (node.mutate) {
-                    null -> {}
-
-                    TokenType.ADD -> {
-                        newValue = original.addedTo(newValue).first
-                    }
-
-                    TokenType.SUBTRACT_BY -> {
-                        newValue = original.subbedBy(newValue).first
-                    }
-
-                    TokenType.MULTIPLY_BY -> {
-                        newValue = original.multedBy(newValue).first
-                    }
-
-                    TokenType.DIVIDE_BY -> {
-                        newValue = original.divedBy(newValue).first
-                    }
-
-                    else -> {}
+                TokenType.SUBTRACT_BY -> {
+                    newValue = original.subbedBy(newValue).first
                 }
-            }
 
-            error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
-        }*/
-
-        if (node.child != null) {
-            val container = context.symbolTable!!.get(name)
-                ?: return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "Container '$name' is not defined!",
-                    context
-                ))
-
-            container as ContainerValue<*>
-            container.value as SymbolTable
-
-            val original = container.value.get(name)
-            var newValue = value
-
-            if (original != null) {
-                original as NumberValue
-
-                when (node.mutate) {
-                    null -> {}
-
-                    TokenType.ADD -> {
-                        newValue = original.addedTo(newValue).first
-                    }
-
-                    TokenType.SUBTRACT_BY -> {
-                        newValue = original.subbedBy(newValue).first
-                    }
-
-                    TokenType.MULTIPLY_BY -> {
-                        newValue = original.multedBy(newValue).first
-                    }
-
-                    TokenType.DIVIDE_BY -> {
-                        newValue = original.divedBy(newValue).first
-                    }
-
-                    else -> {}
+                TokenType.MULTIPLY_BY -> {
+                    newValue = original.multedBy(newValue).first
                 }
-            }
 
-            error = container.value.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
-        } else {
-            val original = context.symbolTable?.get(name)
-            var newValue = value
-
-            if (original != null) {
-                original as NumberValue
-
-                when (node.mutate) {
-                    null -> {}
-
-                    TokenType.ADD -> {
-                        newValue = original.addedTo(newValue).first
-                    }
-
-                    TokenType.SUBTRACT_BY -> {
-                        newValue = original.subbedBy(newValue).first
-                    }
-
-                    TokenType.MULTIPLY_BY -> {
-                        newValue = original.multedBy(newValue).first
-                    }
-
-                    TokenType.DIVIDE_BY -> {
-                        newValue = original.divedBy(newValue).first
-                    }
-
-                    else -> {}
+                TokenType.DIVIDE_BY -> {
+                    newValue = original.divedBy(newValue).first
                 }
-            }
 
-            error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+                else -> {}
+            }
         }
+
+        val error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(immutable = node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
 
         if (error != null) {
             return result.failure(error)
         }
 
-        return result.success(value)
+        return result.success(newValue)
     }
 
     fun visitWhileNode(node: Node, context: Context): RuntimeResult {

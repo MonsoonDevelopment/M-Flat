@@ -39,9 +39,12 @@ meth main(args) {
     std::println(lliw::getRed())
     std::println(lliw::test_func())
     std::println(lliw::getBlue())
+
+    // HERE!
     std::println(lliw::test()::getRed())
 
-    std::exit(0)
+    lliw::red = 23
+    std::println(lliw::red)
 
     const person = secondary::Person("John Doe", 23)
     person::say_name()
