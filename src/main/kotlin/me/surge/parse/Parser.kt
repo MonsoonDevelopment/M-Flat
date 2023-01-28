@@ -123,7 +123,7 @@ class Parser(val tokens: List<Token>) {
                 this.reverse(result.reverseCount)
             }
 
-            return result.success(ReturnNode(expression as Node, start, this.currentToken.end.clone()))
+            return result.success(ReturnNode(expression as Node?, start, this.currentToken.end.clone()))
         }
 
         if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("continue"))) {
