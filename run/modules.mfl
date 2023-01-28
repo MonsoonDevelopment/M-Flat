@@ -1,14 +1,15 @@
-struct Flight {
-    name,
-    description
-}
+container Flight() {
+    const name = "Flight"
+    const description = "Allows you to fly"
 
-impl Flight {
     meth onUpdate() {
         std::println("yo")
     }
 }
 
-meth loadModules() {
-    return [Flight("Flight", "Allows you to fly!")]
+meth main(args) {
+    const flight = Flight()
+
+    std::println(flight::name)
+    std::println(flight::description)
 }

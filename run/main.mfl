@@ -1,14 +1,7 @@
 use "secondary"
 use "maths"
 
-struct Lliw {
-    red,
-    green,
-    blue,
-    alpha
-}
-
-impl Lliw {
+container Lliw(red, green, blue, alpha) {
     meth getRed() {
         return this::red
     }

@@ -585,24 +585,14 @@ class Parser(val tokens: List<Token>) {
             return result.success(definition as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("struct"))) {
-            val definition = result.register(this.structDefinition())
+        else if (token.matches(TokenType.KEYWORD, Constants.get("container"))) {
+            val definition = result.register(this.containerDefinition())
 
             if (result.error != null) {
                 return result
             }
 
             return result.success(definition as Node)
-        }
-
-        else if (token.matches(TokenType.KEYWORD, Constants.get("implement"))) {
-            val implementation = result.register(this.structImplementation())
-
-            if (result.error != null) {
-                return result
-            }
-
-            return result.success(implementation as Node)
         }
 
         else if (token.matches(TokenType.KEYWORD, Constants.get("use"))) {
@@ -1384,14 +1374,14 @@ class Parser(val tokens: List<Token>) {
         ))
     }
 
-    private fun structDefinition(): ParseResult {
+    private fun containerDefinition(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("struct"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("container"))) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.get("function")}'"
+                "Expected '${Constants.get("container")}'"
             ))
         }
 
@@ -1415,11 +1405,11 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '${Constants.get("then")}'"
+                "Expected '('"
             ))
         }
 
@@ -1464,106 +1454,70 @@ class Parser(val tokens: List<Token>) {
 
             skipNewLines(result)
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ',' or '${Constants.get("end")}'"
+                    "Expected ',' or ')'"
                 ))
             }
         } else {
             skipNewLines(result)
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
                 return result.failure(InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected identifier or '${Constants.get("end")}'"
+                    "Expected identifier or ')'"
                 ))
             }
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Struct Definition: Expected ${Constants.get("end")}, got $currentToken"
+                "Container Definition: Expected ')', got $currentToken"
             ))
         }
 
         result.registerAdvancement()
         this.advance()
 
-        return result.success(StructDefineNode(name, argumentNames, this.currentToken))
-    }
-
-    private fun structImplementation(): ParseResult {
-        val result = ParseResult()
-
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("implement"))) {
-            return result.failure(InvalidSyntaxError(
-                this.currentToken.start,
-                this.currentToken.end,
-                "Expected '${Constants.get("implement")}'"
-            ))
-        }
-
-        result.registerAdvancement()
-        this.advance()
+        val index = this.tokenIndex
 
         skipNewLines(result)
 
-        if (this.currentToken.type != TokenType.IDENTIFIER) {
-            return result.failure(InvalidSyntaxError(
-                this.currentToken.start,
-                this.currentToken.end,
-                "Expected identifier"
-            ))
+        var body: Node? = null
+
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+            result.registerAdvancement()
+            this.advance()
+
+            val bodyStatements = result.register(this.statements())
+
+            if (result.error != null) {
+                println(result.error)
+                return result
+            }
+
+            body = bodyStatements as Node
+
+            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+                return result.failure(ExpectedCharError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected '${Constants.get("end")}'"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+        } else {
+            this.reverse(this.tokenIndex - index)
         }
 
-        val name = this.currentToken
-
-        result.registerAdvancement()
-        this.advance()
-
-        skipNewLines(result)
-
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
-            return result.failure(ExpectedCharError(
-                this.currentToken.start,
-                this.currentToken.end,
-                "Expected '${Constants.get("then")}'"
-            ))
-        }
-
-        result.registerAdvancement()
-        this.advance()
-
-        val body = result.register(this.statements())
-
-        if (result.error != null) {
-            println(result.error)
-            return result
-        }
-
-        body as Node
-
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
-            return result.failure(ExpectedCharError(
-                this.currentToken.start,
-                this.currentToken.end,
-                "Expected '${Constants.get("end")}'"
-            ))
-        }
-
-        result.registerAdvancement()
-        this.advance()
-
-        return result.success(StructImplementationNode(
-            name,
-            body,
-            this.currentToken
-        ))
+        return result.success(ContainerDefinitionNode(name, argumentNames, this.currentToken, body))
     }
 
     private fun use(): ParseResult {

@@ -12,9 +12,7 @@ import me.surge.lexer.value.*
 import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.lexer.value.function.FunctionValue
 import me.surge.parse.RuntimeResult
-import java.io.File
 import java.lang.IllegalStateException
-import java.nio.charset.Charset
 
 class Interpreter(val executor: Executor? = null) {
 
@@ -479,7 +477,7 @@ class Interpreter(val executor: Executor? = null) {
                 ))
 
         if (node.child != null && value !is BaseFunctionValue) {
-            if (value !is ContainerValue<*>) {
+            if (value !is ContainerInstanceValue<*>) {
                 return result.failure(RuntimeError(
                     node.start,
                     node.end,
@@ -648,8 +646,8 @@ class Interpreter(val executor: Executor? = null) {
         return RuntimeResult().successBreak()
     }
 
-    fun visitStructDefineNode(node: Node, context: Context): RuntimeResult {
-        node as StructDefineNode
+    fun visitContainerDefinitionNode(node: Node, context: Context): RuntimeResult {
+        node as ContainerDefinitionNode
 
         val result = RuntimeResult()
 
@@ -659,27 +657,15 @@ class Interpreter(val executor: Executor? = null) {
             argumentNames.add(argumentName.value as String)
         }
 
-        val functionValue = StructValue(node.name.value as String, argumentNames)
+        val functionValue = ContainerValue(node.name.value as String, argumentNames)
+
+        if (node.body != null) {
+            functionValue.setImplementation(node.body)
+        }
 
         context.symbolTable!!.set(node.name.value, functionValue, SymbolTable.EntryData(immutable = true, declaration = true, node.start, node.end, context = context, forced = true))
 
         return result.success(functionValue)
-    }
-
-    fun visitStructImplementationNode(node: Node, context: Context): RuntimeResult {
-        node as StructImplementationNode
-
-        val result = RuntimeResult()
-
-        val struct = context.symbolTable!!.get(node.name.value as String) as StructValue
-
-        val res = struct.setImplementation(node.body, context, result, this)
-
-        if (result.shouldReturn()) {
-            return result
-        }
-
-        return result.success(struct)
     }
 
     fun visitImportNode(node: Node, context: Context): RuntimeResult {

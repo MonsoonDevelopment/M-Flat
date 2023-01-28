@@ -19,7 +19,7 @@ Features:
 - [x] Branch Control Statements (break, continue, return)
 - [x] Comments
 - [x] List Iteration
-- [x] Structs
+- [x] Containers
 - [x] File Importing
 - [ ] Indexed List Iteration
 - [ ] Indexed Loops

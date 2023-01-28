@@ -1,8 +1,6 @@
 package me.surge
 
 import me.surge.api.Executor
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.ContainerValue
 import me.surge.lexer.value.ListValue
 import java.io.File
 import java.io.FileReader
@@ -12,7 +10,7 @@ fun main(args: Array<String>) {
         .loadClass("testing", Testing::class.java)
         .loadClass("java_types", JavaTypesTesting::class.java)
 
-    val file = File("main.mfl")
+    val file = File("modules.mfl")
     val reader = FileReader(file)
 
     val result = executor.run(file.name, reader.readText())

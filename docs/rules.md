@@ -128,41 +128,23 @@ The syntax should look like this:
 mut a = 5 // a comment can be after anything
 ```
 
-# <u> Structs </u>
-You can define structs with the `struct` keyword.
+# <u> Containers </u>
+You can define containers with the `container` keyword.
 The syntax should look like this:
 
 ```
-struct [name] {
-    [properties]
-}
-```
-
-### <u> Implementation </u>
-If you want to implement methods into a struct, you can use the `impl` keyword.
-The syntax should look like this:
-
-```
-impl [struct name] {
+container [name] ([constructor arguments]) {
     [contents]
 }
 ```
 
-The struct needs to have been declared before the implementation, otherwise errors will be thrown.
-
-The `this` variable is reserved for an instance of the struct, so you can modify or get the properties.
+The `this` variable is reserved for an instance of the container, so you can modify or get the properties.
 
 Here's an example (note - "Lliw" is Welsh for colo(u)r, to avoid arguments):
 
 ```
-struct Lliw {
-    red,
-    green,
-    blue
-}
-
-impl Lliw {
-    fun average() {
+container Lliw (red, green, blue) {
+    meth average() {
         return (this::red + this::green + this::blue) / 3
     }
 }
@@ -179,14 +161,14 @@ meth main(args) {
 ```
 
 # <u> Importing </u>
-You can import structs and functions from other files using the `use` keyword.
+You can import containers and functions from other files using the `use` keyword.
 The syntax should look like this:
 
 ```
 use "[path]"
 ```
 
-So, if I wanted to access the structs and methods inside the `secondary` class, I would use:
+So, if I wanted to access the containers and methods inside the `secondary` class, I would use:
 
 ```
 use "secondary"

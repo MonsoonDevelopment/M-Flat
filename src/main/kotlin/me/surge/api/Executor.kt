@@ -9,8 +9,7 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.Node
 import me.surge.lexer.position.Position
 import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.ContainerValue
-import me.surge.lexer.value.StructValue
+import me.surge.lexer.value.ContainerInstanceValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.library.BuiltIn
@@ -23,7 +22,7 @@ import java.nio.charset.Charset
 class Executor {
 
     private val globalSymbolTable = SymbolTable()
-    private val silentContainers = hashMapOf<String, ContainerValue<SymbolTable>>()
+    private val silentContainers = hashMapOf<String, ContainerInstanceValue<SymbolTable>>()
 
     init {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
@@ -86,7 +85,7 @@ class Executor {
 
         globalSymbolTable.set(
             file,
-            ContainerValue(file, context.symbolTable),
+            ContainerInstanceValue(file, context.symbolTable),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,
@@ -138,7 +137,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+        globalSymbolTable.set(identifier, ContainerInstanceValue(identifier, symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
         return this
     }
@@ -148,7 +147,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        silentContainers[identifier] = ContainerValue(identifier, symbolTable)
+        silentContainers[identifier] = ContainerInstanceValue(identifier, symbolTable)
 
         return this
     }

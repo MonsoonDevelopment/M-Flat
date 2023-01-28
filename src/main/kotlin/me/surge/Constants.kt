@@ -10,26 +10,19 @@ object Constants {
     private val KEYWORDS = hashMapOf(
         Pair("var", "mut"),
         Pair("val", "const"),
-        //Pair("and", "and"),
-        //Pair("or", "or"),
-        //Pair("not", "not"),
         Pair("if", "if"),
-        //Pair("then", "then"),
         Pair("elif", "elseif"),
         Pair("else", "else"),
         Pair("for", "for"),
-        //Pair("to", "to"),
         Pair("step", "step"),
         Pair("while", "while"),
         Pair("function", "meth"), // short for method,
-        //Pair("end", "end"),
         Pair("return", "return"),
         Pair("continue", "continue"),
         Pair("break", "break"),
         Pair("in", "in"),
-        Pair("struct", "struct"),
-        Pair("implement", "impl"),
-        Pair("use", "use")
+        Pair("use", "use"),
+        Pair("container", "container")
     )
 
     private val SYMBOLS = hashMapOf(
