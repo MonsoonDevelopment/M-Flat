@@ -9,7 +9,7 @@ import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.util.binary
 import kotlin.system.exitProcess
 
-class Standard {
+object Standard {
 
     fun print(value: Value) {
         print(value.rawValue())

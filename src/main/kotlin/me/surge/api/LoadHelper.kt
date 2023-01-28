@@ -16,6 +16,11 @@ import java.lang.IllegalStateException
 object LoadHelper {
 
     fun loadClass(instance: Any, symbolTable: SymbolTable) {
+        instance as Class<*>
+        val constructor = instance.getDeclaredConstructor()
+        constructor.isAccessible = true
+        val instance = constructor.newInstance()
+
         instance.javaClass.declaredFields.forEach { field ->
             if (field.getAnnotation(ExcludeFromProcessing::class.java) != null) {
                 return@forEach
@@ -155,13 +160,6 @@ object LoadHelper {
 
             symbolTable.set(name, function, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
         }
-    }
-
-    fun loadClass(clazz: Class<*>, symbolTable: SymbolTable) {
-        clazz.getDeclaredConstructor().isAccessible = true
-        val instance = clazz.getDeclaredConstructor().newInstance()
-
-        loadClass(instance, symbolTable)
     }
 
     private fun builtIn(name: String, method: (functionData: FunctionData) -> RuntimeResult, argumentNames: ArrayList<String>): BuiltInFunction {

@@ -7,8 +7,8 @@ import java.io.FileReader
 
 fun main(args: Array<String>) {
     val executor = Executor()
-        .loadClass("testing", Testing())
-        .loadClass("java_types", JavaTypesTesting())
+        .loadClass("testing", Testing::class.java)
+        .loadClass("java_types", JavaTypesTesting::class.java)
 
     val file = File("main.mfl")
     val reader = FileReader(file)

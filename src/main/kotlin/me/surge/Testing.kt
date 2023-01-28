@@ -2,7 +2,7 @@ package me.surge
 
 import me.surge.api.annotation.Mutable
 
-class Testing {
+object Testing {
 
     val helloWorld = "Hello, world!"
     val bool = true

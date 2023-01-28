@@ -1,6 +1,6 @@
 package me.surge
 
-class JavaTypesTesting {
+object JavaTypesTesting {
 
     fun test(value: String) {
         println("value: $value")

@@ -2,7 +2,7 @@ package me.surge.library
 
 import me.surge.api.annotation.OverrideName
 
-class BuiltIn {
+object BuiltIn {
 
     @OverrideName("null") val NULL = 0
 

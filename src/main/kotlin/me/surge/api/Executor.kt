@@ -142,20 +142,10 @@ class Executor {
         return this
     }
 
-    fun loadClass(identifier: String, clazz: Class<*>): Executor {
+    fun loadSilentClass(identifier: String, any: Any): Executor {
         val symbolTable = SymbolTable()
 
-        LoadHelper.loadClass(clazz, symbolTable)
-
-        globalSymbolTable.set(identifier, ContainerValue(identifier, symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
-
-        return this
-    }
-
-    fun loadSilentClass(identifier: String, clazz: Class<*>): Executor {
-        val symbolTable = SymbolTable()
-
-        LoadHelper.loadClass(clazz, symbolTable)
+        LoadHelper.loadClass(any, symbolTable)
 
         silentContainers[identifier] = ContainerValue(identifier, symbolTable)
 

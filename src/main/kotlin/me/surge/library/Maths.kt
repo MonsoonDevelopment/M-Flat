@@ -8,7 +8,7 @@ import me.surge.lexer.value.NumberValue
 import kotlin.math.ln
 import kotlin.random.Random
 
-class Maths {
+object Maths {
 
     fun pow(functionData: FunctionData, base: NumberValue, exponent: NumberValue): Result {
         val result = base.powedBy(exponent)
