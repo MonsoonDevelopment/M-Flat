@@ -59,13 +59,16 @@ class Parser(val tokens: List<Token>) {
             this.advance()
         }
 
-        val statement = result.register(this.statement())
+        val expr = this.statement()
+        val statement = result.tryRegister(expr)
 
-        if (result.error != null) {
-            return result
+        if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            return expr
         }
 
-        statements.add(statement as Node)
+        if (statement != null) {
+            statements.add(statement as Node)
+        }
 
         var moreStatements = true
 

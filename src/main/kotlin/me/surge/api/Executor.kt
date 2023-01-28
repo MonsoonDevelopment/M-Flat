@@ -10,6 +10,7 @@ import me.surge.lexer.node.Node
 import me.surge.lexer.position.Position
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.ContainerValue
+import me.surge.lexer.value.StructValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.library.BuiltIn

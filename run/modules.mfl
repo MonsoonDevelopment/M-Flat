@@ -1,0 +1,14 @@
+struct Flight {
+    name,
+    description
+}
+
+impl Flight {
+    meth onUpdate() {
+        std::println("yo")
+    }
+}
+
+meth loadModules() {
+    return [Flight("Flight", "Allows you to fly!")]
+}
