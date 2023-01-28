@@ -23,6 +23,10 @@ impl Lliw {
     meth getAlpha() {
         return this::alpha
     }
+
+    meth test() {
+        return Lliw(this::red + 5, this::green, this::blue, this::alpha)
+    }
 }
 
 meth test_func() {
@@ -30,11 +34,14 @@ meth test_func() {
 }
 
 meth main(args) {
-    const lliw = Lliw(74, 255, 255, 255
+    const lliw = Lliw(74, 255, 255, 255)
 
     std::println(lliw::getRed())
     std::println(lliw::test_func())
     std::println(lliw::getBlue())
+    std::println(lliw::test()::getRed())
+
+    std::exit(0)
 
     const person = secondary::Person("John Doe", 23)
     person::say_name()

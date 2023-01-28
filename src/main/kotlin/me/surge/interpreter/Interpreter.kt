@@ -294,16 +294,6 @@ class Interpreter(val executor: Executor? = null) {
         val result = RuntimeResult()
         val args = ArrayList<Value>()
 
-        var targetValue = result.register(this.visit(node.target, context))
-
-        if (result.shouldReturn()) {
-            return result
-        }
-
-        targetValue as Value
-
-        targetValue = targetValue.clone().setPosition(node.start, node.end)
-
         for (argument in node.arguments) {
             val value = result.register(this.visit(argument, context))
 
@@ -314,10 +304,28 @@ class Interpreter(val executor: Executor? = null) {
             args.add(value as Value)
         }
 
+        node.target.args = args
+
+        var targetValue = result.register(this.visit(node.target, context))
+
+        if (result.shouldReturn()) {
+            return result
+        }
+
+        targetValue as Value
+
+        targetValue = targetValue.clone().setPosition(node.start, node.end)
+
+        targetValue.setContext(context)
+
         var returnValue = result.register(targetValue.execute(args))
 
         if (result.shouldReturn()) {
             return result
+        }
+
+        if (node.child != null) {
+            returnValue = result.register(this.visit(node.child!!, context))
         }
 
         returnValue = returnValue!!.clone().setPosition(node.start, node.end).setContext(context)
@@ -426,7 +434,7 @@ class Interpreter(val executor: Executor? = null) {
         val result = RuntimeResult()
 
         val name = node.name.value as String
-        val parent = node.parent?.value as String?
+        /* val parent = node.parent?.value as String?
 
         val value: Value
 
@@ -454,7 +462,120 @@ class Interpreter(val executor: Executor? = null) {
                     "'$name' is not defined in container '$parent'!",
                     context
                 ))
+        } */
+
+        var value: Value? = context.symbolTable!!.get(name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'$name' is not defined!",
+                    context
+                ))
+
+        if (node.child != null && value !is BaseFunctionValue) {
+            /* val parent = result.register(this.visit(node, context))
+
+            if (result.error != null) {
+                return result
+            } */
+
+            /* val parent = context.symbolTable!!.get(name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'$name' is not defined!",
+                    context
+                ))
+
+            if (parent !is ContainerValue<*>) {
+                return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'${parent.name}' is not a container!",
+                    context
+                ))
+            }
+
+            parent.value as SymbolTable
+
+            val cnxt = Context(parent.name, context)
+            cnxt.symbolTable = SymbolTable(context.symbolTable) //parent.value
+
+            parent.value.symbols.forEach {
+                cnxt.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = true, declaration = true, node.start, node.end, context, forced = true))
+            }
+
+            println(parent.value.symbols)
+
+            val child = result.register(this.visit(node.child!!, cnxt))
+
+            if (result.error != null) {
+                return result
+            }
+
+            return result.success(
+                parent.value.get(child!!.name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'${child.name}' is not defined in container '$parent'!",
+                    context
+                )))
+
+            val child = result.register(this.visit(node.child!!, parent.context!!))
+
+            if (result.error != null) {
+                return result
+            }
+
+            return result.success(child!!) */
+
+            /*if (value is BaseFunctionValue) {
+                println(value::class.java.simpleName)
+                val res = value.execute(node.args)
+
+                println(res.value)
+
+                parent = res.value!!
+            }*/
+
+            if (value !is ContainerValue<*>) {
+                return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "'${value!!.name}' is not a container, it is '${value.rawName}'!",
+                    context
+                ))
+            }
+
+            val childContext = Context(value.name, context, node.start)
+            //childContext.symbolTable = parent.value as SymbolTable
+            //childContext.symbolTable = SymbolTable(parent.value as SymbolTable)
+
+            childContext.symbolTable = SymbolTable(context.symbolTable)
+
+            (value.value as SymbolTable).getAll().forEach {
+                childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true))
+            }
+
+            // because this calls the method...
+            val child = result.register(this.visit(node.child!!, childContext))
+
+            if (result.error != null) {
+                return result
+            }
+
+            value = child
+        } else {
+            value = context.symbolTable!!.get(name) ?: return result.failure(RuntimeError(
+                node.start,
+                node.end,
+                "'$name' is not defined!",
+                context
+            ))
         }
+
+        value = value!!.clone().setPosition(node.start, node.end).setContext(context)
 
         return result.success(value)
     }
@@ -465,7 +586,7 @@ class Interpreter(val executor: Executor? = null) {
         val result = RuntimeResult()
 
         val name = node.name.value as String
-        val parent = node.parent?.value as String?
+        //val parent = node.parent?.value as String?
 
         val value = result.register(this.visit(node.value, context))
 
@@ -478,12 +599,87 @@ class Interpreter(val executor: Executor? = null) {
 
         var error: Error? = null
 
-        if (parent != null) {
+        /*if (parent != null) {
             val container = context.symbolTable!!.get(parent)
                 ?: return result.failure(RuntimeError(
                     node.start,
                     node.end,
                     "Container '$parent' is not defined",
+                    context
+                ))
+
+            container as ContainerValue<*>
+            container.value as SymbolTable
+
+            val original = container.value.get(name)
+            var newValue = value
+
+            if (original != null) {
+                original as NumberValue
+
+                when (node.mutate) {
+                    null -> {}
+
+                    TokenType.ADD -> {
+                        newValue = original.addedTo(newValue).first
+                    }
+
+                    TokenType.SUBTRACT_BY -> {
+                        newValue = original.subbedBy(newValue).first
+                    }
+
+                    TokenType.MULTIPLY_BY -> {
+                        newValue = original.multedBy(newValue).first
+                    }
+
+                    TokenType.DIVIDE_BY -> {
+                        newValue = original.divedBy(newValue).first
+                    }
+
+                    else -> {}
+                }
+            }
+
+            error = container.value.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+        } else {
+            val original = context.symbolTable?.get(name)
+            var newValue = value
+
+            if (original != null) {
+                original as NumberValue
+
+                when (node.mutate) {
+                    null -> {}
+
+                    TokenType.ADD -> {
+                        newValue = original.addedTo(newValue).first
+                    }
+
+                    TokenType.SUBTRACT_BY -> {
+                        newValue = original.subbedBy(newValue).first
+                    }
+
+                    TokenType.MULTIPLY_BY -> {
+                        newValue = original.multedBy(newValue).first
+                    }
+
+                    TokenType.DIVIDE_BY -> {
+                        newValue = original.divedBy(newValue).first
+                    }
+
+                    else -> {}
+                }
+            }
+
+            error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+        }*/
+
+        if (node.child != null) {
+            val container = context.symbolTable!!.get(name)
+                ?: return result.failure(RuntimeError(
+                    node.start,
+                    node.end,
+                    "Container '$name' is not defined!",
                     context
                 ))
 

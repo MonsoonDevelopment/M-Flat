@@ -11,11 +11,18 @@ import me.surge.parse.RuntimeResult
 @ValueName("struct")
 class StructValue(name: String, val argumentNames: ArrayList<String>) : BaseFunctionValue(name) {
 
+    private var body: Node? = null
+    private var implement: ((Node?, Context, Interpreter) -> Unit)? = null
+
     override fun execute(args: ArrayList<Value>): RuntimeResult {
         val functionResult = RuntimeResult()
 
         if (this.context == null) {
             this.context = this.generateContext()
+        }
+
+        if (implement != null) {
+            implement!!(body, this.context!!, Interpreter(null))
         }
 
         val table = SymbolTable(this.context?.symbolTable)
@@ -27,27 +34,39 @@ class StructValue(name: String, val argumentNames: ArrayList<String>) : BaseFunc
         }
 
         args.forEachIndexed { index, value ->
-            table.set(argumentNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!))
+            table.set(argumentNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
         }
 
         return functionResult.success(ContainerValue(name, table))
     }
 
-    fun setImplementation(body: Node, context: Context, result: RuntimeResult, interpreter: Interpreter): RuntimeResult {
+    fun setImplementation(body: Node, context: Context, result: RuntimeResult?, interpreter: Interpreter): RuntimeResult {
         body as ListNode
 
-        val implementationContext = Context(this.name, context).createChildSymbolTable()
-        implementationContext.symbolTable!!.set("this", ContainerValue(this.name, implementationContext.symbolTable), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, implementationContext, forced = true))
+        this.body = body
 
-        result.register(interpreter.visit(body, implementationContext))
+        implement = { body, context, interpreter ->
+            val implementationContext = Context(this.name, context).createChildSymbolTable()
 
-        if (result.error != null) {
-            return result
+            implementationContext.symbolTable!!.set(
+                "this",
+                ContainerValue(this.name, implementationContext.symbolTable),
+                SymbolTable.EntryData(
+                    immutable = true,
+                    declaration = true,
+                    this.start,
+                    this.end,
+                    implementationContext,
+                    forced = true
+                )
+            )
+
+            interpreter.visit(body!!, implementationContext)
+
+            this.context = implementationContext
         }
 
-        this.context = implementationContext
-
-        return result
+        return result!!
     }
 
     override fun clone(): Value {

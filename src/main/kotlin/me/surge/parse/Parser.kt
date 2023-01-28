@@ -196,7 +196,7 @@ class Parser(val tokens: List<Token>) {
                 return result
             }
 
-            return result.success(VarAssignNode(name, null, expression!! as Node, declaration = true, final = final))
+            return result.success(VarAssignNode(name, expression!! as Node, declaration = true, final = final))
         }
 
         val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, Constants.get("and")), Pair(TokenType.KEYWORD, Constants.get("or")))))
@@ -344,9 +344,49 @@ class Parser(val tokens: List<Token>) {
                 this.advance()
             }
 
-            return result.success(MethodCallNode(atom as Node, argumentNodes))
+            var child: Node? = null
+
+            while (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
+                if (child == null) {
+                    child = atom as Node
+                }
+
+                result.registerAdvancement()
+                this.advance()
+
+                val sub = result.register(this.call())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                child.child = sub as Node
+                child = sub
+            }
+
+            return result.success(MethodCallNode(atom as Node, argumentNodes, child))
         } else {
             this.reverse(this.tokenIndex - index)
+        }
+
+        var child: Node? = null
+
+        while (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
+            if (child == null) {
+                child = atom as Node
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            val sub = result.register(this.call())
+
+            if (result.error != null) {
+                return result
+            }
+
+            child.child = sub as Node
+            child = sub
         }
 
         return result.success(atom as Node)
@@ -369,36 +409,10 @@ class Parser(val tokens: List<Token>) {
         }
 
         else if (token.type == TokenType.IDENTIFIER) {
-            var valueToken: Token = token
-
-            var accessed = false
-
             result.registerAdvancement()
             this.advance()
 
-            var index = this.tokenIndex
-
-            skipNewLines(result)
-
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
-                accessed = true
-
-                result.registerAdvancement()
-                this.advance()
-
-                skipNewLines(result)
-
-                valueToken = this.currentToken
-
-                result.registerAdvancement()
-                this.advance()
-
-                skipNewLines(result)
-            } else {
-                this.reverse(this.tokenIndex - index)
-            }
-
-            index = this.tokenIndex
+            val index = this.tokenIndex
 
             skipNewLines(result)
 
@@ -414,7 +428,7 @@ class Parser(val tokens: List<Token>) {
                     return result
                 }
 
-                return result.success(VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false))
+                return result.success(VarAssignNode(token, expression!! as Node, declaration = false, final = false))
             } else if (this.currentToken.type == TokenType.ADD || this.currentToken.type == TokenType.SUBTRACT_BY || this.currentToken.type == TokenType.MULTIPLY_BY || this.currentToken.type == TokenType.DIVIDE_BY) {
                 val type = this.currentToken.type
 
@@ -427,14 +441,14 @@ class Parser(val tokens: List<Token>) {
                     return result
                 }
 
-                val node = VarAssignNode(if (accessed) valueToken else token, if (accessed) token else null, expression!! as Node, declaration = false, final = false, mutate = type)
+                val node = VarAssignNode(token, expression!! as Node, declaration = false, final = false, mutate = type)
 
                 return result.success(node)
             } else {
                 this.reverse(this.tokenIndex - index)
             }
 
-            return result.success(VarAccessNode(if (accessed) valueToken else token, if (accessed) token else null))
+            return result.success(VarAccessNode(token))
         }
 
         else if (token.type == TokenType.LEFT_PARENTHESES) {
@@ -1292,7 +1306,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.get("end")}, got $currentToken"
+                "Method Definition: Expected ${Constants.get("end")}, got $currentToken"
             ))
         }
 
@@ -1411,7 +1425,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected ${Constants.get("end")}, got $currentToken"
+                "Struct Definition: Expected ${Constants.get("end")}, got $currentToken"
             ))
         }
 

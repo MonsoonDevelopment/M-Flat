@@ -20,7 +20,7 @@ open class Error(val start: Position, val end: Position, val name: String, val d
     }
 
     override fun toString(): String {
-        return "${generateMessage()}\n\n$name: $details\nFile ${start.file}, line ${start.line + 1}"
+        return "\n${generateMessage()}\n\n$name: $details\nFile ${start.file}, line ${start.line + 1}"
     }
 
 }

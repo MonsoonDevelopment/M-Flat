@@ -91,6 +91,18 @@ class SymbolTable(val parent: SymbolTable? = null) {
         }
     }
 
+    fun getAll(): ArrayList<Symbol> {
+        val list = arrayListOf<Symbol>()
+
+        list.addAll(this.symbols)
+
+        if (this.parent != null) {
+            list.addAll(this.parent.getAll())
+        }
+
+        return list
+    }
+
     data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
     data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false)
 
