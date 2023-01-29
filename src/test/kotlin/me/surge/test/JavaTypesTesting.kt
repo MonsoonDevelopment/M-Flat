@@ -1,4 +1,4 @@
-package me.surge
+package me.surge.test
 
 object JavaTypesTesting {
 

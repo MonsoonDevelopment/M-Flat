@@ -23,14 +23,14 @@ open class BaseFunctionValue(name: String = "<anonymous>") : Value(name) {
             return result.failure(RuntimeError(
                 this.start!!,
                 this.end!!,
-                "Too many arguments passed into $this",
+                "Too many arguments passed into ${this.name} invocation",
                 this.context!!
             ))
         } else if (arguments.size < argumentNames.size) {
             return result.failure(RuntimeError(
                 this.start!!,
                 this.end!!,
-                "Too little arguments passed into $this",
+                "Too little arguments passed into ${this.name} invocation",
                 this.context!!
             ))
         }

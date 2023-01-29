@@ -12,7 +12,7 @@ import me.surge.parse.RuntimeResult
 class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseFunctionValue(name) {
 
     private var body: Node? = null
-    private var implement: ((Node?, Context, Interpreter) -> Unit)? = null
+    var implement: ((Node?, Context, Interpreter) -> Unit)? = null
 
     override fun execute(args: ArrayList<Value>): RuntimeResult {
         val functionResult = RuntimeResult()
@@ -37,7 +37,7 @@ class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseF
             table.set(argumentNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
         }
 
-        return functionResult.success(ContainerInstanceValue(name, table))
+        return functionResult.success(ContainerInstanceValue(name, table, this))
     }
 
     fun setImplementation(body: Node) {
@@ -50,7 +50,7 @@ class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseF
 
             implementationContext.symbolTable!!.set(
                 "this",
-                ContainerInstanceValue(this.name, implementationContext.symbolTable!!),
+                ContainerInstanceValue(this.name, implementationContext.symbolTable!!, this),
                 SymbolTable.EntryData(
                     immutable = true,
                     declaration = true,
@@ -69,6 +69,10 @@ class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseF
 
     override fun clone(): Value {
         return this
+    }
+
+    override fun rawValue(): String {
+        return "<container $name>"
     }
 
 }

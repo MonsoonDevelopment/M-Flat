@@ -13,7 +13,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(NumberValue(name, if (this.value is Float) this.value.toFloat() + other.value.toFloat() else this.value.toInt() + other.value.toInt()).setContext(this.context), null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("+", other))
         }
     }
 
@@ -21,7 +21,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(NumberValue(name, if (this.value is Float) this.value.toFloat() - other.value.toFloat() else this.value.toInt() - other.value.toInt()).setContext(this.context), null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("-", other))
         }
     }
 
@@ -29,7 +29,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(NumberValue(name, if (this.value is Float) this.value.toFloat() * other.value.toFloat() else this.value.toInt() * other.value.toInt()).setContext(this.context), null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("*", other))
         }
     }
 
@@ -46,7 +46,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
 
             Pair(NumberValue(name, if (this.value is Float) this.value.toFloat() / other.value.toFloat() else this.value.toInt() / other.value.toInt()).setContext(this.context), null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("/", other))
         }
     }
 
@@ -54,7 +54,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(NumberValue(name, if (this.value is Float) this.value.toFloat().pow(other.value.toFloat()) else this.value.toFloat().pow(other.value.toFloat()).toInt()).setContext(this.context), null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("^", other))
         }
     }
 
@@ -62,7 +62,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() == other.value.toFloat() else this.value.toInt() == other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("==", other))
         }
     }
 
@@ -70,7 +70,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() != other.value.toFloat() else this.value.toInt() != other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("!=", other))
         }
     }
 
@@ -78,7 +78,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() < other.value.toFloat() else this.value.toInt() < other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("<", other))
         }
     }
 
@@ -86,7 +86,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() > other.value.toFloat() else this.value.toInt() > other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation(">", other))
         }
     }
 
@@ -94,7 +94,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() <= other.value.toFloat() else this.value.toInt() <= other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation("<=", other))
         }
     }
 
@@ -102,7 +102,7 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return if (other is NumberValue) {
             Pair(BooleanValue(name, if (this.value is Float) this.value.toFloat() >= other.value.toFloat() else this.value.toInt() >= other.value.toInt()).setContext(this.context) as BooleanValue, null)
         } else {
-            Pair(null, illegalOperation(other))
+            Pair(null, illegalOperation(">=", other))
         }
     }
 

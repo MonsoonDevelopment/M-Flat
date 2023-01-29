@@ -84,6 +84,28 @@ object Standard {
         return Success(BooleanValue("<anonymous is list>", value is ListValue))
     }
 
+    fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value): Result {
+        if (containerValue !is ContainerInstanceValue) {
+            return Failure(RuntimeError(
+                functionData.start,
+                functionData.end,
+                "First argument of 'matchesContainer' must be an instance!",
+                functionData.context
+            ))
+        }
+
+        if (parent !is ContainerValue) {
+            return Failure(RuntimeError(
+                functionData.start,
+                functionData.end,
+                "Second argument of 'matchesContainer' must be a container!",
+                functionData.context
+            ))
+        }
+
+        return Success(BooleanValue("<anonymous matches>", containerValue.parent!!.name == parent.name))
+    }
+
     fun stringToNumber(value: Value): Result {
         return Success(NumberValue("<anonymous cast>", value.rawValue().toFloat()))
     }

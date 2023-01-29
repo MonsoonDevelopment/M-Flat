@@ -1,10 +1,10 @@
 package me.surge.lexer
 
-import me.surge.Constants.ALLOWED_SYMBOLS
-import me.surge.Constants.DIGITS
-import me.surge.Constants.LETTERS
-import me.surge.Constants.LETTERS_DIGITS
-import me.surge.Constants.isInKeywords
+import me.surge.util.Constants.ALLOWED_SYMBOLS
+import me.surge.util.Constants.DIGITS
+import me.surge.util.Constants.LETTERS
+import me.surge.util.Constants.LETTERS_DIGITS
+import me.surge.util.Constants.isInKeywords
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.IllegalCharError

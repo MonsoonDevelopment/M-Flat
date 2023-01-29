@@ -3,14 +3,10 @@ package me.surge.api
 import me.surge.api.annotation.ExcludeFromProcessing
 import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
-import me.surge.api.result.Failure
-import me.surge.api.result.Success
-import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
 import me.surge.lexer.value.function.BuiltInFunction
 import me.surge.parse.RuntimeResult
-import me.surge.util.firstIndexed
 import java.lang.IllegalStateException
 
 object LoadHelper {
@@ -25,7 +21,7 @@ object LoadHelper {
         }
 
         instance.javaClass.declaredFields.forEach { field ->
-            if (field.getAnnotation(ExcludeFromProcessing::class.java) != null) {
+            if (field.getAnnotation(ExcludeFromProcessing::class.java) != null || field.name == "INSTANCE") {
                 return@forEach
             }
 
@@ -73,34 +69,43 @@ object LoadHelper {
                 return ListValue(name, elements)
             }
 
-            symbolTable.set(name,
-                when (field.type) {
-                    Int::class.java -> {
-                        NumberValue(name, field.getInt(instance))
-                    }
+            var value = when (field.type) {
+                Int::class.java -> {
+                    NumberValue(name, field.getInt(instance))
+                }
 
-                    Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
-                        NumberValue(name, field.get(instance).toString().toFloat())
-                    }
+                Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
+                    NumberValue(name, field.get(instance).toString().toFloat())
+                }
 
-                    String::class.java -> {
-                        StringValue(name, field.get(instance).toString())
-                    }
+                String::class.java -> {
+                    StringValue(name, field.get(instance).toString())
+                }
 
-                    Boolean::class.java -> {
-                        BooleanValue(name, field.getBoolean(instance))
-                    }
+                Boolean::class.java -> {
+                    BooleanValue(name, field.getBoolean(instance))
+                }
 
-                    else -> {
-                        if (field.type.isArray) {
-                            parseArray(name, field.get(instance) as Array<*>)
-                        } else {
-                            Value(name)
-                        }
+                ContainerValue::class.java -> {
+                    field.get(instance) as ContainerValue
+                }
+
+                else -> {
+                    if (field.type.isArray) {
+                        parseArray(name, field.get(instance) as Array<*>)
+                    } else {
+                        Value(name)
                     }
-                },
-                SymbolTable.EntryData(field.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null)
-            )
+                }
+            }
+
+            if (field::class.java.isInstance(Value::class.java)) {
+                value = field.get(value) as Value
+
+                println(value)
+            }
+
+            symbolTable.set(name, value, SymbolTable.EntryData(field.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
         }
 
         instance.javaClass.declaredMethods.forEach { method ->
@@ -108,81 +113,14 @@ object LoadHelper {
                 return@forEach
             }
 
-            method.isAccessible = true
+            val method = Coercer.coerceMethod(instance, method)
 
-            val name = if (method.isAnnotationPresent(OverrideName::class.java)) {
-                method.getAnnotation(OverrideName::class.java).name
-            } else {
-                method.name
-            }
-
-            val function = builtIn(
-                name,
-
-                { functionData ->
-                    val types = method.parameterTypes.filter { it != FunctionData::class.java }
-                    val converted = arrayListOf<Class<*>>()
-
-                    types.forEach {
-                        converted.add(getEquivalentValue(it))
-                    }
-
-                    val arguments = arrayListOf<Any>()
-
-                    if (method.parameters.any { it.type == FunctionData::class.java }) {
-                        arguments.add(functionData)
-                    }
-
-                    functionData.arguments.forEachIndexed { index, value ->
-                        arguments.add(getEquivalentPrimitive(value, types[index]))
-                    }
-
-                    val result = method.invoke(instance, *arguments.toTypedArray())
-
-                    if (result is RuntimeResult) {
-                        return@builtIn result
-                    }
-
-                    when (result) {
-                        is Success -> {
-                            RuntimeResult().success(result.value)
-                        }
-
-                        is Failure -> {
-                            RuntimeResult().failure(result.error!!)
-                        }
-
-                        is Boolean -> {
-                            RuntimeResult().success(BooleanValue(name, result))
-                        }
-
-                        is Number -> {
-                            RuntimeResult().success(NumberValue(name, result))
-                        }
-
-                        is String -> {
-                            RuntimeResult().success(StringValue(name, result))
-                        }
-
-                        else -> {
-                            RuntimeResult().success(NumberValue.NULL)
-                        }
-                    }
-                },
-
-                ArrayList(method.parameters.filter { it.type != FunctionData::class.java }.map { it.name }.toList())
-            )
-
-            symbolTable.set(name, function, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+            symbolTable.set(method.name, method, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
         }
     }
 
-    private fun builtIn(name: String, method: (functionData: FunctionData) -> RuntimeResult, argumentNames: ArrayList<String>): BuiltInFunction {
-        return BuiltInFunction(name, method, argumentNames)
-    }
-
-    private fun getEquivalentValue(clazz: Class<*>): Class<*> {
-        if (clazz.superclass == Value::class.java || clazz == Value::class.java) {
+    fun getEquivalentValue(clazz: Class<*>): Class<*> {
+        if (isAssignableFrom(clazz, Value::class.java)) {
             return clazz
         }
 
@@ -203,8 +141,8 @@ object LoadHelper {
         throw IllegalStateException("No equivalent value found! (Got $clazz)")
     }
 
-    private fun getEquivalentPrimitive(value: Value, clazz: Class<*>): Any {
-        if (clazz.superclass == Value::class.java || clazz == Value::class.java) {
+    fun getEquivalentPrimitive(value: Value, clazz: Class<*>): Any {
+        if (isAssignableFrom(clazz, Value::class.java)) {
             return value
         }
 
@@ -240,9 +178,25 @@ object LoadHelper {
             is BooleanValue -> {
                 return value.value
             }
+
         }
 
         throw IllegalStateException("No equivalent primitive found! (Got $value, $clazz)")
+    }
+
+    fun isAssignableFrom(clazz: Class<*>, superclass: Class<*>): Boolean {
+        var assignable = clazz == superclass
+
+        if (!assignable) {
+            var superclass = clazz.superclass
+
+            while (superclass != null && !assignable) {
+                assignable = clazz == superclass
+                superclass = clazz.superclass
+            }
+        }
+
+        return assignable
     }
 
 }

@@ -1,6 +1,6 @@
 package me.surge.parse
 
-import me.surge.Constants
+import me.surge.util.Constants
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*

@@ -7,11 +7,6 @@ container Flight {
     }
 }
 
-meth test_method(target) {
-    target::output()
-    std::println(target::a)
-}
-
 meth main(args) {
     const flight = Flight()
 
@@ -22,5 +17,8 @@ meth main(args) {
         std::println(number)
     }
 
-    //std::println(test()[2])
+    const testClass = testing::TestClass(2)
+    testClass::testClassFunction()
+    const matches = std::matchesContainer(testClass, testing::TestClass)
+    std::println(matches)
 }

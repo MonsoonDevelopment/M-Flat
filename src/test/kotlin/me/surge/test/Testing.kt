@@ -1,6 +1,8 @@
-package me.surge
+package me.surge.test
 
+import me.surge.api.Coercer
 import me.surge.api.annotation.Mutable
+import me.surge.api.annotation.OverrideName
 
 object Testing {
 
@@ -18,6 +20,15 @@ object Testing {
 
     fun test2(): Boolean {
         return false
+    }
+
+    @OverrideName("TestClass")
+    val testClass = Coercer.createContainer(TestClass(5))
+
+    class TestClass(val a: Int) {
+        fun testClassFunction() {
+            println("test calss functionsdfds")
+        }
     }
 
 }

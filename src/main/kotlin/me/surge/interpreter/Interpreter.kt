@@ -1,6 +1,6 @@
 package me.surge.interpreter
 
-import me.surge.Constants
+import me.surge.util.Constants
 import me.surge.api.Executor
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
