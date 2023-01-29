@@ -514,7 +514,7 @@ class Interpreter(val executor: Executor? = null) {
                 ))
 
         if (node.child != null && value !is BaseFunctionValue) {
-            if (value !is ContainerInstanceValue<*>) {
+            if (value !is ContainerInstanceValue) {
                 return result.failure(RuntimeError(
                     node.start,
                     node.end,

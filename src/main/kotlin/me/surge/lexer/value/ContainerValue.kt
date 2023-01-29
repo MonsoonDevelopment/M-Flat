@@ -50,7 +50,7 @@ class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseF
 
             implementationContext.symbolTable!!.set(
                 "this",
-                ContainerInstanceValue(this.name, implementationContext.symbolTable),
+                ContainerInstanceValue(this.name, implementationContext.symbolTable!!),
                 SymbolTable.EntryData(
                     immutable = true,
                     declaration = true,

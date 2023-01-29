@@ -7,8 +7,9 @@ container Flight {
     }
 }
 
-meth test() {
-    return [1, 2, [3, 4, 5]]
+meth test_method(target) {
+    target::output()
+    std::println(target::a)
 }
 
 meth main(args) {
@@ -21,5 +22,5 @@ meth main(args) {
         std::println(number)
     }
 
-    std::println(test()[2])
+    //std::println(test()[2])
 }

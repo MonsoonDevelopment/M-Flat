@@ -1,7 +1,9 @@
 package me.surge.lexer.value
 
+import me.surge.lexer.symbol.SymbolTable
+
 @ValueName("instance")
-class ContainerInstanceValue<T>(name: String, val value: T) : Value(name) {
+class ContainerInstanceValue(name: String, val value: SymbolTable) : Value(name) {
 
     override fun clone(): Value {
         return ContainerInstanceValue(name, value)

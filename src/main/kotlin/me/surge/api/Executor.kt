@@ -22,7 +22,7 @@ import java.nio.charset.Charset
 class Executor {
 
     private val globalSymbolTable = SymbolTable()
-    private val silentContainers = hashMapOf<String, ContainerInstanceValue<SymbolTable>>()
+    private val silentContainers = hashMapOf<String, ContainerInstanceValue>()
 
     init {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
@@ -85,7 +85,7 @@ class Executor {
 
         globalSymbolTable.set(
             file,
-            ContainerInstanceValue(file, context.symbolTable),
+            ContainerInstanceValue(file, context.symbolTable!!),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,

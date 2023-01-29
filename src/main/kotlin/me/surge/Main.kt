@@ -1,5 +1,6 @@
 package me.surge
 
+import me.surge.api.Coercer
 import me.surge.api.Executor
 import me.surge.lexer.value.ListValue
 import java.io.File
@@ -28,6 +29,16 @@ fun main(args: Array<String>) {
 
     if (trueResult.error != null) {
         println(trueResult.error.toString())
+    }
+
+    val res = executor.getFunction("test_method")?.execute(arrayListOf(Coercer.coerceObject(TestClass(5))))
+        ?: run {
+            println("Couldn't find test method!")
+            return
+        }
+
+    if (res.error != null) {
+        println(res.error.toString())
     }
 
     /* val trueResult = executor.getFunction("loadModules")?.execute(arrayListOf())

@@ -16,10 +16,13 @@ import java.lang.IllegalStateException
 object LoadHelper {
 
     fun loadClass(instance: Any, symbolTable: SymbolTable) {
-        instance as Class<*>
-        val constructor = instance.getDeclaredConstructor()
-        constructor.isAccessible = true
-        val instance = constructor.newInstance()
+        val instance: Any = if (instance is Class<*>) {
+            val constructor = instance.getDeclaredConstructor()
+            constructor.isAccessible = true
+            constructor.newInstance()
+        } else {
+            instance
+        }
 
         instance.javaClass.declaredFields.forEach { field ->
             if (field.getAnnotation(ExcludeFromProcessing::class.java) != null) {
