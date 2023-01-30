@@ -1,10 +1,18 @@
 container TestContainer (a, b, c) (a, b) {
 
+    meth init {
+        std::println("Init!")
+
+        if (c == null) {
+            c = 54312656
+        }
+    }
+
 }
 
 meth main(args) {
     std::println(testing::twoDArray)
 
     const cont = TestContainer(2, 543156)
-    std::println(cont::b)
+    std::println(cont::c)
 }

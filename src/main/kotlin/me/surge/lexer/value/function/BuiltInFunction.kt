@@ -1,5 +1,6 @@
 package me.surge.lexer.value.function
 
+import me.surge.lexer.error.context.Context
 import me.surge.lexer.value.FunctionData
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.ValueName
@@ -8,9 +9,8 @@ import me.surge.parse.RuntimeResult
 @ValueName("built-in function")
 open class BuiltInFunction(name: String, val supplier: (functionData: FunctionData) -> RuntimeResult, private val argumentNames: ArrayList<String>) : BaseFunctionValue(name) {
 
-    override fun execute(args: ArrayList<Value>): RuntimeResult {
+    override fun execute(args: ArrayList<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
-        val context = this.generateContext()
 
         result.register(this.checkAndPopulateArguments(this.argumentNames, args, context))
 
@@ -25,6 +25,10 @@ open class BuiltInFunction(name: String, val supplier: (functionData: FunctionDa
         }
 
         return result.success(value)
+    }
+
+    override fun execute(args: ArrayList<Value>): RuntimeResult {
+        return execute(args, this.generateContext())
     }
 
     override fun clone(): Value {

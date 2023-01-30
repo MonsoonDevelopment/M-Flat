@@ -527,7 +527,7 @@ class Interpreter(val executor: Executor? = null) {
 
             childContext.symbolTable = SymbolTable(context.symbolTable)
 
-            (value.value as SymbolTable).getAll().forEach {
+            value.value.getAll().forEach {
                 childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true))
             }
 
@@ -615,9 +615,7 @@ class Interpreter(val executor: Executor? = null) {
         val original = context.symbolTable?.get(name)
         var newValue = value
 
-        if (original != null) {
-            original as NumberValue
-
+        if (original != null && original is NumberValue) {
             when (node.mutate) {
                 null -> {}
 

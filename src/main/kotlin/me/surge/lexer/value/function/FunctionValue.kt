@@ -1,6 +1,7 @@
 package me.surge.lexer.value.function
 
 import me.surge.interpreter.Interpreter
+import me.surge.lexer.error.context.Context
 import me.surge.lexer.node.Node
 import me.surge.lexer.value.NullValue
 import me.surge.lexer.value.NumberValue
@@ -11,10 +12,9 @@ import me.surge.parse.RuntimeResult
 @ValueName("function")
 class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentNames: ArrayList<String>, val shouldAutoReturn: Boolean) : BaseFunctionValue(name) {
 
-    override fun execute(args: ArrayList<Value>): RuntimeResult {
+    override fun execute(args: ArrayList<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
         val interpreter = Interpreter()
-        val context = this.generateContext()
 
         result.register(this.checkAndPopulateArguments(this.argumentNames, args, context))
 
@@ -33,6 +33,10 @@ class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentN
         }
 
         return result.success(NullValue())
+    }
+
+    override fun execute(args: ArrayList<Value>): RuntimeResult {
+        return this.execute(args, this.generateContext())
     }
 
     override fun clone(): Value {

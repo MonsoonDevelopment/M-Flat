@@ -40,6 +40,7 @@ open class Value(var name: String) {
     open fun oredBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(Constants.get("ot"), other))
     open fun notted(): Pair<Value?, Error?> = Pair(null, illegalOperation(Constants.get("not")))
 
+    open fun execute(args: ArrayList<Value> = arrayListOf(), context: Context): RuntimeResult = RuntimeResult().failure(this.illegalOperation("execute"))
     open fun execute(args: ArrayList<Value> = arrayListOf()): RuntimeResult = RuntimeResult().failure(this.illegalOperation("execute"))
 
     open fun compareEquality(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation("==", other))

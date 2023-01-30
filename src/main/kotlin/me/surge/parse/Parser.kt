@@ -1305,84 +1305,76 @@ class Parser(val tokens: List<Token>) {
             this.advance()
 
             skipNewLines(result)
-
-            if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
-                return result.failure(InvalidSyntaxError(
-                    this.currentToken.start,
-                    this.currentToken.end,
-                    "Expected '('"
-                ))
-            }
         } else {
             name = null
-
-            if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
-                return result.failure(InvalidSyntaxError(
-                    this.currentToken.start,
-                    this.currentToken.end,
-                    "Expected identifier or '('"
-                ))
-            }
         }
-
-        result.registerAdvancement()
-        this.advance()
-
-        skipNewLines(result)
 
         val argumentNames = arrayListOf<Token>()
 
-        if (this.currentToken.type == TokenType.IDENTIFIER) {
-            argumentNames.add(this.currentToken)
-
+        if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
             result.registerAdvancement()
             this.advance()
 
             skipNewLines(result)
 
-            while (this.currentToken.type == TokenType.COMMA) {
-                result.registerAdvancement()
-                this.advance()
-
-                skipNewLines(result)
-
-                if (this.currentToken.type != TokenType.IDENTIFIER) {
-                    return result.failure(InvalidSyntaxError(
-                        this.currentToken.start,
-                        this.currentToken.end,
-                        "Expected identifier"
-                    ))
-                }
-
+            if (this.currentToken.type == TokenType.IDENTIFIER) {
                 argumentNames.add(this.currentToken)
 
                 result.registerAdvancement()
                 this.advance()
 
                 skipNewLines(result)
+
+                while (this.currentToken.type == TokenType.COMMA) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.IDENTIFIER) {
+                        return result.failure(
+                            InvalidSyntaxError(
+                                this.currentToken.start,
+                                this.currentToken.end,
+                                "Expected identifier"
+                            )
+                        )
+                    }
+
+                    argumentNames.add(this.currentToken)
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                }
+
+                if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                    return result.failure(
+                        InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected ',' or ')', got $currentToken"
+                        )
+                    )
+                }
+            } else {
+                if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                    return result.failure(
+                        InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected identifier or ')', got $currentToken"
+                        )
+                    )
+                }
             }
 
-            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
-                return result.failure(InvalidSyntaxError(
-                    this.currentToken.start,
-                    this.currentToken.end,
-                    "Expected ',' or ')'"
-                ))
-            }
-        } else {
-            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
-                return result.failure(InvalidSyntaxError(
-                    this.currentToken.start,
-                    this.currentToken.end,
-                    "Expected identifier or ')'"
-                ))
-            }
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
         }
-
-        result.registerAdvancement()
-        this.advance()
-
-        skipNewLines(result)
 
         if (this.currentToken.type == TokenType.ARROW) {
             result.registerAdvancement()
@@ -1409,7 +1401,7 @@ class Parser(val tokens: List<Token>) {
             return result.failure(InvalidSyntaxError(
                 this.currentToken.start,
                 this.currentToken.end,
-                "Expected '->' or ${Constants.get("then")}"
+                "Expected '->' or ${Constants.get("then")}, got $currentToken"
             ))
         }
 

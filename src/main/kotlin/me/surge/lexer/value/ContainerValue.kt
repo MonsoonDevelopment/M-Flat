@@ -7,6 +7,7 @@ import me.surge.lexer.node.ListNode
 import me.surge.lexer.node.Node
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.function.BaseFunctionValue
+import me.surge.lexer.value.function.FunctionValue
 import me.surge.parse.RuntimeResult
 
 @ValueName("container")
@@ -54,7 +55,21 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
         constructors.forEach { (_, argumentNames) ->
             argumentNames.forEach { name ->
                 if (!this.context!!.symbolTable!!.symbols.any { it.identifier == name }) {
-                    table.set(name, NullValue(), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+                    this.context!!.symbolTable!!.set(name, NullValue(), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+                }
+            }
+        }
+
+        val init = this.context!!.symbolTable!!.get("init") as BaseFunctionValue?
+
+        if (init != null) {
+            val check = init.checkArguments(arrayListOf(), arrayListOf())
+
+            if (!check.shouldReturn()) {
+                functionResult.register(init.execute(arrayListOf(), context!!))
+
+                if (functionResult.shouldReturn()) {
+                    return functionResult
                 }
             }
         }
