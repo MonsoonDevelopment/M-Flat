@@ -1,11 +1,11 @@
 package me.surge.library
 
 import me.surge.api.annotation.OverrideName
-import me.surge.lexer.value.NumberValue
+import me.surge.lexer.value.NullValue
 
 object BuiltIn {
 
-    @OverrideName("null") val NULL = NumberValue.NULL
+    @OverrideName("null") val NULL = NullValue()
 
     @OverrideName("true") val TRUE = true
 

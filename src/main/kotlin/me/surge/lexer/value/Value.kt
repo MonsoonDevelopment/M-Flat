@@ -6,6 +6,7 @@ import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.position.Position
 import me.surge.parse.RuntimeResult
+import java.lang.IllegalStateException
 
 @ValueName("any")
 open class Value(var name: String) {
@@ -63,14 +64,14 @@ open class Value(var name: String) {
         )
     }
 
-    open fun clone(): Value = this //throw IllegalStateException("No clone method defined")
+    open fun clone(): Value = this
 
     open fun isTrue(): Boolean {
         return false
     }
 
     open fun rawValue(): String {
-        return "NULL"
+        throw IllegalStateException("Raw value not found")
     }
 
 }

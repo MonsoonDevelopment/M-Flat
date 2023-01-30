@@ -153,7 +153,7 @@ class Interpreter(val executor: Executor? = null) {
             elements.add(value!!)
         }
 
-        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous for list>", elements).setContext(forLoopContext).setPosition(node.start, node.end))
+        return result.success(if (node.shouldReturnNull) NullValue() else ListValue("<anonymous for list>", elements).setContext(forLoopContext).setPosition(node.start, node.end))
     }
 
     fun visitIfNode(node: Node, context: Context): RuntimeResult {
@@ -180,7 +180,7 @@ class Interpreter(val executor: Executor? = null) {
                     return result
                 }
 
-                return result.success(if (case.shouldReturnNull) NumberValue.NULL else expressionValue)
+                return result.success(if (case.shouldReturnNull) NullValue() else expressionValue)
             }
         }
 
@@ -194,10 +194,10 @@ class Interpreter(val executor: Executor? = null) {
                 return result
             }
 
-            return result.success(if (node.elseCase.shouldReturnNull) NumberValue.NULL else expressionValue)
+            return result.success(if (node.elseCase.shouldReturnNull) NullValue() else expressionValue)
         }
 
-        return result.success(NumberValue.NULL)
+        return result.success(NullValue())
     }
 
     fun visitIterationNode(node: Node, context: Context): RuntimeResult {
@@ -255,7 +255,7 @@ class Interpreter(val executor: Executor? = null) {
             elements.add(value!!)
         }
 
-        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous iteration list>", elements).setContext(iterationContext).setPosition(node.start, node.end))
+        return result.success(if (node.shouldReturnNull) NullValue() else ListValue("<anonymous iteration list>", elements).setContext(iterationContext).setPosition(node.start, node.end))
     }
 
     fun visitMethodDefineNode(node: Node, context: Context): RuntimeResult {
@@ -689,7 +689,7 @@ class Interpreter(val executor: Executor? = null) {
             elements.add(value!!)
         }
 
-        return result.success(if (node.shouldReturnNull) NumberValue.NULL else ListValue("<anonymous while list>", elements).setContext(context).setPosition(node.start, node.end))
+        return result.success(if (node.shouldReturnNull) NullValue() else ListValue("<anonymous while list>", elements).setContext(context).setPosition(node.start, node.end))
     }
 
     fun visitReturnNode(node: Node, context: Context): RuntimeResult {
@@ -708,7 +708,7 @@ class Interpreter(val executor: Executor? = null) {
 
             value = local as Value
         } else {
-            value = NumberValue.NULL
+            value = NullValue()
         }
 
         return result.successReturn(value)

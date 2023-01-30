@@ -2,6 +2,7 @@ package me.surge.lexer.value.function
 
 import me.surge.interpreter.Interpreter
 import me.surge.lexer.node.Node
+import me.surge.lexer.value.NullValue
 import me.surge.lexer.value.NumberValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.ValueName
@@ -28,10 +29,10 @@ class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentN
                 return result
             }
 
-            return result.success((if (shouldAutoReturn) value else null) ?: (result.returnValue ?: NumberValue.NULL))
+            return result.success((if (shouldAutoReturn) value else null) ?: (result.returnValue ?: NullValue()))
         }
 
-        return result.success(NumberValue.NULL)
+        return result.success(NullValue())
     }
 
     override fun clone(): Value {

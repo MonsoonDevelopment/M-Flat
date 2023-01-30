@@ -21,7 +21,7 @@ object Coercer {
             is Boolean -> coerceBoolean(obj)
             is String -> coerceString(obj)
             is ArrayList<*> -> coerceList(obj)
-            null -> NumberValue.NULL
+            null -> NullValue()
             else -> {
                 coerceObject(obj)
             }
@@ -113,7 +113,7 @@ object Coercer {
                     }
 
                     else -> {
-                        RuntimeResult().success(NumberValue.NULL)
+                        RuntimeResult().success(NullValue())
                     }
                 }
             },

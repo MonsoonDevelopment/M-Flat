@@ -69,76 +69,68 @@ object LoadHelper {
                 return ListValue(name, elements)
             }
 
-            var value = when (field.type) {
-                Int::class.java -> {
-                    val fieldValue = field.get(instance)
+            val fieldValue = field.get(instance)
 
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        NumberValue(name, fieldValue as Int)
+            val value = if (field != null && isValue(fieldValue::class.java)) {
+                fieldValue as Value
+            } else {
+                when (field.type) {
+                    Int::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            NumberValue(name, fieldValue as Int)
+                        }
+                    }
+
+                    Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            NumberValue(name, fieldValue.toString().toFloat())
+                        }
+                    }
+
+                    String::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            StringValue(name, fieldValue.toString())
+                        }
+                    }
+
+                    Boolean::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            BooleanValue(name, fieldValue.toString().toBooleanStrict())
+                        }
+                    }
+
+                    ContainerValue::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            fieldValue as ContainerValue
+                        }
+                    }
+
+                    List::class.java, ArrayList::class.java -> {
+                        if (fieldValue == null) {
+                            NullValue()
+                        } else {
+                            parseArray(name, field.get(instance) as List<*>)
+                        }
+                    }
+
+                    null, Void::class.java, Nothing::class.java, Unit::class.java -> {
+                        NullValue()
+                    }
+
+                    else -> {
+                        return@forEach
                     }
                 }
-
-                Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
-                    val fieldValue = field.get(instance)
-
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        NumberValue(name, fieldValue.toString().toFloat())
-                    }
-                }
-
-                String::class.java -> {
-                    val fieldValue = field.get(instance)
-
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        StringValue(name, fieldValue.toString())
-                    }
-                }
-
-                Boolean::class.java -> {
-                    val fieldValue = field.get(instance)
-
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        BooleanValue(name, fieldValue.toString().toBooleanStrict())
-                    }
-                }
-
-                ContainerValue::class.java -> {
-                    val fieldValue = field.get(instance)
-
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        fieldValue as ContainerValue
-                    }
-                }
-
-                List::class.java, ArrayList::class.java -> {
-                    val fieldValue = field.get(instance)
-
-                    if (fieldValue == null) {
-                        NumberValue.NULL
-                    } else {
-                        parseArray(name, field.get(instance) as List<*>)
-                    }
-                }
-
-                else -> {
-                    return@forEach
-                }
-            }
-
-            if (field::class.java.isInstance(Value::class.java)) {
-                value = field.get(value) as Value
-
-                println(value)
             }
 
             symbolTable.set(name, value, SymbolTable.EntryData(field.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
@@ -156,7 +148,7 @@ object LoadHelper {
     }
 
     fun getEquivalentValue(clazz: Class<*>): Class<*> {
-        if (isAssignableFrom(clazz, Value::class.java)) {
+        if (isValue(clazz)) {
             return clazz
         }
 
@@ -178,7 +170,7 @@ object LoadHelper {
     }
 
     fun getEquivalentPrimitive(value: Value, clazz: Class<*>): Any {
-        if (isAssignableFrom(clazz, Value::class.java)) {
+        if (isValue(clazz)) {
             return value
         }
 
@@ -214,25 +206,13 @@ object LoadHelper {
             is BooleanValue -> {
                 return value.value
             }
-
         }
 
         throw IllegalStateException("No equivalent primitive found! (Got $value, $clazz)")
     }
 
-    fun isAssignableFrom(clazz: Class<*>, superclass: Class<*>): Boolean {
-        var assignable = clazz == superclass
-
-        if (!assignable) {
-            var superclass = clazz.superclass
-
-            while (superclass != null && !assignable) {
-                assignable = clazz == superclass
-                superclass = clazz.superclass
-            }
-        }
-
-        return assignable
+    fun isValue(clazz: Class<*>): Boolean {
+        return clazz == Value::class.java || clazz.superclass == Value::class.java || clazz.superclass?.superclass == Value::class.java
     }
 
 }

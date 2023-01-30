@@ -124,8 +124,4 @@ class NumberValue(name: String, val value: Number) : Value(name) {
         return this.value.toString()
     }
 
-    companion object {
-        val NULL = NumberValue("null", 0)
-    }
-
 }
