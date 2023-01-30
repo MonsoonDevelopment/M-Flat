@@ -126,7 +126,7 @@ object Coercer {
 
     @JvmStatic
     fun coerceObject(obj: Any): ContainerInstanceValue {
-        val container = ContainerValue(obj.javaClass.simpleName, ArrayList())
+        val container = ContainerValue(obj.javaClass.simpleName, hashMapOf())
 
         val table = SymbolTable()
 
@@ -147,7 +147,7 @@ object Coercer {
             names += it.name
         }
 
-        val container = ContainerValue(instance.javaClass.simpleName, names)
+        val container = ContainerValue(instance.javaClass.simpleName, hashMapOf(Pair(names.size, names)))
 
         container.implement = { _, context, _ ->
             val implContext = Context(instance.javaClass.simpleName, context)

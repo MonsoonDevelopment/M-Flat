@@ -1,5 +1,6 @@
 package me.surge.parse
 
+import me.surge.lexer.error.impl.DualConstructorError
 import me.surge.util.Constants
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.InvalidSyntaxError
@@ -1477,9 +1478,12 @@ class Parser(val tokens: List<Token>) {
         var argumented = false
         var bodied = false
 
-        val argumentNames = arrayListOf<Token>()
+        val argumentNames = hashMapOf<Int, ArrayList<Token>>()
 
-        if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+        while (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+            val start = this.currentToken
+            val constructor = arrayListOf<Token>()
+
             argumented = true
 
             result.registerAdvancement()
@@ -1488,7 +1492,7 @@ class Parser(val tokens: List<Token>) {
             skipNewLines(result)
 
             if (this.currentToken.type == TokenType.IDENTIFIER) {
-                argumentNames.add(this.currentToken)
+                constructor.add(this.currentToken)
 
                 result.registerAdvancement()
                 this.advance()
@@ -1509,7 +1513,7 @@ class Parser(val tokens: List<Token>) {
                         ))
                     }
 
-                    argumentNames.add(this.currentToken)
+                    constructor.add(this.currentToken)
 
                     result.registerAdvancement()
                     this.advance()
@@ -1546,8 +1550,20 @@ class Parser(val tokens: List<Token>) {
                 ))
             }
 
+            if (argumentNames[constructor.size] != null) {
+                return result.failure(DualConstructorError(
+                    start.start,
+                    this.currentToken.end,
+                    "Constructor with ${constructor.size} arguments was already defined for container '${name.value as String}'"
+                ))
+            }
+
             result.registerAdvancement()
             this.advance()
+
+            skipNewLines(result)
+
+            argumentNames[constructor.size] = constructor
         }
 
         var body: Node? = null

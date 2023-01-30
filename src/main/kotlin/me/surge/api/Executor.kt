@@ -138,7 +138,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, arrayListOf())), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+        globalSymbolTable.set(identifier, ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, hashMapOf())), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
         return this
     }
@@ -148,7 +148,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        silentContainers[identifier] = ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, arrayListOf()))
+        silentContainers[identifier] = ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, hashMapOf()))
 
         return this
     }

@@ -1,9 +1,10 @@
-container BunnyHop {
-    const name = "BunnyHop"
-    const description = "hops like a rabbit"
+container TestContainer (a, b, c) (a, b) {
+
 }
 
 meth main(args) {
     std::println(testing::twoDArray)
-    std::println(null)
+
+    const cont = TestContainer(2, 543156)
+    std::println(cont::b)
 }

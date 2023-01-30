@@ -2,6 +2,7 @@ package me.surge.lexer.value
 
 import me.surge.interpreter.Interpreter
 import me.surge.lexer.error.context.Context
+import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.ListNode
 import me.surge.lexer.node.Node
 import me.surge.lexer.symbol.SymbolTable
@@ -9,7 +10,7 @@ import me.surge.lexer.value.function.BaseFunctionValue
 import me.surge.parse.RuntimeResult
 
 @ValueName("container")
-class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseFunctionValue(name) {
+class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<String>>) : BaseFunctionValue(name) {
 
     private var body: Node? = null
     var implement: ((Node?, Context, Interpreter) -> Unit)? = null
@@ -27,14 +28,35 @@ class ContainerValue(name: String, val argumentNames: ArrayList<String>) : BaseF
 
         val table = SymbolTable(this.context?.symbolTable)
 
-        functionResult.register(this.checkAndPopulateArguments(argumentNames, args, this.context!!))
+        var argNames: ArrayList<String> = arrayListOf()
+
+        run loop@ {
+            constructors.forEach { (_, argumentNames) ->
+                val res = this.checkArguments(argumentNames, args)
+
+                if (!res.shouldReturn()) {
+                    argNames = argumentNames
+                    return@loop
+                }
+            }
+        }
+
+        functionResult.register(this.checkAndPopulateArguments(argNames, args, this.context!!))
 
         if (functionResult.shouldReturn()) {
             return functionResult
         }
 
         args.forEachIndexed { index, value ->
-            table.set(argumentNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+            table.set(argNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+        }
+
+        constructors.forEach { (_, argumentNames) ->
+            argumentNames.forEach { name ->
+                if (!this.context!!.symbolTable!!.symbols.any { it.identifier == name }) {
+                    table.set(name, NullValue(), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+                }
+            }
         }
 
         return functionResult.success(ContainerInstanceValue(name, table, this))

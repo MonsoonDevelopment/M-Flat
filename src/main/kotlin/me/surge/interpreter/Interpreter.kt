@@ -727,13 +727,19 @@ class Interpreter(val executor: Executor? = null) {
 
         val result = RuntimeResult()
 
-        val argumentNames = ArrayList<String>()
+        val constructors = hashMapOf<Int, ArrayList<String>>()
 
-        for (argumentName in node.argumentTokens) {
-            argumentNames.add(argumentName.value as String)
+        node.argumentTokens.forEach { (size, tokens) ->
+            if (constructors[size] == null) {
+                constructors[size] = arrayListOf()
+            }
+
+            for (name in tokens) {
+                constructors[size]!!.add(name.value as String)
+            }
         }
 
-        val functionValue = ContainerValue(node.name.value as String, argumentNames)
+        val functionValue = ContainerValue(node.name.value as String, constructors)
 
         if (node.body != null) {
             functionValue.setImplementation(node.body)
