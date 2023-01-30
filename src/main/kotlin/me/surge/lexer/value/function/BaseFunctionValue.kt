@@ -44,7 +44,7 @@ open class BaseFunctionValue(name: String = "<anonymous>") : Value(name) {
                 val name = argumentNames[index]
                 val argumentValue = arguments[index]
                 argumentValue.setContext(context)
-                context.symbolTable!!.set(name, argumentValue, SymbolTable.EntryData(immutable = true, declaration = true, start = this.start, end = this.end, context = context))
+                context.symbolTable!!.set(name, argumentValue, SymbolTable.EntryData(immutable = true, declaration = true, start = this.start, end = this.end, context = context, forced = true))
             }
         }
     }

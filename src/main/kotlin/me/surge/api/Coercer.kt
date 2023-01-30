@@ -20,7 +20,7 @@ object Coercer {
             is Number -> coerceNumber(obj)
             is Boolean -> coerceBoolean(obj)
             is String -> coerceString(obj)
-            is Array<*> -> coerceArray(obj)
+            is ArrayList<*> -> coerceList(obj)
             null -> NumberValue.NULL
             else -> {
                 coerceObject(obj)
@@ -44,11 +44,11 @@ object Coercer {
     }
 
     @JvmStatic
-    fun coerceArray(array: Array<*>): ListValue {
+    fun coerceList(list: List<*>): ListValue {
         val arraylist = arrayListOf<Value>()
 
-        array.forEach {
-            arraylist.add(coerce(it!!))
+        list.forEach {
+            arraylist.add(coerce(it))
         }
 
         return ListValue("list", arraylist)
@@ -122,13 +122,6 @@ object Coercer {
         )
 
         return function
-    }
-
-    @JvmStatic
-    fun coerceField(instance: Any, field: Field): Value {
-        field.isAccessible = true
-
-        return coerce(field.get(instance))
     }
 
     @JvmStatic

@@ -33,17 +33,17 @@ object LoadHelper {
                 field.name
             }
 
-            fun parseArray(name: String, array: Array<*>): ListValue {
+            fun parseArray(name: String, array: List<*>): ListValue {
                 val elements = ArrayList<Value>()
 
-                array.forEach {
+                array.forEach arrayFor@{
                     elements.add(
                         when (it) {
                             is Int -> {
                                 NumberValue(array.size.toString(), it)
                             }
 
-                            is Float, is Double, is Long, is Short -> {
+                            is Number -> {
                                 NumberValue(array.size.toString(), it.toString().toFloat())
                             }
 
@@ -55,12 +55,12 @@ object LoadHelper {
                                 NumberValue(array.size.toString(), if (it) 1 else 0)
                             }
 
+                            is List<*> -> {
+                                parseArray(array.size.toString(), it)
+                            }
+
                             else -> {
-                                if (it!!.javaClass.isArray) {
-                                    parseArray(array.size.toString(), it as Array<*>)
-                                } else {
-                                    Value(array.size.toString())
-                                }
+                                return@arrayFor
                             }
                         }
                     )
@@ -71,31 +71,67 @@ object LoadHelper {
 
             var value = when (field.type) {
                 Int::class.java -> {
-                    NumberValue(name, field.getInt(instance))
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        NumberValue(name, fieldValue as Int)
+                    }
                 }
 
                 Float::class.java, Double::class.java, Long::class.java, Short::class.java -> {
-                    NumberValue(name, field.get(instance).toString().toFloat())
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        NumberValue(name, fieldValue.toString().toFloat())
+                    }
                 }
 
                 String::class.java -> {
-                    StringValue(name, field.get(instance).toString())
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        StringValue(name, fieldValue.toString())
+                    }
                 }
 
                 Boolean::class.java -> {
-                    BooleanValue(name, field.getBoolean(instance))
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        BooleanValue(name, fieldValue.toString().toBooleanStrict())
+                    }
                 }
 
                 ContainerValue::class.java -> {
-                    field.get(instance) as ContainerValue
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        fieldValue as ContainerValue
+                    }
+                }
+
+                List::class.java, ArrayList::class.java -> {
+                    val fieldValue = field.get(instance)
+
+                    if (fieldValue == null) {
+                        NumberValue.NULL
+                    } else {
+                        parseArray(name, field.get(instance) as List<*>)
+                    }
                 }
 
                 else -> {
-                    if (field.type.isArray) {
-                        parseArray(name, field.get(instance) as Array<*>)
-                    } else {
-                        Value(name)
-                    }
+                    return@forEach
                 }
             }
 

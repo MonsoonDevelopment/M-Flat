@@ -30,9 +30,9 @@ class SymbolTable(val parent: SymbolTable? = null) {
         val existingValue = getSymbol(identifier)
 
         // value already exists
-        if (existingValue != null && entry.declaration && !entry.forced) {
+        if (existingValue != null && entry.declaration && !entry.forced && entry.start != null) {
             return RuntimeError(
-                entry.start!!,
+                entry.start,
                 entry.end!!,
                 "'$identifier' was already defined!",
                 entry.context!!
@@ -48,12 +48,14 @@ class SymbolTable(val parent: SymbolTable? = null) {
         } else if (existingValue != null && !entry.declaration || entry.forced) {
             this.symbols.first { it.identifier == identifier }.value = value
         } else {
-            return RuntimeError(
-                entry.start!!,
-                entry.end!!,
-                "'$identifier' is not defined!",
-                entry.context!!
-            )
+            if (entry.start != null) {
+                return RuntimeError(
+                    entry.start,
+                    entry.end!!,
+                    "'$identifier' is not defined!",
+                    entry.context!!
+                )
+            }
         }
 
         return null

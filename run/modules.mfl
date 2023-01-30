@@ -1,24 +1,8 @@
-container Flight {
-    const name = "Flight"
-    const description = "Allows you to fly"
-
-    meth onUpdate() {
-        std::println("yo")
-    }
+container BunnyHop {
+    const name = "BunnyHop"
+    const description = "hops like a rabbit"
 }
 
 meth main(args) {
-    const flight = Flight()
-
-    std::println(flight::name)
-    std::println(flight::description)
-
-    for (number = 0 to 6, step = 2) {
-        std::println(number)
-    }
-
-    const testClass = testing::TestClass(2)
-    testClass::testClassFunction()
-    const matches = std::matchesContainer(testClass, testing::TestClass)
-    std::println(matches)
+    std::println(testing::twoDArray)
 }

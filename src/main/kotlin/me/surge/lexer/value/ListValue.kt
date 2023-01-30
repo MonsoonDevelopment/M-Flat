@@ -74,7 +74,7 @@ class ListValue(name: String, val elements: ArrayList<Value>) : Value(name) {
     }
 
     override fun toString(): String {
-        return "'${this.elements}'"
+        return "${this.elements}"
     }
 
     override fun rawValue(): String {

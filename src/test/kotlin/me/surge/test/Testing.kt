@@ -8,8 +8,8 @@ object Testing {
 
     val helloWorld = "Hello, world!"
     val bool = true
-    val array = arrayOf("hello", "world")
-    val twoDArray = arrayOf(arrayOf("test"), arrayOf("test2"))
+    val array = arrayListOf("hello", "world")
+    val twoDArray = arrayListOf(arrayListOf("test"), arrayListOf("test2"))
 
     @Mutable
     val integer = 0

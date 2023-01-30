@@ -27,3 +27,6 @@ Features:
 - [ ] GUI / LWJGL Implementation
 - [x] List Indexing
 - [x] String Indexing
+
+# <u> Known Issues </u>
+- Cannot use `ContainerInstanceValue` or `ContainerValue` inside 
