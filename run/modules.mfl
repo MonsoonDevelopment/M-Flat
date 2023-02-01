@@ -1,4 +1,4 @@
-container TestContainer (a, b, c) (a, b) {
+container TestContainer (a, b, c) (a, b) (a, b, c, d = 5) {
 
     meth init {
         std::println("Init!")

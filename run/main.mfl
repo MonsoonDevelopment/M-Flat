@@ -23,11 +23,20 @@ container Lliw(red, green, blue, alpha) {
     }
 }
 
+container DefaultArgs(a, b = 2) {
+    meth out() {
+        std::println(b)
+    }
+}
+
 meth test_func() {
     return 5
 }
 
 meth main(args) {
+    const default = DefaultArgs(3)
+    default::out()
+
     const lliw = Lliw(74, 255, 255, 255)
 
     std::println(lliw::getRed())

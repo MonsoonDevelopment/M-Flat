@@ -7,6 +7,7 @@ import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*
 import me.surge.lexer.token.Token
 import me.surge.lexer.token.TokenType
+import me.surge.lexer.value.Value
 import java.util.function.Supplier
 
 class Parser(val tokens: List<Token>) {
@@ -633,7 +634,7 @@ class Parser(val tokens: List<Token>) {
         }
 
         else if (token.matches(TokenType.KEYWORD, Constants.get("function"))) {
-            val definition = result.register(this.functionDefinition())
+            val definition = result.register(this.methodDefinition())
 
             if (result.error != null) {
                 return result
@@ -1280,7 +1281,7 @@ class Parser(val tokens: List<Token>) {
         return result.success(WhileNode(condition as Node, body as Node, true))
     }
 
-    private fun functionDefinition(): ParseResult {
+    private fun methodDefinition(): ParseResult {
         val result = ParseResult()
 
         if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("function"))) {
@@ -1470,11 +1471,11 @@ class Parser(val tokens: List<Token>) {
         var argumented = false
         var bodied = false
 
-        val argumentNames = hashMapOf<Int, ArrayList<Token>>()
+        val argumentNames = hashMapOf<Int, ArrayList<ArgumentToken>>()
 
         while (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
             val start = this.currentToken
-            val constructor = arrayListOf<Token>()
+            val constructor = arrayListOf<ArgumentToken>()
 
             argumented = true
 
@@ -1484,12 +1485,39 @@ class Parser(val tokens: List<Token>) {
             skipNewLines(result)
 
             if (this.currentToken.type == TokenType.IDENTIFIER) {
-                constructor.add(this.currentToken)
+                var optionals = false
+
+                val name = this.currentToken
+                var defaultValue: Node? = null
 
                 result.registerAdvancement()
                 this.advance()
 
                 skipNewLines(result)
+
+                if (this.currentToken.type == TokenType.EQUALS) {
+                    optionals = true
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    val node = result.register(this.expression())
+
+                    if (result.error != null) {
+                        return result
+                    }
+
+                    defaultValue = node as Node?
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                }
+
+                constructor.add(ArgumentToken(name, defaultValue))
 
                 while (this.currentToken.type == TokenType.COMMA) {
                     result.registerAdvancement()
@@ -1505,12 +1533,40 @@ class Parser(val tokens: List<Token>) {
                         ))
                     }
 
-                    constructor.add(this.currentToken)
+                    val name = this.currentToken
+                    var defaultValue: Node? = null
 
                     result.registerAdvancement()
                     this.advance()
 
                     skipNewLines(result)
+
+                    if (optionals && this.currentToken.type != TokenType.EQUALS) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Argument '${name.value as String}' must be optional as previous arguments have been optional!"
+                        ))
+                    }
+
+                    if (this.currentToken.type == TokenType.EQUALS) {
+                        optionals = true
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        val node = result.register(this.expression())
+
+                        if (result.error != null) {
+                            return result
+                        }
+
+                        defaultValue = node as Node?
+                    }
+
+                    constructor.add(ArgumentToken(name, defaultValue))
                 }
 
                 skipNewLines(result)
@@ -1679,5 +1735,6 @@ class Parser(val tokens: List<Token>) {
         }
     }
     class Case(val node: Node, token: Node, shouldReturnNull: Boolean) : BaseCase(token, shouldReturnNull)
+    class ArgumentToken(val token: Token, val defaultValue: Node?)
 
 }

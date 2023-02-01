@@ -730,8 +730,14 @@ class Interpreter(val executor: Executor? = null) {
                 constructors[size] = arrayListOf()
             }
 
-            for (name in tokens) {
-                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(name.value as String))
+            for (token in tokens) {
+                val value = token.defaultValue?.let { result.register(this.visit(it, context)) }
+
+                if (result.shouldReturn()) {
+                    return result
+                }
+
+                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(token.token.value as String, value))
             }
         }
 
