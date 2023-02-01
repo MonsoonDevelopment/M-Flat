@@ -1,78 +1,90 @@
 package me.surge.lexer.value
 
-import me.surge.util.Constants
 import me.surge.lexer.error.Error
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.position.Position
+import me.surge.lexer.symbol.SymbolTable
 import me.surge.parse.RuntimeResult
+import me.surge.util.Constants
 import java.lang.IllegalStateException
 
-@ValueName("any")
-open class Value(var name: String) {
+open class Value(val identifier: String, var name: String = "any") {
 
     var start: Position? = null
     var end: Position? = null
     var context: Context? = null
 
-    val rawName = this::class.java.getAnnotation(ValueName::class.java).name
+    var symbols = SymbolTable()
 
-    fun setPosition(start: Position? = null, end: Position? = null): Value {
+    open fun addedTo(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, "+")
+    open fun subbedBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, "-")
+    open fun multedBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, "*")
+    open fun divedBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, "/")
+    open fun moduloedBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, "%")
+    open fun andedBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, Constants.get("and"))
+    open fun oredBy(other: Value): Pair<Value?, Error?> = delegateToIllegal(other, Constants.get("or"))
+    open fun notted(): Pair<Value?, Error?> = delegateToIllegal(null, Constants.get("not"))
+
+    open fun execute(args: List<Value> = arrayListOf(), context: Context): RuntimeResult = RuntimeResult().failure(this.delegateToIllegal(null, "execute").second)
+    open fun execute(args: List<Value> = arrayListOf()): RuntimeResult = RuntimeResult().failure(this.delegateToIllegal(null, "execute").second)
+
+    open fun compareEquality(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, "==") as Pair<BooleanValue?, Error?>
+    open fun compareInequality(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, "!=") as Pair<BooleanValue?, Error?>
+    open fun compareLessThan(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, "<") as Pair<BooleanValue?, Error?>
+    open fun compareGreaterThan(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, ">") as Pair<BooleanValue?, Error?>
+    open fun compareLessThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, "<=") as Pair<BooleanValue?, Error?>
+    open fun compareGreaterThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = this.delegateToIllegal(null, ">=") as Pair<BooleanValue?, Error?>
+
+    open fun clone(): Value {
+        return this
+    }
+
+    open fun isTrue(): Pair<Boolean, Error?> {
+        return Pair(false, RuntimeError(
+            this.start!!,
+            this.end!!,
+            "'${this.name}' cannot be interpreted as a boolean!",
+            this.context!!
+        ))
+    }
+
+    open fun stringValue(): String {
+        throw IllegalStateException("`Value#stringValue` was not overridden!")
+    }
+
+    fun setPosition(start: Position?, end: Position?): Value {
         this.start = start
         this.end = end
 
         return this
     }
 
-    fun setContext(context: Context? = null): Value {
+    fun setContext(context: Context?): Value {
         this.context = context
 
         return this
     }
 
-    open fun addedTo(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("+", other))
-    open fun subbedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("-", other))
-    open fun multedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("*", other))
-    open fun divedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("/", other))
-    open fun powedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("^", other))
-    open fun moduloedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation("%", other))
-    open fun andedBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(Constants.get("and"), other))
-    open fun oredBy(other: Value): Pair<Value?, Error?> = Pair(null, illegalOperation(Constants.get("ot"), other))
-    open fun notted(): Pair<Value?, Error?> = Pair(null, illegalOperation(Constants.get("not")))
+    fun setSymbolTable(table: SymbolTable): Value {
+        this.symbols = table
 
-    open fun execute(args: ArrayList<Value> = arrayListOf(), context: Context): RuntimeResult = RuntimeResult().failure(this.illegalOperation("execute"))
-    open fun execute(args: ArrayList<Value> = arrayListOf()): RuntimeResult = RuntimeResult().failure(this.illegalOperation("execute"))
+        return this
+    }
 
-    open fun compareEquality(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation("==", other))
-    open fun compareInequality(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation("!=", other))
-    open fun compareLessThan(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation("<", other))
-    open fun compareGreaterThan(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(">", other))
-    open fun compareLessThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation("<=", other))
-    open fun compareGreaterThanOrEqualTo(other: Value): Pair<BooleanValue?, Error?> = Pair(null, illegalOperation(">=", other))
-
-    fun illegalOperation(operation: String, other: Any? = null): RuntimeError {
-        var other = other
-
-        if (other == null) {
-            other = this
+    private fun delegateToIllegal(other: Value?, operation: String): Pair<Value?, RuntimeError> {
+        val message = if (other != null) {
+            "Illegal operation ('$operation') between values of types '${this.name}' and '${other.name}'"
+        } else {
+            "Illegal operation ('$operation') on value of type '${this.name}'"
         }
 
-        return RuntimeError(
+        return Pair(null, RuntimeError(
             this.start!!,
             this.end!!,
-            "Illegal Operation: '$operation'",
+            message,
             this.context!!
-        )
-    }
-
-    open fun clone(): Value = this
-
-    open fun isTrue(): Boolean {
-        return false
-    }
-
-    open fun rawValue(): String {
-        throw IllegalStateException("Raw value not found")
+        ))
     }
 
 }

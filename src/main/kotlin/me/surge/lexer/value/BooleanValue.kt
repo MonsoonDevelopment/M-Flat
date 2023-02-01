@@ -1,64 +1,56 @@
 package me.surge.lexer.value
 
+import me.surge.api.LoadHelper
 import me.surge.lexer.error.Error
-import me.surge.util.binary
-import me.surge.util.multiply
 
-@ValueName("string")
-class BooleanValue(name: String, val value: Boolean) : Value(name) {
+class BooleanValue(identifier: String, val value: Boolean) : Value(identifier, "boolean") {
+
+    init {
+        LoadHelper.loadClass(CompanionBuiltIns(this), this.symbols)
+    }
+
+    override fun andedBy(other: Value): Pair<Value?, Error?> = if (other is BooleanValue) Pair(BooleanValue(identifier, this.value && other.value), null) else super.andedBy(other)
+    override fun oredBy(other: Value): Pair<Value?, Error?> = if (other is BooleanValue) Pair(BooleanValue(identifier, this.value || other.value), null) else super.oredBy(other)
+    override fun notted(): Pair<Value?, Error?> = Pair(BooleanValue(identifier, !this.value), null)
 
     override fun compareEquality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, false), null)
+        }
+
         return if (other is BooleanValue) {
-            Pair(BooleanValue(name, this.value == other.value), null)
+            Pair(BooleanValue(identifier, this.value == other.value), null)
         } else {
             super.compareEquality(other)
         }
     }
 
     override fun compareInequality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, true), null)
+        }
+
         return if (other is BooleanValue) {
-            Pair(BooleanValue(name, this.value != other.value), null)
+            Pair(BooleanValue(identifier, this.value != other.value), null)
         } else {
-            super.compareEquality(other)
+            super.compareInequality(other)
         }
     }
 
-    override fun andedBy(other: Value): Pair<Value?, Error?> {
-        return if (other is BooleanValue) {
-            Pair(BooleanValue(name, this.value && other.value), null)
-        } else {
-            super.andedBy(other)
-        }
-    }
-
-    override fun oredBy(other: Value): Pair<Value?, Error?> {
-        return if (other is BooleanValue) {
-            Pair(BooleanValue(name, this.value || other.value), null)
-        } else {
-            super.andedBy(other)
-        }
-    }
-
-    override fun notted(): Pair<Value?, Error?> {
-        return Pair(BooleanValue(name, !this.value), null)
-    }
-
-    override fun isTrue(): Boolean {
-        return this.value
-    }
-
-    override fun clone(): Value {
-        return BooleanValue(name, this.value)
-            .setPosition(this.start, this.end)
-            .setContext(this.context)
+    override fun isTrue(): Pair<Boolean, Error?> {
+        return Pair(this.value, null)
     }
 
     override fun toString(): String {
-        return "'${this.value}'"
+        return stringValue()
     }
 
-    override fun rawValue(): String {
-        return this.value.toString()
+    override fun stringValue(): String {
+        return value.toString()
+    }
+
+    private class CompanionBuiltIns(val instance: BooleanValue) {
+
     }
 
 }

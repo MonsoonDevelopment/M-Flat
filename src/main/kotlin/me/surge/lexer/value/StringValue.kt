@@ -1,18 +1,19 @@
 package me.surge.lexer.value
 
+import me.surge.api.LoadHelper
+import me.surge.api.result.Result
+import me.surge.api.result.Success
 import me.surge.lexer.error.Error
-import me.surge.util.binary
 import me.surge.util.multiply
 
-@ValueName("string")
-class StringValue(name: String, val value: String) : Value(name) {
+class StringValue(identifier: String, var value: String) : Value(identifier, "string") {
+
+    init {
+        LoadHelper.loadClass(CompanionBuiltIns(this), this.symbols)
+    }
 
     override fun addedTo(other: Value): Pair<Value?, Error?> {
-        return if (other is StringValue || other is NumberValue) {
-            Pair(StringValue(name, this.value + other.rawValue()).setContext(this.context), null)
-        } else {
-            super.addedTo(other)
-        }
+        return Pair(StringValue(this.identifier, this.value + other.stringValue()), null)
     }
 
     override fun multedBy(other: Value): Pair<Value?, Error?> {
@@ -24,29 +25,50 @@ class StringValue(name: String, val value: String) : Value(name) {
     }
 
     override fun compareEquality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, false), null)
+        }
+
         return if (other is StringValue) {
-            Pair(BooleanValue(name, this.rawValue() == other.rawValue()), null)
+            Pair(BooleanValue(identifier, this.value == other.value), null)
         } else {
             super.compareEquality(other)
         }
     }
+    override fun compareInequality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, true), null)
+        }
 
-    override fun isTrue(): Boolean {
-        return this.value.isNotEmpty()
-    }
-
-    override fun clone(): Value {
-        return StringValue(name, this.value)
-            .setPosition(this.start, this.end)
-            .setContext(this.context)
+        return if (other is StringValue) {
+            Pair(BooleanValue(identifier, this.value != other.value), null)
+        } else {
+            super.compareInequality(other)
+        }
     }
 
     override fun toString(): String {
-        return "'${this.value}'"
+        return "\"${stringValue()}\""
     }
 
-    override fun rawValue(): String {
-        return this.value
+    override fun stringValue(): String {
+        return value
+    }
+
+    private class CompanionBuiltIns(val instance: StringValue) {
+
+        fun upper(): Result {
+            return Success(StringValue(instance.identifier, instance.stringValue().uppercase()))
+        }
+
+        fun lower(): Result {
+            return Success(StringValue(instance.identifier, instance.stringValue().lowercase()))
+        }
+
+        fun equalsIgnoreCase(other: StringValue): Result {
+            return Success(BooleanValue(instance.identifier, instance.value.equals(other.value, true)))
+        }
+
     }
 
 }

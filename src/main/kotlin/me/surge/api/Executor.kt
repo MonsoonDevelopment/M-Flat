@@ -9,10 +9,9 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.Node
 import me.surge.lexer.position.Position
 import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.ContainerInstanceValue
 import me.surge.lexer.value.ContainerValue
 import me.surge.lexer.value.Value
-import me.surge.lexer.value.function.BaseFunctionValue
+import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.library.BuiltIn
 import me.surge.library.Maths
 import me.surge.parse.Parser
@@ -23,7 +22,7 @@ import java.nio.charset.Charset
 class Executor {
 
     private val globalSymbolTable = SymbolTable()
-    private val silentContainers = hashMapOf<String, ContainerInstanceValue>()
+    private val silentContainers = hashMapOf<String, Value>()
 
     init {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
@@ -86,7 +85,7 @@ class Executor {
 
         globalSymbolTable.set(
             file,
-            ContainerInstanceValue(file, context.symbolTable!!, null),
+            Value(file, "instance").setSymbolTable(context.symbolTable!!),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,
@@ -138,7 +137,9 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        globalSymbolTable.set(identifier, ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, hashMapOf())), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+        val value = Value(identifier, "instance").setSymbolTable(symbolTable)
+
+        globalSymbolTable.set(identifier, value, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
         return this
     }
@@ -148,13 +149,13 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        silentContainers[identifier] = ContainerInstanceValue(identifier, symbolTable, ContainerValue(identifier, hashMapOf()))
+        silentContainers[identifier] = Value(identifier, "instance").setSymbolTable(symbolTable)
 
         return this
     }
 
-    fun getFunction(identifier: String): BaseFunctionValue? {
-        return globalSymbolTable.get(identifier) as BaseFunctionValue?
+    fun getFunction(identifier: String): BaseMethodValue? {
+        return globalSymbolTable.get(identifier) as BaseMethodValue?
     }
 
     fun getValue(identifier: String): Value? {

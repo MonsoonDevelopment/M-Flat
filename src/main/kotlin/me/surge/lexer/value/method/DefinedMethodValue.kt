@@ -1,18 +1,16 @@
-package me.surge.lexer.value.function
+package me.surge.lexer.value.method
 
 import me.surge.interpreter.Interpreter
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.node.Node
+import me.surge.lexer.value.FunctionData
 import me.surge.lexer.value.NullValue
-import me.surge.lexer.value.NumberValue
 import me.surge.lexer.value.Value
-import me.surge.lexer.value.ValueName
 import me.surge.parse.RuntimeResult
 
-@ValueName("function")
-class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentNames: ArrayList<String>, val shouldAutoReturn: Boolean) : BaseFunctionValue(name) {
+class DefinedMethodValue(identifier: String, val body: Node?, private val argumentNames: List<Argument>, val shouldAutoReturn: Boolean) : BaseMethodValue(identifier, "defined method") {
 
-    override fun execute(args: ArrayList<Value>, context: Context): RuntimeResult {
+    override fun execute(args: List<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
         val interpreter = Interpreter()
 
@@ -35,18 +33,18 @@ class FunctionValue(name: String = "<anonymous>", val body: Node?, val argumentN
         return result.success(NullValue())
     }
 
-    override fun execute(args: ArrayList<Value>): RuntimeResult {
-        return this.execute(args, this.generateContext())
+    override fun execute(args: List<Value>): RuntimeResult {
+        return execute(args, this.generateContext())
     }
 
     override fun clone(): Value {
-        return FunctionValue(this.name, this.body, this.argumentNames, this.shouldAutoReturn)
+        return DefinedMethodValue(this.identifier, this.body, this.argumentNames, this.shouldAutoReturn)
             .setPosition(this.start, this.end)
             .setContext(this.context)
     }
 
-    override fun toString(): String {
-        return "<function $name>"
+    override fun stringValue(): String {
+        return "<method $identifier#(${this.argumentNames})>"
     }
 
 }

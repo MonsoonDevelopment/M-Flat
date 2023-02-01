@@ -1,84 +1,70 @@
 package me.surge.lexer.value
 
+import me.surge.api.LoadHelper
 import me.surge.lexer.error.Error
-import me.surge.lexer.error.impl.RuntimeError
-import me.surge.lexer.node.Node
-import me.surge.util.multiply
-import java.util.Collections
 
-@ValueName("list")
-class ListValue(name: String, val elements: ArrayList<Value>) : Value(name) {
+class ListValue(identifier: String, val elements: MutableList<Value>) : Value(identifier, "list") {
 
-    override fun addedTo(other: Value): Pair<Value?, Error?> {
-        val new = this.clone() as ListValue
-        new.elements.add(other)
-
-        return Pair(new, null)
+    init {
+        LoadHelper.loadClass(CompanionBuiltIns(this), this.symbols)
     }
 
-    override fun subbedBy(other: Value): Pair<Value?, Error?> {
-        if (other is NumberValue) {
-            val new = this.clone() as ListValue
-
-            return try {
-                new.elements.removeAt(other.value.toInt())
-                Pair(new, null)
-            } catch (exception: Exception) {
-                Pair(null, RuntimeError(
-                    other.start!!,
-                    other.end!!,
-                    "Index out of bounds: ${other.value.toInt()}",
-                    this.context!!
-                ))
-            }
-        } else {
-            return super.subbedBy(other)
+    override fun compareEquality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, false), null)
         }
-    }
 
-    override fun multedBy(other: Value): Pair<Value?, Error?> {
         return if (other is ListValue) {
-            val new = this.clone() as ListValue
-            new.elements.addAll(other.elements)
-            return Pair(new, null)
+            Pair(BooleanValue(identifier, this == other), null)
         } else {
-            super.multedBy(other)
+            super.compareEquality(other)
         }
     }
 
-    override fun divedBy(other: Value): Pair<Value?, Error?> {
-        if (other is NumberValue) {
-            return try {
-                return Pair(this.elements[other.value.toInt()], null)
-            } catch (exception: Exception) {
-                return Pair(null, RuntimeError(
-                    other.start!!,
-                    other.end!!,
-                    "Index out of bounds: ${other.value.toInt()}",
-                    this.context!!
-                ))
-            }
+    override fun compareInequality(other: Value): Pair<BooleanValue?, Error?> {
+        if (other is NullValue) {
+            return Pair(BooleanValue(identifier, true), null)
+        }
+
+        return if (other is ListValue) {
+            Pair(BooleanValue(identifier, this != other), null)
         } else {
-            return super.divedBy(other)
+            super.compareInequality(other)
         }
     }
 
-    override fun isTrue(): Boolean {
-        return this.elements.isNotEmpty()
-    }
-
-    override fun clone(): Value {
-        return ListValue(name, ArrayList(this.elements))
+    override fun clone(): ListValue {
+        return ListValue(name, ArrayList(elements))
             .setPosition(this.start, this.end)
-            .setContext(this.context)
+            .setContext(this.context) as ListValue
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is ListValue) {
+            return false
+        }
+
+        return this.elements == other.elements
     }
 
     override fun toString(): String {
-        return "${this.elements}"
+        return stringValue()
     }
 
-    override fun rawValue(): String {
+    override fun stringValue(): String {
         return this.elements.toString()
+    }
+
+    private class CompanionBuiltIns(val instance: ListValue) {
+
+        fun add(value: Value) {
+            instance.elements.add(value)
+        }
+
+        fun remove(index: NumberValue) {
+            instance.elements.removeAt(index.value.toInt())
+        }
+
     }
 
 }

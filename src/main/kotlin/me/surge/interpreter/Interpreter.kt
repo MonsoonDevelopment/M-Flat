@@ -9,8 +9,7 @@ import me.surge.lexer.node.*
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.token.TokenType
 import me.surge.lexer.value.*
-import me.surge.lexer.value.function.BaseFunctionValue
-import me.surge.lexer.value.function.FunctionValue
+import me.surge.lexer.value.method.*
 import me.surge.parse.RuntimeResult
 import java.lang.IllegalStateException
 
@@ -63,7 +62,6 @@ class Interpreter(val executor: Executor? = null) {
                 TokenType.MINUS -> left.subbedBy(right)
                 TokenType.MULTIPLY -> left.multedBy(right)
                 TokenType.DIVIDE -> left.divedBy(right)
-                TokenType.POWER -> left.powedBy(right)
                 TokenType.MODULO -> left.moduloedBy(right)
                 TokenType.EQUALITY -> left.compareEquality(right)
                 TokenType.INEQUALITY -> left.compareInequality(right)
@@ -168,9 +166,15 @@ class Interpreter(val executor: Executor? = null) {
                 return result
             }
 
-            conditionValue as BooleanValue
+            //conditionValue as BooleanValue
 
-            if (conditionValue.isTrue()) {
+            val condition = conditionValue!!.isTrue()
+
+            if (condition.second != null) {
+                return result.failure(condition.second!!)
+            }
+
+            if (condition.first) {
                 val newContext = Context("if", context)
                 newContext.symbolTable = SymbolTable(context.symbolTable)
 
@@ -264,13 +268,13 @@ class Interpreter(val executor: Executor? = null) {
         val result = RuntimeResult()
 
         val name = if (node.name != null) node.name.value as String else "<anonymous>"
-        val argumentNames = ArrayList<String>()
+        val argumentNames = arrayListOf<BaseMethodValue.Argument>()
 
         for (argumentName in node.argumentTokens) {
-            argumentNames.add(argumentName.value as String)
+            argumentNames.add(BaseMethodValue.Argument(argumentName.value as String, null)) // TODO: default values
         }
 
-        val functionValue = FunctionValue(name, node.body, argumentNames, node.shouldReturnNull)
+        val functionValue = DefinedMethodValue(name, node.body, argumentNames, node.shouldReturnNull)
             .setContext(context)
             .setPosition(node.start, node.end)
 
@@ -363,7 +367,11 @@ class Interpreter(val executor: Executor? = null) {
             }
         }
 
-        returnValue = returnValue!!.clone().setPosition(node.start, node.end).setContext(context)
+        if (returnValue == null) {
+            returnValue = NullValue()
+        }
+
+        returnValue = returnValue.clone().setPosition(node.start, node.end).setContext(context)
 
         return result.success(returnValue)
     }
@@ -505,7 +513,7 @@ class Interpreter(val executor: Executor? = null) {
 
         val name = node.name.value as String
 
-        var value: Value? = context.symbolTable!!.get(name)
+        var value: Value = context.symbolTable!!.get(name)
                 ?: return result.failure(RuntimeError(
                     node.start,
                     node.end,
@@ -513,43 +521,27 @@ class Interpreter(val executor: Executor? = null) {
                     context
                 ))
 
-        if (node.child != null && value !is BaseFunctionValue) {
-            if (value !is ContainerInstanceValue) {
-                return result.failure(RuntimeError(
-                    node.start,
-                    node.end,
-                    "'${value!!.name}' is not a container, it is '${value.rawName}'!",
-                    context
-                ))
-            }
-
+        if (node.child != null && value !is BaseMethodValue) {
             val childContext = Context(value.name, context, node.start)
 
             childContext.symbolTable = SymbolTable(context.symbolTable)
 
-            value.value.getAll().forEach {
+            value.symbols.getAll().forEach {
                 childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true))
             }
 
             val child = result.register(this.visit(node.child!!, childContext))
 
-            if (result.error != null) {
+            if (result.shouldReturn()) {
                 return result
             }
 
             if (node.child is VarAssignNode) {
                 node.child as VarAssignNode
-                (value.value as SymbolTable).set((node.child!! as VarAssignNode).name.value as String, child!!, SymbolTable.EntryData(immutable = (node.child!! as VarAssignNode).final, declaration = (node.child!! as VarAssignNode).declaration, node.start, node.end, childContext))
+                value.symbols.set((node.child!! as VarAssignNode).name.value as String, child!!, SymbolTable.EntryData(immutable = (node.child!! as VarAssignNode).final, declaration = (node.child!! as VarAssignNode).declaration, node.start, node.end, childContext))
             }
 
-            value = child
-        } else {
-            value = context.symbolTable!!.get(name) ?: return result.failure(RuntimeError(
-                node.start,
-                node.end,
-                "'$name' is not defined!",
-                context
-            ))
+            value = child!!
         }
 
         if (node.index != null) {
@@ -585,13 +577,13 @@ class Interpreter(val executor: Executor? = null) {
                 return result.failure(RuntimeError(
                     node.start,
                     node.end,
-                    "'${value!!.name}' is not indexable!",
+                    "'${value.name}' is not indexable!",
                     context
                 ))
             }
         }
 
-        value = value!!.clone().setPosition(node.start, node.end).setContext(context)
+        value = value.clone().setPosition(node.start, node.end).setContext(context)
 
         return result.success(value)
     }
@@ -664,9 +656,15 @@ class Interpreter(val executor: Executor? = null) {
                 return result
             }
 
-            condition as BooleanValue
+            //condition as BooleanValue
 
-            if (!condition.isTrue()) {
+            val conditionValue = condition!!.isTrue()
+
+            if (conditionValue.second != null) {
+                return result.failure(conditionValue.second!!)
+            }
+
+            if (!conditionValue.first) {
                 break
             }
 
@@ -725,7 +723,7 @@ class Interpreter(val executor: Executor? = null) {
 
         val result = RuntimeResult()
 
-        val constructors = hashMapOf<Int, ArrayList<String>>()
+        val constructors = hashMapOf<Int, List<BaseMethodValue.Argument>>()
 
         node.argumentTokens.forEach { (size, tokens) ->
             if (constructors[size] == null) {
@@ -733,7 +731,7 @@ class Interpreter(val executor: Executor? = null) {
             }
 
             for (name in tokens) {
-                constructors[size]!!.add(name.value as String)
+                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(name.value as String))
             }
         }
 

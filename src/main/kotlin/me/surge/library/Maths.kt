@@ -6,6 +6,7 @@ import me.surge.api.result.Success
 import me.surge.lexer.value.FunctionData
 import me.surge.lexer.value.NumberValue
 import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.random.Random
 
 object Maths {
@@ -13,13 +14,7 @@ object Maths {
     val pi = Math.PI
 
     fun pow(functionData: FunctionData, base: NumberValue, exponent: NumberValue): Result {
-        val result = base.powedBy(exponent)
-
-        if (result.second != null) {
-            return Failure(result.second!!)
-        }
-
-        return Success(result.first!!)
+        return Success(NumberValue(base.name, base.value.toDouble().pow(exponent.value.toDouble())))
     }
 
     fun sin(value: NumberValue): Result {

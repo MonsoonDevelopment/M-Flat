@@ -2,21 +2,18 @@ package me.surge.lexer.value
 
 import me.surge.interpreter.Interpreter
 import me.surge.lexer.error.context.Context
-import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.ListNode
 import me.surge.lexer.node.Node
 import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.function.BaseFunctionValue
-import me.surge.lexer.value.function.FunctionValue
+import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.parse.RuntimeResult
 
-@ValueName("container")
-class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<String>>) : BaseFunctionValue(name) {
+class ContainerValue(identifier: String, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "container") {
 
     private var body: Node? = null
     var implement: ((Node?, Context, Interpreter) -> Unit)? = null
 
-    override fun execute(args: ArrayList<Value>): RuntimeResult {
+    override fun execute(args: List<Value>): RuntimeResult {
         val functionResult = RuntimeResult()
 
         if (this.context == null) {
@@ -29,7 +26,7 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
 
         val table = SymbolTable(this.context?.symbolTable)
 
-        var argNames: ArrayList<String> = arrayListOf()
+        var argNames: List<Argument> = arrayListOf()
 
         run loop@ {
             constructors.forEach { (_, argumentNames) ->
@@ -49,18 +46,18 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
         }
 
         args.forEachIndexed { index, value ->
-            table.set(argNames[index], value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+            table.set(argNames[index].name, value, SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
         }
 
         constructors.forEach { (_, argumentNames) ->
             argumentNames.forEach { name ->
-                if (!this.context!!.symbolTable!!.symbols.any { it.identifier == name }) {
-                    this.context!!.symbolTable!!.set(name, NullValue(), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
+                if (!this.context!!.symbolTable!!.symbols.any { it.identifier == name.name }) {
+                    this.context!!.symbolTable!!.set(name.name, NullValue(), SymbolTable.EntryData(immutable = true, declaration = true, this.start, this.end, this.context!!, forced = true))
                 }
             }
         }
 
-        val init = this.context!!.symbolTable!!.get("init") as BaseFunctionValue?
+        val init = this.context!!.symbolTable!!.get("init") as BaseMethodValue?
 
         if (init != null) {
             val check = init.checkArguments(arrayListOf(), arrayListOf())
@@ -74,7 +71,7 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
             }
         }
 
-        return functionResult.success(ContainerInstanceValue(name, table, this))
+        return functionResult.success(Value(name, "instance").setSymbolTable(table))
     }
 
     fun setImplementation(body: Node) {
@@ -87,7 +84,7 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
 
             implementationContext.symbolTable!!.set(
                 "this",
-                ContainerInstanceValue(this.name, implementationContext.symbolTable!!, this),
+                Value(this.name).setSymbolTable(implementationContext.symbolTable!!),
                 SymbolTable.EntryData(
                     immutable = true,
                     declaration = true,
@@ -108,7 +105,11 @@ class ContainerValue(name: String, val constructors: HashMap<Int, ArrayList<Stri
         return this
     }
 
-    override fun rawValue(): String {
+    override fun toString(): String {
+        return stringValue()
+    }
+
+    override fun stringValue(): String {
         return "<container $name>"
     }
 

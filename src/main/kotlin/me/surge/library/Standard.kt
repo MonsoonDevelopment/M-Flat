@@ -5,18 +5,17 @@ import me.surge.api.result.Result
 import me.surge.api.result.Success
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.value.*
-import me.surge.lexer.value.function.BaseFunctionValue
-import me.surge.util.binary
+import me.surge.lexer.value.method.BuiltInMethod
 import kotlin.system.exitProcess
 
 object Standard {
 
     fun print(value: Value) {
-        print(value.rawValue())
+        print(value.stringValue())
     }
 
     fun println(value: Value) {
-        println(value.rawValue())
+        println(value.stringValue())
     }
 
     fun input(): Success {
@@ -77,25 +76,16 @@ object Standard {
     }
 
     fun isMethod(value: Value): Result {
-        return Success(BooleanValue("<anonymous is method>", value is BaseFunctionValue))
+        return Success(BooleanValue("<anonymous is method>", value is BuiltInMethod))
     }
 
     fun isList(value: Value): Result {
         return Success(BooleanValue("<anonymous is list>", value is ListValue))
     }
 
-    fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value): Result {
-        if (containerValue !is ContainerInstanceValue) {
-            return Failure(RuntimeError(
-                functionData.start,
-                functionData.end,
-                "First argument of 'matchesContainer' must be an instance!",
-                functionData.context
-            ))
-        }
-
+    fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value) {
         if (parent !is ContainerValue) {
-            return Failure(RuntimeError(
+            Failure(RuntimeError(
                 functionData.start,
                 functionData.end,
                 "Second argument of 'matchesContainer' must be a container!",
@@ -103,15 +93,15 @@ object Standard {
             ))
         }
 
-        return Success(BooleanValue("<anonymous matches>", containerValue.parent!!.name == parent.name))
+        //return Success(BooleanValue("<anonymous matches>", containerValue.parent!!.name == parent.name))
     }
 
     fun stringToNumber(value: Value): Result {
-        return Success(NumberValue("<anonymous cast>", value.rawValue().toFloat()))
+        return Success(NumberValue("<anonymous cast>", value.stringValue().toFloat()))
     }
 
     fun stringToBool(value: Value): Result {
-        return Success(BooleanValue("<anonymous cast>", value.rawValue().lowercase() == "true"))
+        return Success(BooleanValue("<anonymous cast>", value.stringValue().lowercase() == "true"))
     }
 
     fun delete(functionData: FunctionData, name: Value): Result {
@@ -129,11 +119,7 @@ object Standard {
     }
 
     fun type(value: Value): Result {
-        return Success(StringValue("anonymous", value.rawName))
-    }
-
-    fun equalsIgnoreCase(a: StringValue, b: StringValue): Result {
-        return Success(BooleanValue("anonymous", a.rawValue().lowercase() == b.rawValue().lowercase()))
+        return Success(StringValue("anonymous", value.name))
     }
 
 }

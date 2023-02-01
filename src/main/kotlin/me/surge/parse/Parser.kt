@@ -276,11 +276,11 @@ class Parser(val tokens: List<Token>) {
             return result.success(UnaryOperationNode(token, factor as Node))
         }
 
-        return this.power()
+        return this.modulo()
     }
 
-    private fun power(): ParseResult {
-        return this.binaryOperation({ this.call() }, arrayOf(TokenType.POWER, TokenType.MODULO), { this.factor() })
+    private fun modulo(): ParseResult {
+        return this.binaryOperation({ this.call() }, arrayOf(TokenType.MODULO), { this.factor() })
     }
 
     private fun call(): ParseResult {

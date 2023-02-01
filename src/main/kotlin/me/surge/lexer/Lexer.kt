@@ -59,11 +59,6 @@ class Lexer(val file: String, val text: String) {
                     }
                 }
 
-                '^' -> {
-                    tokens.add(Token(POWER, start = this.position))
-                    this.advance()
-                }
-
                 '%' -> {
                     tokens.add(Token(MODULO, start = this.position))
                     this.advance()

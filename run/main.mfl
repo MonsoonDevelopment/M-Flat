@@ -57,7 +57,7 @@ meth main(args) {
     const list2 = ["string1", "string2", "string3"]
 
     for (i in list2) {
-        if (std::equalsIgnoreCase(i, "string2")) {
+        if (i::equalsIgnoreCase("string2")) {
             continue
         }
 

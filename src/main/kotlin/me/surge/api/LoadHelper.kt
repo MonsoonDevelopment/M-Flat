@@ -5,8 +5,6 @@ import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
-import me.surge.lexer.value.function.BuiltInFunction
-import me.surge.parse.RuntimeResult
 import java.lang.IllegalStateException
 
 object LoadHelper {
@@ -143,10 +141,10 @@ object LoadHelper {
 
             val method = Coercer.coerceMethod(instance, method)
 
-            symbolTable.set(method.name, method, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+            symbolTable.set(method.identifier, method, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
         }
     }
-
+    
     fun getEquivalentValue(clazz: Class<*>): Class<*> {
         if (isValue(clazz)) {
             return clazz
@@ -178,7 +176,7 @@ object LoadHelper {
             is NumberValue -> {
                 when (clazz) {
                     Int::class.java -> {
-                        return value.rawValue().toInt()
+                        return value.stringValue().toInt()
                     }
 
                     Float::class.java -> {

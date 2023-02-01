@@ -6,9 +6,9 @@ import me.surge.api.result.Success
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
-import me.surge.lexer.value.function.BuiltInFunction
+import me.surge.lexer.value.method.BaseMethodValue
+import me.surge.lexer.value.method.BuiltInMethod
 import me.surge.parse.RuntimeResult
-import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 object Coercer {
@@ -55,7 +55,7 @@ object Coercer {
     }
 
     @JvmStatic
-    fun coerceMethod(instance: Any?, method: Method): BuiltInFunction {
+    fun coerceMethod(instance: Any?, method: Method): BuiltInMethod {
         method.isAccessible = true
 
         val name = if (method.isAnnotationPresent(OverrideName::class.java)) {
@@ -64,7 +64,7 @@ object Coercer {
             method.name
         }
 
-        val function = BuiltInFunction(
+        val function = BuiltInMethod(
             name,
 
             { functionData ->
@@ -88,7 +88,7 @@ object Coercer {
                 val result = method.invoke(instance, *arguments.toTypedArray())
 
                 if (result is RuntimeResult) {
-                    return@BuiltInFunction result
+                    return@BuiltInMethod result
                 }
 
                 when (result) {
@@ -118,21 +118,21 @@ object Coercer {
                 }
             },
 
-            ArrayList(method.parameters.filter { it.type != FunctionData::class.java }.map { it.name }.toList())
+            ArrayList(method.parameters.filter { it.type != FunctionData::class.java }.map { BaseMethodValue.Argument(it.name) }.toList())
         )
 
         return function
     }
 
     @JvmStatic
-    fun coerceObject(obj: Any): ContainerInstanceValue {
+    fun coerceObject(obj: Any): Value {
         val container = ContainerValue(obj.javaClass.simpleName, hashMapOf())
 
         val table = SymbolTable()
 
         LoadHelper.loadClass(obj, table)
 
-        return ContainerInstanceValue(container.name, table, container)
+        return Value(container.name, "instance").setSymbolTable(table)
     }
 
     @JvmStatic
@@ -141,10 +141,10 @@ object Coercer {
 
         LoadHelper.loadClass(instance, table)
 
-        val names = arrayListOf<String>()
+        val names = arrayListOf<BaseMethodValue.Argument>()
 
         instance.javaClass.constructors[0].parameters.forEach {
-            names += it.name
+            names += BaseMethodValue.Argument(it.name)
         }
 
         val container = ContainerValue(instance.javaClass.simpleName, hashMapOf(Pair(names.size, names)))

@@ -14,7 +14,6 @@ enum class TokenType {
     MULTIPLY_BY,
     DIVIDE,
     DIVIDE_BY,
-    POWER,
     MODULO,
     EQUALS,
     LEFT_PARENTHESES,

@@ -119,6 +119,16 @@ class SymbolTable(val parent: SymbolTable? = null) {
         return true
     }
 
+    fun clone(): SymbolTable {
+        val table = SymbolTable(this.parent)
+
+        this.symbols.forEach {
+            table.set(it.identifier, it.value, EntryData(immutable = it.immutable, declaration = true, null, null, null, forced = true))
+        }
+
+        return table
+    }
+
     data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
     data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false)
 

@@ -7,10 +7,6 @@ import me.surge.util.arrows
 
 class RuntimeError(start: Position, end: Position, details: String, val context: Context) : Error(start, end, "RuntimeError", details) {
 
-    /* override fun toString(): String {
-        return "${this.generateTraceback()}$name: $details\n\n${arrows(this.start.fileText, this.start, this.end)}"
-    } */
-
     fun generateTraceback(): String {
         var result = ""
         var position: Position? = this.start
