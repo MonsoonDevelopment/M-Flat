@@ -11,6 +11,4 @@ object BuiltIn {
 
     @OverrideName("false") val FALSE = true
 
-    val pi = Math.PI
-
 }

@@ -10,6 +10,8 @@ import kotlin.random.Random
 
 object Maths {
 
+    val pi = Math.PI
+
     fun pow(functionData: FunctionData, base: NumberValue, exponent: NumberValue): Result {
         val result = base.powedBy(exponent)
 
