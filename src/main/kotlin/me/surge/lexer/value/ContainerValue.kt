@@ -8,7 +8,7 @@ import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.parse.RuntimeResult
 
-class ContainerValue(identifier: String, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "container") {
+open class ContainerValue(identifier: String, val constructors: HashMap<Int, List<Argument>>, name: String = "container") : BaseMethodValue(identifier, name) {
 
     private var body: Node? = null
     var implement: ((Node?, Context, Interpreter) -> Unit)? = null
@@ -84,7 +84,7 @@ class ContainerValue(identifier: String, val constructors: HashMap<Int, List<Arg
 
             implementationContext.symbolTable!!.set(
                 "this",
-                Value(this.name).setSymbolTable(implementationContext.symbolTable!!),
+                Value(this.name, "instance").setSymbolTable(implementationContext.symbolTable!!),
                 SymbolTable.EntryData(
                     immutable = true,
                     declaration = true,
@@ -110,7 +110,7 @@ class ContainerValue(identifier: String, val constructors: HashMap<Int, List<Arg
     }
 
     override fun stringValue(): String {
-        return "<container $name>"
+        return "<container $identifier>"
     }
 
 }

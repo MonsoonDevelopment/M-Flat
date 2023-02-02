@@ -35,12 +35,12 @@ class BuiltInMethod(identifier: String, val invoke: (functionData: FunctionData)
             .setContext(this.context)
     }
 
-    override fun stringValue(): String {
-        return "<JVM METHOD [$identifier]>"
+    override fun toString(): String {
+        return stringValue()
     }
 
-    override fun toString(): String {
-        return identifier
+    override fun stringValue(): String {
+        return "<JVM METHOD [$identifier]>"
     }
 
 }

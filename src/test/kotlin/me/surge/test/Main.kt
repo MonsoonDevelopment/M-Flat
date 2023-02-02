@@ -9,11 +9,13 @@ fun main(args: Array<String>) {
     val executor = Executor()
         .loadClass("testing", Testing::class.java)
         .loadClass("java_types", JavaTypesTesting::class.java)
+        .loadClassAsContainer(TestInstantiationClass(null))
+        .loadClassAsContainer(TestSecondClass(""))
 
     val file = File("modules.mfl")
     val reader = FileReader(file)
 
-    val result = executor.run(file.name, reader.readText())
+    val result = executor.evaluate(file.name, reader.readText())
 
     if (result.second != null) {
         println(result.second)

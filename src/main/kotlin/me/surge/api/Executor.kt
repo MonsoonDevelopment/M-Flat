@@ -9,10 +9,10 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.Node
 import me.surge.lexer.position.Position
 import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.ContainerValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.library.BuiltIn
+import me.surge.library.JVMLink
 import me.surge.library.Maths
 import me.surge.parse.Parser
 import me.surge.parse.RuntimeResult
@@ -28,9 +28,10 @@ class Executor {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
         loadClass("std", Standard::class.java)
         loadSilentClass("maths", Maths::class.java)
+        loadClass("jvmlink", JVMLink::class.java)
     }
 
-    fun run(file: String, text: String): Pair<Any?, Error?> {
+    fun evaluate(file: String, text: String): Pair<Any?, Error?> {
         val lexer = Lexer(file, text)
         val tokens = lexer.makeTokens()
 
@@ -151,6 +152,11 @@ class Executor {
 
         silentContainers[identifier] = Value(identifier, "instance").setSymbolTable(symbolTable)
 
+        return this
+    }
+
+    fun loadClassAsContainer(any: Any): Executor {
+        LoadHelper.loadClassAsContainer(any, globalSymbolTable)
         return this
     }
 

@@ -1,3 +1,5 @@
+jvmlink::classForName("me.surge.test.JavaString", "JavaString", [""])
+
 container TestContainer (a, b, c) (a, b) (a, b, c, d = 5) {
 
     meth init {
@@ -26,4 +28,12 @@ meth main(args) {
 
     const test = "test"
     std::println(test::equalsIgnoreCase("tEsT"))
+
+    const testClass = TestInstantiationClass(TestSecondClass("test"))
+    testClass::output()
+
+    testing::loadTest(testClass)
+
+    const str = JavaString("Java string test!")
+    std::println(str::value)
 }

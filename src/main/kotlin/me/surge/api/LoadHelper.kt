@@ -5,6 +5,7 @@ import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
+import me.surge.lexer.value.method.BaseMethodValue
 import java.lang.IllegalStateException
 
 object LoadHelper {
@@ -69,7 +70,7 @@ object LoadHelper {
 
             val fieldValue = field.get(instance)
 
-            val value = if (field != null && isValue(fieldValue::class.java)) {
+            val value = if (fieldValue != null && isValue(fieldValue::class.java)) {
                 fieldValue as Value
             } else {
                 when (field.type) {
@@ -143,6 +144,26 @@ object LoadHelper {
 
             symbolTable.set(method.identifier, method, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
         }
+    }
+
+    fun loadClassAsContainer(instance: Any, symbolTable: SymbolTable) {
+        val constructors = hashMapOf<Int, List<BaseMethodValue.Argument>>()
+
+        instance.javaClass.constructors.forEach { constructor ->
+            if (!constructor.isAccessible) {
+                return@forEach
+            }
+
+            val list = arrayListOf<BaseMethodValue.Argument>()
+
+            constructor.parameters.forEach { parameter ->
+                list.add(BaseMethodValue.Argument(parameter.name))
+            }
+
+            constructors[list.size] = list
+        }
+
+        symbolTable.set(instance.javaClass.simpleName, JavaClassLinkValue(instance.javaClass.simpleName, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
     }
     
     fun getEquivalentValue(clazz: Class<*>): Class<*> {

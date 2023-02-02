@@ -25,14 +25,14 @@ open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : V
             return result.failure(RuntimeError(
                 this.start!!,
                 this.end!!,
-                "Too many arguments passed into ${this.name} invocation",
+                "Too many arguments passed into ${this.identifier} invocation",
                 this.context!!
             ))
         } else if (arguments.size < argumentNames.filter { it.defaultValue == null }.size) {
             return result.failure(RuntimeError(
                 this.start!!,
                 this.end!!,
-                "Too little arguments passed into ${this.name} invocation",
+                "Too little arguments passed into ${this.identifier} invocation",
                 this.context!!
             ))
         }

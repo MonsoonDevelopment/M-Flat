@@ -9,7 +9,7 @@ import me.surge.parse.RuntimeResult
 import me.surge.util.Constants
 import java.lang.IllegalStateException
 
-open class Value(val identifier: String, var name: String = "any") {
+open class Value(val identifier: String, var name: String) {
 
     var start: Position? = null
     var end: Position? = null
