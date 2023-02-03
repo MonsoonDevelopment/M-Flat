@@ -1,6 +1,7 @@
 package me.surge.test
 
 import me.surge.api.Executor
+import me.surge.api.annotation.OverrideName
 import me.surge.lexer.value.ListValue
 import java.io.File
 import java.io.FileReader
@@ -9,8 +10,8 @@ fun main(args: Array<String>) {
     val executor = Executor()
         .loadClass("testing", Testing::class.java)
         .loadClass("java_types", JavaTypesTesting::class.java)
-        .loadClassAsContainer(TestInstantiationClass(null))
-        .loadClassAsContainer(TestSecondClass(""))
+        .loadClassAsContainer("TestInstantiationClass", TestInstantiationClass(null))
+        .loadClassAsContainer("Second", TestSecondClass(""))
 
     val file = File("modules.mfl")
     val reader = FileReader(file)

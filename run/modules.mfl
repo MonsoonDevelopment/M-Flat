@@ -1,39 +1,14 @@
-jvmlink::classForName("me.surge.test.JavaString", "JavaString", [""])
-
-container TestContainer (a, b, c) (a, b) (a, b, c, d = 5) {
-
-    meth init {
-        std::println("Init!")
-
-        if (c == null) {
-            c = 54312656
+container BunnyHop (name = "BunnyHop", description = "hops like a rabit") {
+    meth onUpdate() {
+        if (player::isOnGround()) {
+            player::jump()
         }
     }
-
 }
 
 meth main(args) {
-    std::println(testing::twoDArray)
-
-    const cont = TestContainer(2, 543156)
-    std::println(cont::c)
-
-    const list = [1, 2, 3, 4, 5]
-    list::add(6)
-
-    std::println(list)
-
-    list::remove(2)
-    std::println(list)
-
-    const test = "test"
-    std::println(test::equalsIgnoreCase("tEsT"))
-
-    const testClass = TestInstantiationClass(TestSecondClass("test"))
-    testClass::output()
-
-    testing::loadTest(testClass)
-
-    const str = JavaString("Java string test!")
-    std::println(str::value)
+    const bh = BunnyHop()
+    std::println(bh::name)
 }
+
+//manager::registerModule(BunnyHop())

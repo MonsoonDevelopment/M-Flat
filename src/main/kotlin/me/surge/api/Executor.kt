@@ -155,8 +155,8 @@ class Executor {
         return this
     }
 
-    fun loadClassAsContainer(any: Any): Executor {
-        LoadHelper.loadClassAsContainer(any, globalSymbolTable)
+    fun loadClassAsContainer(identifier: String, any: Any): Executor {
+        LoadHelper.loadClassAsContainer(identifier, any, globalSymbolTable)
         return this
     }
 

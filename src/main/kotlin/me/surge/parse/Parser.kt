@@ -1511,9 +1511,6 @@ class Parser(val tokens: List<Token>) {
 
                     defaultValue = node as Node?
 
-                    result.registerAdvancement()
-                    this.advance()
-
                     skipNewLines(result)
                 }
 
@@ -1564,9 +1561,13 @@ class Parser(val tokens: List<Token>) {
                         }
 
                         defaultValue = node as Node?
+
+                        skipNewLines(result)
                     }
 
                     constructor.add(ArgumentToken(name, defaultValue))
+
+                    skipNewLines(result)
                 }
 
                 skipNewLines(result)
@@ -1575,7 +1576,7 @@ class Parser(val tokens: List<Token>) {
                     return result.failure(InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected ',' or ')'"
+                        "Expected ',' or ')', got $currentToken"
                     ))
                 }
             } else {

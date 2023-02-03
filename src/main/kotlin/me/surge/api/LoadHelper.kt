@@ -146,7 +146,7 @@ object LoadHelper {
         }
     }
 
-    fun loadClassAsContainer(instance: Any, symbolTable: SymbolTable) {
+    fun loadClassAsContainer(identifier: String, instance: Any, symbolTable: SymbolTable) {
         val constructors = hashMapOf<Int, List<BaseMethodValue.Argument>>()
 
         instance.javaClass.constructors.forEach { constructor ->
@@ -163,7 +163,7 @@ object LoadHelper {
             constructors[list.size] = list
         }
 
-        symbolTable.set(instance.javaClass.simpleName, JavaClassLinkValue(instance.javaClass.simpleName, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
+        symbolTable.set(identifier, JavaClassLinkValue(identifier, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
     }
     
     fun getEquivalentValue(clazz: Class<*>): Class<*> {
