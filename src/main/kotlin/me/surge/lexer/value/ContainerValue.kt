@@ -71,7 +71,7 @@ open class ContainerValue(identifier: String, val constructors: HashMap<Int, Lis
             }
         }
 
-        return functionResult.success(Value(name, "instance").setSymbolTable(table))
+        return functionResult.success(InstanceValue(this.identifier, table))
     }
 
     fun setImplementation(body: Node) {
@@ -84,7 +84,7 @@ open class ContainerValue(identifier: String, val constructors: HashMap<Int, Lis
 
             implementationContext.symbolTable!!.set(
                 "this",
-                Value(this.name, "instance").setSymbolTable(implementationContext.symbolTable!!),
+                InstanceValue(this.identifier, implementationContext.symbolTable!!),
                 SymbolTable.EntryData(
                     immutable = true,
                     declaration = true,

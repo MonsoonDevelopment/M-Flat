@@ -23,7 +23,8 @@ object Constants {
         Pair("in", "in"),
         Pair("use", "use"),
         Pair("container", "container"),
-        Pair("to", "to")
+        Pair("to", "to"),
+        Pair("enum", "enum")
     )
 
     private val SYMBOLS = hashMapOf(

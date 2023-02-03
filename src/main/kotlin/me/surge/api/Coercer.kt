@@ -132,7 +132,7 @@ object Coercer {
 
         LoadHelper.loadClass(obj, table)
 
-        return Value(container.name, "instance").setSymbolTable(table)
+        return InstanceValue(container.identifier, table)
     }
 
     @JvmStatic

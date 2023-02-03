@@ -1,13 +1,12 @@
 package me.surge.parse
 
 import me.surge.lexer.error.impl.DualConstructorError
-import me.surge.util.Constants
 import me.surge.lexer.error.impl.ExpectedCharError
 import me.surge.lexer.error.impl.InvalidSyntaxError
 import me.surge.lexer.node.*
 import me.surge.lexer.token.Token
 import me.surge.lexer.token.TokenType
-import me.surge.lexer.value.Value
+import me.surge.util.Constants
 import java.util.function.Supplier
 
 class Parser(val tokens: List<Token>) {
@@ -661,6 +660,16 @@ class Parser(val tokens: List<Token>) {
             }
 
             return result.success(use as Node)
+        }
+
+        else if (token.matches(TokenType.KEYWORD, Constants.get("enum"))) {
+            val definition = result.register(this.enumDefinition())
+
+            if (result.error != null) {
+                return result
+            }
+
+            return result.success(definition as Node)
         }
 
         return result.failure(InvalidSyntaxError(
@@ -1652,6 +1661,338 @@ class Parser(val tokens: List<Token>) {
         }
 
         return result.success(ContainerDefinitionNode(name, argumentNames, this.currentToken, body))
+    }
+
+    private fun enumDefinition(): ParseResult {
+        val result = ParseResult()
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("enum"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected '${Constants.get("enum")}', got $currentToken"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        if (this.currentToken.type != TokenType.IDENTIFIER) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected identifier, got $currentToken"
+            ))
+        }
+
+        val name = this.currentToken
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        var memberArguments = arrayListOf<ArgumentToken>()
+
+        if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+            memberArguments = generateArguments(result)
+
+            if (result.error != null) {
+                return result
+            }
+        }
+
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+            return result.failure(InvalidSyntaxError(
+                this.currentToken.start,
+                this.currentToken.end,
+                "Expected ${Constants.get("then")}, got $currentToken"
+            ))
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        skipNewLines(result)
+
+        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            return result.success(EnumDefinitionNode(name, memberArguments, linkedMapOf(), null, name.start, this.currentToken.end))
+        }
+
+        val members = linkedMapOf<Token, List<Node>>()
+
+        while (this.currentToken.type == TokenType.IDENTIFIER) {
+            val memberName = this.currentToken
+
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+
+            val args = arrayListOf<Node>()
+
+            /*if (memberArguments.isNotEmpty()) {
+                if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
+                    return result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected '(', got $currentToken"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                val node = result.register(this.expression())
+
+                if (result.error != null) {
+                    return result
+                }
+
+                args.add(node as Node)
+
+                skipNewLines(result)
+
+                while (this.currentToken.type == TokenType.COMMA) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    val node = result.register(this.expression())
+
+                    if (result.error != null) {
+                        return result
+                    }
+
+                    args.add(node as Node)
+
+                    skipNewLines(result)
+                }
+
+                if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                    return result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected ',' or ')', got $currentToken"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+            } else {
+
+            }*/
+
+            if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                if (this.currentToken.type == TokenType.RIGHT_PARENTHESES) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                } else {
+                    val node = result.register(this.expression())
+
+                    if (result.error != null) {
+                        return result
+                    }
+
+                    args.add(node as Node)
+
+                    skipNewLines(result)
+
+                    while (this.currentToken.type == TokenType.COMMA) {
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        val node = result.register(this.expression())
+
+                        if (result.error != null) {
+                            return result
+                        }
+
+                        args.add(node as Node)
+
+                        skipNewLines(result)
+                    }
+
+                    if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected ',' or ')', got $currentToken"
+                        ))
+                    }
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                }
+            }
+
+            if (this.currentToken.type == TokenType.COMMA) {
+                result.registerAdvancement()
+                this.advance()
+            }
+
+            members[memberName] = args
+
+            skipNewLines(result)
+        }
+
+        var body: Node? = null
+
+        if (this.currentToken.type == TokenType.KEYWORD && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            val bodyStatements = result.register(this.statements())
+
+            if (result.error != null) {
+                return result
+            }
+
+            body = bodyStatements as Node
+        }
+
+        result.registerAdvancement()
+        this.advance()
+
+        return result.success(EnumDefinitionNode(name, memberArguments, members, body, name.start, this.currentToken.end))
+    }
+
+    private fun generateArguments(result: ParseResult): ArrayList<ArgumentToken> {
+        val argumentNames = arrayListOf<ArgumentToken>()
+
+        while (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+
+            if (this.currentToken.type == TokenType.IDENTIFIER) {
+                var optionals = false
+
+                val name = this.currentToken
+                var defaultValue: Node? = null
+
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
+                if (this.currentToken.type == TokenType.EQUALS) {
+                    optionals = true
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    val node = result.register(this.expression())
+
+                    defaultValue = node as Node?
+
+                    skipNewLines(result)
+                }
+
+                argumentNames.add(ArgumentToken(name, defaultValue))
+
+                while (this.currentToken.type == TokenType.COMMA) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.IDENTIFIER) {
+                        result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected identifier"
+                        ))
+                    }
+
+                    val name = this.currentToken
+                    var defaultValue: Node? = null
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (optionals && this.currentToken.type != TokenType.EQUALS) {
+                        result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Argument '${name.value as String}' must be optional as previous arguments have been optional!"
+                        ))
+                    }
+
+                    if (this.currentToken.type == TokenType.EQUALS) {
+                        optionals = true
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        val node = result.register(this.expression())
+
+                        defaultValue = node as Node?
+
+                        skipNewLines(result)
+                    }
+
+                    argumentNames.add(ArgumentToken(name, defaultValue))
+
+                    skipNewLines(result)
+                }
+
+                skipNewLines(result)
+
+                if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                    result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected ',' or ')', got $currentToken"
+                    ))
+                }
+            } else {
+                skipNewLines(result)
+
+                if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                    result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected identifier or ')'"
+                    ))
+                }
+            }
+
+            if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Container Definition: Expected ')', got $currentToken"
+                ))
+            }
+
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+        }
+
+        return argumentNames
     }
 
     private fun use(): ParseResult {

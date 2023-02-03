@@ -766,4 +766,64 @@ class Interpreter(val executor: Executor? = null) {
         return result.success(null)
     }
 
+    fun visitEnumDefinitionNode(node: Node, context: Context): RuntimeResult {
+        node as EnumDefinitionNode
+
+        val result = RuntimeResult()
+
+        val members = linkedMapOf<String, Value>()
+
+        node.members.forEach { (nameToken, parameters) ->
+            val args = mutableListOf<BaseMethodValue.Argument>()
+
+            node.arguments.forEach { parameter ->
+                var default: Value? = null
+
+                if (parameter.defaultValue != null) {
+                    val defaultValue = result.register(this.visit(parameter.defaultValue, context))
+
+                    if (result.shouldReturn()) {
+                        return result
+                    }
+
+                    default = defaultValue
+                }
+
+                args.add(BaseMethodValue.Argument(parameter.token.value as String, default))
+            }
+
+            val container = ContainerValue(nameToken.value as String, hashMapOf(Pair(args.size, args)))
+
+            if (node.body != null) {
+                container.setImplementation(node.body)
+            }
+
+            val passedParameters = arrayListOf<Value>()
+
+            parameters.forEach { parameter ->
+                val value = result.register(this.visit(parameter, context))
+
+                if (result.shouldReturn()) {
+                    return result
+                }
+
+                passedParameters.add(value!!)
+            }
+
+            val instance = result.register(container.execute(passedParameters))
+
+            if (result.shouldReturn()) {
+                return result
+            }
+
+            members[nameToken.value] = instance!!
+        }
+
+        val enum = EnumValue(node.name.value as String, members)
+
+        context.symbolTable!!.set(node.name.value, enum, SymbolTable.EntryData(immutable = true, declaration = true, node.start, node.end, context = context, forced = true))
+
+        return result.success(enum)
+    }
+
 }

@@ -1,14 +1,17 @@
-container BunnyHop (name = "BunnyHop", description = "hops like a rabit") {
-    meth onUpdate() {
-        if (player::isOnGround()) {
-            player::jump()
-        }
+enum TestEnum(param1, param2) {
+    MEMBER_ONE(5, 2)
+
+    meth test() {
+        std::println("wowza " + param1)
     }
 }
 
-meth main(args) {
-    const bh = BunnyHop()
-    std::println(bh::name)
+enum TestEnumeration {
+    MEMBER_TEST,
+    MEMBER_TEST_2
 }
 
-//manager::registerModule(BunnyHop())
+meth main(args) {
+    TestEnum::MEMBER_ONE::test()
+    std::println(TestEnumeration::MEMBER_TEST_2)
+}

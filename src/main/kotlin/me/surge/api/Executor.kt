@@ -9,6 +9,7 @@ import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.node.Node
 import me.surge.lexer.position.Position
 import me.surge.lexer.symbol.SymbolTable
+import me.surge.lexer.value.InstanceValue
 import me.surge.lexer.value.Value
 import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.library.BuiltIn
@@ -86,7 +87,7 @@ class Executor {
 
         globalSymbolTable.set(
             file,
-            Value(file, "instance").setSymbolTable(context.symbolTable!!),
+            InstanceValue(file, context.symbolTable!!),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,
@@ -138,7 +139,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        val value = Value(identifier, "instance").setSymbolTable(symbolTable)
+        val value = InstanceValue(identifier, symbolTable)
 
         globalSymbolTable.set(identifier, value, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
@@ -150,7 +151,7 @@ class Executor {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        silentContainers[identifier] = Value(identifier, "instance").setSymbolTable(symbolTable)
+        silentContainers[identifier] = InstanceValue(identifier, symbolTable)
 
         return this
     }
