@@ -17,4 +17,7 @@ meth main(args) {
     std::println(KEnumTest::MEMBER_ONE::a)
     std::println(JEnumTest::MEMBER_ONE::a)
     JEnumTest::MEMBER_TWO::output()
+
+    const tester = EnumTester(KEnumTest::MEMBER_ONE)
+    tester::output()
 }

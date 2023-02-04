@@ -6,7 +6,7 @@ import me.surge.lexer.value.Value
 import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.parse.RuntimeResult
 
-class JvmLinkMethod(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, private val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD") {
+class JvmLinkMethod(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD") {
 
     override fun execute(args: List<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
