@@ -31,8 +31,8 @@ application {
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            from components.java
+        create<MavenPublication>("maven") {
+            from(components.findByName("java"))
         }
     }
 }
