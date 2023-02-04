@@ -2,7 +2,7 @@ package me.surge.lexer.value
 
 import me.surge.lexer.symbol.SymbolTable
 
-open class EnumValue(identifier: String, members: LinkedHashMap<String, Value>) : Value(identifier, "enum") {
+class EnumValue(identifier: String, members: LinkedHashMap<String, Value>) : Value(identifier, "enum") {
 
     init {
         members.forEach { (name, value) ->

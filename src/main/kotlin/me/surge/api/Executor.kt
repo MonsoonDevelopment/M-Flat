@@ -161,6 +161,11 @@ class Executor {
         return this
     }
 
+    fun loadEnum(identifier: String, clazz: Class<*>): Executor {
+        LoadHelper.loadEnum(identifier, clazz as Class<Enum<*>>, globalSymbolTable)
+        return this
+    }
+
     fun getFunction(identifier: String): BaseMethodValue? {
         return globalSymbolTable.get(identifier) as BaseMethodValue?
     }

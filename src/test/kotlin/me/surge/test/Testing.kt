@@ -3,8 +3,7 @@ package me.surge.test
 import me.surge.api.Coercer
 import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
-import me.surge.lexer.value.JavaClassInstanceValue
-import me.surge.lexer.value.Value
+import me.surge.lexer.value.link.JvmClassInstanceValue
 
 object Testing {
 
@@ -24,7 +23,7 @@ object Testing {
         return false
     }
 
-    fun loadTest(value: JavaClassInstanceValue<TestInstantiationClass>) {
+    fun loadTest(value: JvmClassInstanceValue<TestInstantiationClass>) {
         println("A = " + value.instance.clazz!!.test)
     }
 

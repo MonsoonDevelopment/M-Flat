@@ -5,6 +5,8 @@ import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
+import me.surge.lexer.value.link.JvmClassLinkValue
+import me.surge.lexer.value.link.JvmEnumLinkValue
 import me.surge.lexer.value.method.BaseMethodValue
 import java.lang.IllegalStateException
 
@@ -163,9 +165,13 @@ object LoadHelper {
             constructors[list.size] = list
         }
 
-        symbolTable.set(identifier, JavaClassLinkValue(identifier, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
+        symbolTable.set(identifier, JvmClassLinkValue(identifier, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
     }
-    
+
+    fun loadEnum(identifier: String, enum: Class<Enum<*>>, symbolTable: SymbolTable) {
+        symbolTable.set(identifier, JvmEnumLinkValue(identifier, enum), SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
+    }
+
     fun getEquivalentValue(clazz: Class<*>): Class<*> {
         if (isValue(clazz)) {
             return clazz

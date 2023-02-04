@@ -14,4 +14,7 @@ enum TestEnumeration {
 meth main(args) {
     TestEnum::MEMBER_ONE::test()
     std::println(TestEnumeration::MEMBER_TEST_2)
+    std::println(KEnumTest::MEMBER_ONE::a)
+    std::println(JEnumTest::MEMBER_ONE::a)
+    JEnumTest::MEMBER_TWO::output()
 }

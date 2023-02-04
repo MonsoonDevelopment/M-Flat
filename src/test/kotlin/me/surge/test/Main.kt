@@ -12,6 +12,8 @@ fun main(args: Array<String>) {
         .loadClass("java_types", JavaTypesTesting::class.java)
         .loadClassAsContainer("TestInstantiationClass", TestInstantiationClass(null))
         .loadClassAsContainer("Second", TestSecondClass(""))
+        .loadEnum("KEnumTest", KEnumTest::class.java)
+        .loadEnum("JEnumTest", JEnumTest::class.java)
 
     val file = File("modules.mfl")
     val reader = FileReader(file)

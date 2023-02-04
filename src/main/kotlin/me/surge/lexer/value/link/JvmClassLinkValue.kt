@@ -1,14 +1,14 @@
-package me.surge.lexer.value
+package me.surge.lexer.value.link
 
 import me.surge.api.LoadHelper
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.error.impl.JvmLinkError
 import me.surge.lexer.error.impl.RuntimeError
-import me.surge.lexer.symbol.SymbolTable
+import me.surge.lexer.value.*
 import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.parse.RuntimeResult
 
-class JavaClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "JVM CLASS LINK") {
+class JvmClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "JVM CLASS LINK") {
 
     init {
         LoadHelper.loadClass(instance, this.symbols)
@@ -33,7 +33,7 @@ class JavaClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any,
         args.forEach {
             constructorArgs.add(when (it) {
                 is BooleanValue -> it.value
-                is JavaClassInstanceValue<*> -> it.instance
+                is JvmClassInstanceValue<*> -> it.instance
                 is ListValue -> it.elements
                 is NullValue -> null
 
@@ -65,7 +65,7 @@ class JavaClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any,
         try {
             val classInstance = constructor.newInstance(*constructorArgs.toTypedArray())
 
-            val instance = JavaClassInstanceValue(clazz.simpleName, classInstance)
+            val instance = JvmClassInstanceValue(clazz.simpleName, classInstance)
 
             return RuntimeResult().success(instance)
         } catch (exception: Exception) {
