@@ -22,8 +22,8 @@ import java.nio.charset.Charset
 
 class Executor {
 
-    private val globalSymbolTable = SymbolTable()
-    private val silentContainers = hashMapOf<String, Value>()
+    val globalSymbolTable = SymbolTable()
+    val silentContainers = hashMapOf<String, Value>()
 
     init {
         LoadHelper.loadClass(BuiltIn::class.java, globalSymbolTable)
