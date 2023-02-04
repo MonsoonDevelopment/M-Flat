@@ -1,11 +1,12 @@
-package me.surge.lexer.value.method
+package me.surge.lexer.value.link
 
 import me.surge.lexer.error.context.Context
 import me.surge.lexer.value.FunctionData
 import me.surge.lexer.value.Value
+import me.surge.lexer.value.method.BaseMethodValue
 import me.surge.parse.RuntimeResult
 
-class BuiltInMethod(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, private val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD") {
+class JvmLinkMethod(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, private val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD") {
 
     override fun execute(args: List<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
@@ -16,7 +17,7 @@ class BuiltInMethod(identifier: String, val invoke: (functionData: FunctionData)
             return result
         }
 
-        val value = result.register(invoke(FunctionData(this.start!!, this.end!!, context, args, this)))
+        val value = result.register(invoke(FunctionData(this.start, this.end, context, args, this)))
 
         if (result.shouldReturn()) {
             return result
@@ -30,7 +31,7 @@ class BuiltInMethod(identifier: String, val invoke: (functionData: FunctionData)
     }
 
     override fun clone(): Value {
-        return BuiltInMethod(this.identifier, this.invoke, this.argumentNames)
+        return JvmLinkMethod(this.identifier, this.invoke, this.argumentNames)
             .setPosition(this.start, this.end)
             .setContext(this.context)
     }

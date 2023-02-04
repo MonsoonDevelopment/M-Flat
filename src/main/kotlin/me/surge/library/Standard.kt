@@ -5,7 +5,7 @@ import me.surge.api.result.Result
 import me.surge.api.result.Success
 import me.surge.lexer.error.impl.RuntimeError
 import me.surge.lexer.value.*
-import me.surge.lexer.value.method.BuiltInMethod
+import me.surge.lexer.value.link.JvmLinkMethod
 import kotlin.system.exitProcess
 
 object Standard {
@@ -37,10 +37,10 @@ object Standard {
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
                 RuntimeError(
-                functionData.start,
-                functionData.end,
+                functionData.start!!,
+                functionData.end!!,
                 "Index out of bounds: $index",
-                functionData.context
+                functionData.context!!
             ))
         }
 
@@ -53,10 +53,10 @@ object Standard {
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
                 RuntimeError(
-                functionData.start,
-                functionData.end,
+                functionData.start!!,
+                functionData.end!!,
                 "Index out of bounds: $index",
-                functionData.context
+                functionData.context!!
             ))
         }
 
@@ -76,7 +76,7 @@ object Standard {
     }
 
     fun isMethod(value: Value): Result {
-        return Success(BooleanValue("<anonymous is method>", value is BuiltInMethod))
+        return Success(BooleanValue("<anonymous is method>", value is JvmLinkMethod))
     }
 
     fun isList(value: Value): Result {
@@ -86,10 +86,10 @@ object Standard {
     fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value) {
         if (parent !is ContainerValue) {
             Failure(RuntimeError(
-                functionData.start,
-                functionData.end,
+                functionData.start!!,
+                functionData.end!!,
                 "Second argument of 'matchesContainer' must be a container!",
-                functionData.context
+                functionData.context!!
             ))
         }
 
@@ -105,7 +105,7 @@ object Standard {
     }
 
     fun delete(functionData: FunctionData, name: Value): Result {
-        val error = functionData.context.symbolTable!!.removeGlobally(name.name, start = functionData.start, end = functionData.end, context = functionData.context)
+        val error = functionData.context!!.symbolTable!!.removeGlobally(name.name, start = functionData.start, end = functionData.end, context = functionData.context)
 
         if (error != null) {
             return Failure(error)

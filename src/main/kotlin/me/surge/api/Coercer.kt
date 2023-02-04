@@ -7,7 +7,7 @@ import me.surge.lexer.error.context.Context
 import me.surge.lexer.symbol.SymbolTable
 import me.surge.lexer.value.*
 import me.surge.lexer.value.method.BaseMethodValue
-import me.surge.lexer.value.method.BuiltInMethod
+import me.surge.lexer.value.link.JvmLinkMethod
 import me.surge.parse.RuntimeResult
 import java.lang.reflect.Method
 
@@ -55,7 +55,7 @@ object Coercer {
     }
 
     @JvmStatic
-    fun coerceMethod(instance: Any?, method: Method): BuiltInMethod {
+    fun coerceMethod(instance: Any?, method: Method): JvmLinkMethod {
         method.isAccessible = true
 
         val name = if (method.isAnnotationPresent(OverrideName::class.java)) {
@@ -64,7 +64,7 @@ object Coercer {
             method.name
         }
 
-        val function = BuiltInMethod(
+        val function = JvmLinkMethod(
             name,
 
             { functionData ->
@@ -88,7 +88,7 @@ object Coercer {
                 val result = method.invoke(instance, *arguments.toTypedArray())
 
                 if (result is RuntimeResult) {
-                    return@BuiltInMethod result
+                    return@JvmLinkMethod result
                 }
 
                 when (result) {

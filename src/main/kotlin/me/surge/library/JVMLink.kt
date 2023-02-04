@@ -33,7 +33,7 @@ object JVMLink {
             constructors[list.size] = list
         }
 
-        functionData.context.parent?.parent?.symbolTable!!.set(identifier.value, JvmClassLinkValue(identifier.value, clazz, instance, constructors), SymbolTable.EntryData(immutable = true, declaration = true, functionData.start, functionData.end, functionData.context))
+        functionData.context?.parent?.parent?.symbolTable!!.set(identifier.value, JvmClassLinkValue(identifier.value, clazz, instance, constructors), SymbolTable.EntryData(immutable = true, declaration = true, functionData.start, functionData.end, functionData.context))
     }
 
 }
