@@ -1,7 +1,5 @@
 package me.surge.lang.parse
 
-import me.surge.lang.error.impl.DualConstructorError
-import me.surge.lang.error.impl.ExpectedCharError
 import me.surge.lang.error.impl.InvalidSyntaxError
 import me.surge.lang.node.*
 import me.surge.lang.lexer.token.Token
@@ -704,7 +702,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(definition as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("use"))) {
+        else if (token.matches(TokenType.KEYWORD, Constants.get("import"))) {
             val use = result.register(this.use())
 
             if (result.error != null) {
@@ -2178,18 +2176,20 @@ class Parser(val tokens: List<Token>) {
     private fun use(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("use"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("import"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("use")}'"
+                    "Expected '${Constants.get("import")}'"
                 )
             )
         }
 
         result.registerAdvancement()
         this.advance()
+
+        skipNewLines(result)
 
         if (this.currentToken.type != TokenType.STRING) {
             return result.failure(
@@ -2206,7 +2206,34 @@ class Parser(val tokens: List<Token>) {
         result.registerAdvancement()
         this.advance()
 
-        return result.success(ImportNode(value, this.currentToken.start, this.currentToken.end))
+        val index = this.tokenIndex
+
+        skipNewLines(result)
+
+        var identifier = value
+
+        if (this.currentToken.type == TokenType.ARROW) {
+            result.registerAdvancement()
+            this.advance()
+            skipNewLines(result)
+
+            if (this.currentToken.type != TokenType.IDENTIFIER) {
+                return result.failure(InvalidSyntaxError(
+                    this.currentToken.start,
+                    this.currentToken.end,
+                    "Expected identifier"
+                ))
+            }
+
+            identifier = this.currentToken
+
+            result.registerAdvancement()
+            this.advance()
+        } else {
+            this.reverse(this.tokenIndex - index)
+        }
+
+        return result.success(ImportNode(value, identifier, this.currentToken.start, this.currentToken.end))
     }
 
     private fun binaryOperation(function: Supplier<ParseResult>, ops: Array<Any>, functionB: Supplier<ParseResult>? = null): ParseResult {

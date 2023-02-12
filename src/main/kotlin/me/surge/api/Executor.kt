@@ -60,7 +60,7 @@ class Executor {
         return Pair(result.value, result.error)
     }
 
-    fun use(file: String, text: String): Pair<Any?, Error?> {
+    fun use(file: String, text: String, identifier: String): Pair<Any?, Error?> {
         val lexer = Lexer(file, text)
         val tokens = lexer.makeTokens()
 
@@ -86,8 +86,8 @@ class Executor {
         val result = interpreter.visit(ast.node!! as Node, context)
 
         globalSymbolTable.set(
-            file,
-            InstanceValue(file, context.symbolTable!!),
+            identifier,
+            InstanceValue(identifier, context.symbolTable!!),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,
@@ -101,18 +101,18 @@ class Executor {
         return Pair(result.value, result.error)
     }
 
-    fun useImplementation(name: String, start: Position, end: Position, context: Context): RuntimeResult {
+    fun useImplementation(name: String, identifier: String, start: Position, end: Position, context: Context): RuntimeResult {
         val result = RuntimeResult()
 
         if (name in silentContainers) {
-            globalSymbolTable.set(name, silentContainers[name]!!, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null, forced = true))
+            globalSymbolTable.set(identifier, silentContainers[name]!!, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null, forced = true))
         } else {
             val file = File("$name.mfl")
 
             if (file.exists()) {
                 val result = RuntimeResult()
 
-                val import = this.use(name, file.readText(Charset.defaultCharset()))
+                val import = this.use(name, file.readText(Charset.defaultCharset()), identifier)
 
                 if (import.second != null) {
                     return result.failure(import.second!!)

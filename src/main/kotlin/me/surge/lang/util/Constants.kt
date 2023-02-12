@@ -5,7 +5,7 @@ object Constants {
     const val DIGITS = "0123456789"
     const val LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
     const val LETTERS_DIGITS = LETTERS + DIGITS
-    const val ALLOWED_SYMBOLS = ":&?{}!>"
+    const val ALLOWED_SYMBOLS = ":&?{}!>$"
 
     private val KEYWORDS = hashMapOf(
         Pair("var", "mut"),
@@ -21,7 +21,6 @@ object Constants {
         Pair("continue", "continue"),
         Pair("break", "break"),
         Pair("in", "in"),
-        Pair("use", "use"),
         Pair("container", "container"),
         Pair("to", "to"),
         Pair("enum", "enum")
@@ -34,7 +33,8 @@ object Constants {
         Pair("then", "{"),
         Pair("end", "}"),
         Pair("accessor", "::"),
-        Pair("index splitter", ":")
+        Pair("index splitter", ":"),
+        Pair("import", "$")
     )
 
     fun get(identifier: String): String {

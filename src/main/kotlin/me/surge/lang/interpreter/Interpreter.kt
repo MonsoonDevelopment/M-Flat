@@ -778,7 +778,7 @@ class Interpreter(val executor: Executor? = null) {
 
         val result = RuntimeResult()
 
-        result.register(this.executor!!.useImplementation(node.name.value as String, node.start, node.end, context))
+        result.register(this.executor!!.useImplementation(node.name.value as String, node.identifier.value as String, node.start, node.end, context))
 
         if (result.shouldReturn()) {
             return result

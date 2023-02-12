@@ -1,3 +1,5 @@
+$ "maths" -> m
+
 enum TestEnum(param1, param2) {
     MEMBER_ONE(5, 2)
 
@@ -20,4 +22,6 @@ meth main(args) {
 
     const tester = EnumTester(KEnumTest::MEMBER_ONE)
     tester::output()
+
+    std::println(m::pi)
 }

@@ -1,5 +1,5 @@
-use "secondary"
-use "maths"
+$ "secondary" -> sec
+$ "maths"
 
 container Lliw(red, green, blue, alpha) {
     meth getRed() {
