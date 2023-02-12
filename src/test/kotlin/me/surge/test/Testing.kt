@@ -3,7 +3,7 @@ package me.surge.test
 import me.surge.api.Coercer
 import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
-import me.surge.lexer.value.link.JvmClassInstanceValue
+import me.surge.lang.value.link.JvmClassInstanceValue
 
 object Testing {
 

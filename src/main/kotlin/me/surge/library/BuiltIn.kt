@@ -1,7 +1,7 @@
 package me.surge.library
 
 import me.surge.api.annotation.OverrideName
-import me.surge.lexer.value.NullValue
+import me.surge.lang.value.NullValue
 
 object BuiltIn {
 

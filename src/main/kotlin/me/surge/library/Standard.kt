@@ -3,9 +3,9 @@ package me.surge.library
 import me.surge.api.result.Failure
 import me.surge.api.result.Result
 import me.surge.api.result.Success
-import me.surge.lexer.error.impl.RuntimeError
-import me.surge.lexer.value.*
-import me.surge.lexer.value.link.JvmLinkMethod
+import me.surge.lang.error.impl.RuntimeError
+import me.surge.lang.value.*
+import me.surge.lang.value.link.JvmLinkMethod
 import kotlin.system.exitProcess
 
 object Standard {
@@ -36,12 +36,13 @@ object Standard {
             list.elements.removeAt(index.value.toInt())
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
-                RuntimeError(
-                functionData.start!!,
-                functionData.end!!,
-                "Index out of bounds: $index",
-                functionData.context!!
-            ))
+                me.surge.lang.error.impl.RuntimeError(
+                    functionData.start!!,
+                    functionData.end!!,
+                    "Index out of bounds: $index",
+                    functionData.context!!
+                )
+            )
         }
 
         return Success()
@@ -52,12 +53,13 @@ object Standard {
             list.elements[index.value.toInt()]
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
-                RuntimeError(
-                functionData.start!!,
-                functionData.end!!,
-                "Index out of bounds: $index",
-                functionData.context!!
-            ))
+                me.surge.lang.error.impl.RuntimeError(
+                    functionData.start!!,
+                    functionData.end!!,
+                    "Index out of bounds: $index",
+                    functionData.context!!
+                )
+            )
         }
 
         return Success(value)
@@ -76,7 +78,7 @@ object Standard {
     }
 
     fun isMethod(value: Value): Result {
-        return Success(BooleanValue("<anonymous is method>", value is JvmLinkMethod))
+        return Success(BooleanValue("<anonymous is method>", value is  JvmLinkMethod))
     }
 
     fun isList(value: Value): Result {
@@ -85,12 +87,14 @@ object Standard {
 
     fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value) {
         if (parent !is ContainerValue) {
-            Failure(RuntimeError(
-                functionData.start!!,
-                functionData.end!!,
-                "Second argument of 'matchesContainer' must be a container!",
-                functionData.context!!
-            ))
+            Failure(
+                me.surge.lang.error.impl.RuntimeError(
+                    functionData.start!!,
+                    functionData.end!!,
+                    "Second argument of 'matchesContainer' must be a container!",
+                    functionData.context!!
+                )
+            )
         }
 
         //return Success(BooleanValue("<anonymous matches>", containerValue.parent!!.name == parent.name))

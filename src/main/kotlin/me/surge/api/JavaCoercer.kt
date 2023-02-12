@@ -1,7 +1,6 @@
 package me.surge.api
 
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.*
+import me.surge.lang.value.*
 import java.lang.IllegalStateException
 
 object JavaCoercer {

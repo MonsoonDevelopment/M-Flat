@@ -1,12 +1,12 @@
 package me.surge.library
 
 import me.surge.api.JavaCoercer
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.FunctionData
-import me.surge.lexer.value.link.JvmClassLinkValue
-import me.surge.lexer.value.ListValue
-import me.surge.lexer.value.StringValue
-import me.surge.lexer.value.method.BaseMethodValue
+import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.value.FunctionData
+import me.surge.lang.value.ListValue
+import me.surge.lang.value.StringValue
+import me.surge.lang.value.link.JvmClassLinkValue
+import me.surge.lang.value.method.BaseMethodValue
 
 object JVMLink {
 

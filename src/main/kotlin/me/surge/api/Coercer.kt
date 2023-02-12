@@ -3,12 +3,12 @@ package me.surge.api
 import me.surge.api.annotation.OverrideName
 import me.surge.api.result.Failure
 import me.surge.api.result.Success
-import me.surge.lexer.error.context.Context
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.*
-import me.surge.lexer.value.method.BaseMethodValue
-import me.surge.lexer.value.link.JvmLinkMethod
-import me.surge.parse.RuntimeResult
+import me.surge.lang.error.context.Context
+import me.surge.lang.parse.RuntimeResult
+import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.value.*
+import me.surge.lang.value.link.*
+import me.surge.lang.value.method.*
 import java.lang.reflect.Method
 
 object Coercer {

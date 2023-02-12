@@ -1,22 +1,22 @@
 package me.surge.api
 
 import me.surge.library.Standard
-import me.surge.interpreter.Interpreter
-import me.surge.lexer.Lexer
-import me.surge.lexer.error.Error
-import me.surge.lexer.error.context.Context
-import me.surge.lexer.error.impl.RuntimeError
-import me.surge.lexer.node.Node
-import me.surge.lexer.position.Position
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.InstanceValue
-import me.surge.lexer.value.Value
-import me.surge.lexer.value.method.BaseMethodValue
+import me.surge.lang.interpreter.Interpreter
+import me.surge.lang.error.Error
+import me.surge.lang.error.context.Context
+import me.surge.lang.error.impl.RuntimeError
+import me.surge.lang.lexer.Lexer
+import me.surge.lang.lexer.position.Position
+import me.surge.lang.node.Node
+import me.surge.lang.parse.Parser
+import me.surge.lang.parse.RuntimeResult
+import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.value.InstanceValue
+import me.surge.lang.value.Value
+import me.surge.lang.value.method.BaseMethodValue
 import me.surge.library.BuiltIn
 import me.surge.library.JVMLink
 import me.surge.library.Maths
-import me.surge.parse.Parser
-import me.surge.parse.RuntimeResult
 import java.io.File
 import java.nio.charset.Charset
 
@@ -171,7 +171,7 @@ class Executor {
     }
 
     fun getValue(identifier: String): Value? {
-        return globalSymbolTable.get(identifier) as Value?
+        return globalSymbolTable.get(identifier)
     }
 
 }

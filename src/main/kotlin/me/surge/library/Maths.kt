@@ -1,10 +1,9 @@
 package me.surge.library
 
-import me.surge.api.result.Failure
 import me.surge.api.result.Result
 import me.surge.api.result.Success
-import me.surge.lexer.value.FunctionData
-import me.surge.lexer.value.NumberValue
+import me.surge.lang.value.FunctionData
+import me.surge.lang.value.NumberValue
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.random.Random

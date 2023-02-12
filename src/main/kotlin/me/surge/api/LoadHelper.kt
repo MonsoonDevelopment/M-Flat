@@ -3,11 +3,10 @@ package me.surge.api
 import me.surge.api.annotation.ExcludeFromProcessing
 import me.surge.api.annotation.Mutable
 import me.surge.api.annotation.OverrideName
-import me.surge.lexer.symbol.SymbolTable
-import me.surge.lexer.value.*
-import me.surge.lexer.value.link.JvmClassLinkValue
-import me.surge.lexer.value.link.JvmEnumLinkValue
-import me.surge.lexer.value.method.BaseMethodValue
+import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.value.*
+import me.surge.lang.value.link.*
+import me.surge.lang.value.method.*
 import java.lang.IllegalStateException
 
 object LoadHelper {
