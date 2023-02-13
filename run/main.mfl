@@ -49,7 +49,7 @@ meth main(args) {
     lliw::red = 23
     std::println(lliw::red)
 
-    const person = secondary::Person("John Doe", 23)
+    const person = sec::Person("John Doe", 23)
     person::say_name()
 
     mut a = 6

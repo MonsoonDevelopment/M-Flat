@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
         .loadEnum("JEnumTest", JEnumTest::class.java)
         .loadClassAsContainer("EnumTester", EnumTester(KEnumTest.MEMBER_ONE))
 
-    val file = File("modules.mfl")
+    val file = File("main.mfl")
     val reader = FileReader(file)
 
     val result = executor.evaluate(file.name, reader.readText())

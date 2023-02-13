@@ -52,7 +52,7 @@ object LoadHelper {
                             }
 
                             is Boolean -> {
-                                NumberValue(array.size.toString(), if (it) 1 else 0)
+                                BooleanValue(array.size.toString(), it)
                             }
 
                             is List<*> -> {
