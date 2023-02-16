@@ -338,7 +338,7 @@ class Interpreter(val executor: Executor? = null) {
 
                 if (index !is NumberValue) {
                     return result.failure(
-                        me.surge.lang.error.impl.RuntimeError(
+                        RuntimeError(
                             node.index.start,
                             node.index.end,
                             "Value isn't a number!",
@@ -351,7 +351,7 @@ class Interpreter(val executor: Executor? = null) {
 
                 if (indexValue >= returnValue.elements.size || indexValue < 0) {
                     return result.failure(
-                        me.surge.lang.error.impl.RuntimeError(
+                        RuntimeError(
                             node.index.start,
                             node.index.end,
                             "Index out of bounds: $indexValue",
@@ -363,7 +363,7 @@ class Interpreter(val executor: Executor? = null) {
                 returnValue = returnValue.elements[indexValue]
             } else {
                 return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.start,
                         node.end,
                         "'${returnValue!!.name}' is not indexable!",
@@ -429,7 +429,7 @@ class Interpreter(val executor: Executor? = null) {
 
             if (start < 0 || start >= value.length + 1) {
                 return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.indexStart.start,
                         node.indexStart.end,
                         "Start index out of bounds! Got $start when the minimum index is 0, and the maximum index is ${value.length}!",
@@ -440,7 +440,7 @@ class Interpreter(val executor: Executor? = null) {
 
             if (end < 0 || end >= value.length + 1) {
                 return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.indexStart.start,
                         node.indexStart.end,
                         "End index out of bounds! Got $end when the minimum index is 0, and the maximum index is ${value.length}!",
@@ -451,7 +451,7 @@ class Interpreter(val executor: Executor? = null) {
 
             if (end < start) {
                 return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.indexEnd.start,
                         node.indexEnd.end,
                         "Start index is greater than end index! Got $end, when the start index is $start!",
@@ -526,9 +526,9 @@ class Interpreter(val executor: Executor? = null) {
 
         val name = node.name.value as String
 
-        var value: Value = context.symbolTable!!.get(name)
+        var value: Value = context.symbolTable!!.get(name, node.parent != null)
                 ?: return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.start,
                         node.end,
                         "'$name' is not defined!",
@@ -542,8 +542,10 @@ class Interpreter(val executor: Executor? = null) {
             childContext.symbolTable = SymbolTable(context.symbolTable)
 
             value.symbols.getAll().forEach {
-                childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true))
+                childContext.symbolTable!!.set(it.identifier, it.value, SymbolTable.EntryData(immutable = false, declaration = true, start = node.start, end = node.end, context, forced = true, top = true))
             }
+
+            node.child!!.parent = node
 
             val child = result.register(this.visit(node.child!!, childContext))
 
@@ -569,7 +571,7 @@ class Interpreter(val executor: Executor? = null) {
 
                 if (index !is NumberValue) {
                     return result.failure(
-                        me.surge.lang.error.impl.RuntimeError(
+                        RuntimeError(
                             node.index!!.start,
                             node.index!!.end,
                             "Value isn't a number!",
@@ -582,7 +584,7 @@ class Interpreter(val executor: Executor? = null) {
 
                 if (indexValue >= value.elements.size || indexValue < 0) {
                     return result.failure(
-                        me.surge.lang.error.impl.RuntimeError(
+                        RuntimeError(
                             node.index!!.start,
                             node.index!!.end,
                             "Index out of bounds: $indexValue",
@@ -594,7 +596,7 @@ class Interpreter(val executor: Executor? = null) {
                 value = value.elements[indexValue]
             } else {
                 return result.failure(
-                    me.surge.lang.error.impl.RuntimeError(
+                    RuntimeError(
                         node.start,
                         node.end,
                         "'${value.name}' is not indexable!",

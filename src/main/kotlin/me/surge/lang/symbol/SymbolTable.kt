@@ -10,8 +10,8 @@ class SymbolTable(val parent: SymbolTable? = null) {
 
     val symbols = arrayListOf<Symbol>()
 
-    fun get(identifier: String): Value? {
-        if (!symbols.any { it.identifier == identifier } && parent != null) {
+    fun get(identifier: String, top: Boolean = false): Value? {
+        if (!symbols.any { it.identifier == identifier } && parent != null && !top) {
             return parent.get(identifier)
         }
 
@@ -39,11 +39,11 @@ class SymbolTable(val parent: SymbolTable? = null) {
             )
         }
 
-        if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null) {
+        if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null && !entry.top) {
             return this.parent.set(identifier, value, entry)
         }
 
-        if (existingValue == null && entry.declaration) {
+        if ((existingValue == null || entry.top) && entry.declaration) {
             this.symbols.add(Symbol(identifier, value, entry.immutable))
         } else if (existingValue != null && !entry.declaration || entry.forced) {
             this.symbols.first { it.identifier == identifier }.value = value
@@ -130,6 +130,6 @@ class SymbolTable(val parent: SymbolTable? = null) {
     }
 
     data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
-    data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false)
+    data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false, val top: Boolean = false)
 
 }

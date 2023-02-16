@@ -71,6 +71,8 @@ open class ContainerValue(identifier: String, val constructors: HashMap<Int, Lis
             }
         }
 
+        table.symbols.addAll(this.context!!.symbolTable!!.symbols)
+
         return functionResult.success(InstanceValue(this.identifier, table))
     }
 
@@ -80,7 +82,8 @@ open class ContainerValue(identifier: String, val constructors: HashMap<Int, Lis
         this.body = body
 
         implement = { body, context, interpreter ->
-            val implementationContext = Context(this.name, context).createChildSymbolTable()
+            val implementationContext = Context(this.name)
+            implementationContext.symbolTable = SymbolTable()
 
             implementationContext.symbolTable!!.set(
                 "this",

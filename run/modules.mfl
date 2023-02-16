@@ -1,27 +1,16 @@
 $ "maths" -> m
 
-enum TestEnum(param1, param2) {
-    MEMBER_ONE(5, 2)
-
+container TestContainer(a) {
     meth test() {
-        std::println("wowza " + param1)
+        std::println(a)
     }
 }
 
-enum TestEnumeration {
-    MEMBER_TEST,
-    MEMBER_TEST_2
+meth test() {
+    std::println(":(")
 }
 
 meth main(args) {
-    TestEnum::MEMBER_ONE::test()
-    std::println(TestEnumeration::MEMBER_TEST_2)
-    std::println(KEnumTest::MEMBER_ONE::a)
-    std::println(JEnumTest::MEMBER_ONE::a)
-    JEnumTest::MEMBER_TWO::output()
-
-    const tester = EnumTester(KEnumTest::MEMBER_ONE)
-    tester::output()
-
-    std::println(m::pi)
+    const cont = TestContainer(5)
+    cont::test()
 }
