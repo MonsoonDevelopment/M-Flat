@@ -1,0 +1,20 @@
+container Wowza(a) {
+    function bleh() {
+        std.println(this.a)
+    }
+}
+
+function main(args) {
+    std.println("wowza")
+
+    const wowza = Wowza(5)
+    wowza.bleh()
+
+    const a = std.stringToBool(std.input())
+
+    if (a) {
+        std.println("woah")
+    } else if (!a) {
+        std.println("oh")
+    }
+}

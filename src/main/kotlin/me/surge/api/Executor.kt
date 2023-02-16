@@ -1,5 +1,7 @@
 package me.surge.api
 
+import me.surge.api.flavour.Flavour
+import me.surge.api.flavour.flavours.MFlatDefault
 import me.surge.library.Standard
 import me.surge.lang.interpreter.Interpreter
 import me.surge.lang.error.Error
@@ -20,7 +22,7 @@ import me.surge.library.Maths
 import java.io.File
 import java.nio.charset.Charset
 
-class Executor {
+class Executor(val flavour: Flavour = MFlatDefault) {
 
     val globalSymbolTable = SymbolTable()
     val silentContainers = hashMapOf<String, Value>()
@@ -33,7 +35,7 @@ class Executor {
     }
 
     fun evaluate(file: String, text: String): Pair<Any?, Error?> {
-        val lexer = Lexer(file, text)
+        val lexer = Lexer(file, text, this)
         val tokens = lexer.makeTokens()
 
         if (tokens.first.size == 1) {
@@ -44,7 +46,7 @@ class Executor {
             return Pair(null, tokens.second)
         }
 
-        val parser = Parser(tokens.first)
+        val parser = Parser(tokens.first, this)
         val ast = parser.parse()
 
         if (ast.node == null) {
@@ -61,7 +63,7 @@ class Executor {
     }
 
     fun use(file: String, text: String, identifier: String): Pair<Any?, Error?> {
-        val lexer = Lexer(file, text)
+        val lexer = Lexer(file, text, this)
         val tokens = lexer.makeTokens()
 
         if (tokens.first.size == 1) {
@@ -72,7 +74,7 @@ class Executor {
             return Pair(null, tokens.second)
         }
 
-        val parser = Parser(tokens.first)
+        val parser = Parser(tokens.first, this)
         val ast = parser.parse()
 
         if (ast.node == null) {

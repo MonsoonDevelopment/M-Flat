@@ -1,13 +1,14 @@
 package me.surge.lang.parse
 
+import me.surge.api.Executor
+import me.surge.lang.error.impl.ExpectedCharError
 import me.surge.lang.error.impl.InvalidSyntaxError
 import me.surge.lang.node.*
 import me.surge.lang.lexer.token.Token
 import me.surge.lang.lexer.token.TokenType
-import me.surge.lang.util.Constants
 import java.util.function.Supplier
 
-class Parser(val tokens: List<Token>) {
+class Parser(val tokens: List<Token>, val executor: Executor) {
 
     private var tokenIndex = -1
     private lateinit var currentToken: Token
@@ -42,11 +43,7 @@ class Parser(val tokens: List<Token>) {
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', '<=', '>=', '${Constants.get("and")}' or '${
-                        Constants.get(
-                            "or"
-                        )
-                    }'"
+                    "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', '<=', '>=', '${executor.flavour.get("and")}' or '${executor.flavour.get("or")}'"
                 )
             )
         }
@@ -67,7 +64,7 @@ class Parser(val tokens: List<Token>) {
         val expr = this.statement()
         val statement = result.tryRegister(expr)
 
-        if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return expr
         }
 
@@ -97,7 +94,7 @@ class Parser(val tokens: List<Token>) {
             val expr = this.statement()
             val statement = result.tryRegister(expr)
 
-            if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (expr.error != null && this.currentToken.type != TokenType.EOF && !this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
                 return expr
             }
 
@@ -121,7 +118,7 @@ class Parser(val tokens: List<Token>) {
         val result = ParseResult()
         val start = this.currentToken.start.clone()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("return"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("return"))) {
             result.registerAdvancement()
             this.advance()
 
@@ -134,13 +131,13 @@ class Parser(val tokens: List<Token>) {
             return result.success(ReturnNode(expression as Node?, start, this.currentToken.end.clone()))
         }
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("continue"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("continue"))) {
             result.registerAdvancement()
             this.advance()
             return result.success(ContinueNode(start, this.currentToken.end.clone()))
         }
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("break"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("break"))) {
             result.registerAdvancement()
             this.advance()
             return result.success(BreakNode(start, this.currentToken.end.clone()))
@@ -153,15 +150,15 @@ class Parser(val tokens: List<Token>) {
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("return")}', '${Constants.get("continue")}', '${Constants.get("break")}', '${
-                        Constants.get(
+                    "Expected '${executor.flavour.get("return")}', '${executor.flavour.get("continue")}', '${executor.flavour.get("break")}', '${
+                        executor.flavour.get(
                             "var"
                         )
-                    }', '${Constants.get("if")}', '${Constants.get("for")}', '${Constants.get("while")}', '${
-                        Constants.get(
+                    }', '${executor.flavour.get("if")}', '${executor.flavour.get("for")}', '${executor.flavour.get("while")}', '${
+                        executor.flavour.get(
                             "function"
                         )
-                    }', int, float, identifier, '+', '-', '(', '[' or '${Constants.get("not")}'"
+                    }', int, float, identifier, '+', '-', '(', '[' or '${executor.flavour.get("not")}'"
                 )
             )
         }
@@ -172,8 +169,8 @@ class Parser(val tokens: List<Token>) {
     private fun expression(): ParseResult {
         val result = ParseResult()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("var")) || this.currentToken.matches(TokenType.KEYWORD, Constants.get("val"))) {
-            val final = this.currentToken.matches(TokenType.KEYWORD, Constants.get("val"))
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("var")) || this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("val"))) {
+            val final = this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("val"))
 
             result.registerAdvancement()
             this.advance()
@@ -221,18 +218,18 @@ class Parser(val tokens: List<Token>) {
             return result.success(VarAssignNode(name, expression!! as Node, declaration = true, final = final))
         }
 
-        val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, Constants.get("and")), Pair(TokenType.KEYWORD, Constants.get("or")))))
+        val node = result.register(this.binaryOperation({this.comparisonExpression()}, arrayOf(Pair(TokenType.KEYWORD, executor.flavour.get("and")), Pair(TokenType.KEYWORD, executor.flavour.get("or")))))
 
         if (result.error != null) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${
-                        Constants.get(
+                    "Expected '${executor.flavour.get("var")}', '${executor.flavour.get("if")}', '${executor.flavour.get("for")}', '${
+                        executor.flavour.get(
                             "while"
                         )
-                    }', int, float, identifier, '+', '-', '(' or '${Constants.get("not")}'"
+                    }', int, float, identifier, '+', '-', '(' or '${executor.flavour.get("not")}'"
                 )
             )
         }
@@ -243,7 +240,7 @@ class Parser(val tokens: List<Token>) {
     private fun comparisonExpression(): ParseResult {
         val result = ParseResult()
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("not"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("not"))) {
             val operator = this.currentToken
 
             result.registerAdvancement()
@@ -267,11 +264,11 @@ class Parser(val tokens: List<Token>) {
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected int, float, identifier, '+', '-', '(', '${Constants.get("if")}', '${Constants.get("for")}', '${
-                        Constants.get(
+                    "Expected int, float, identifier, '+', '-', '(', '${executor.flavour.get("if")}', '${executor.flavour.get("for")}', '${
+                        executor.flavour.get(
                             "while"
                         )
-                    }', '${Constants.get("function")}' or '${Constants.get("not")}'"
+                    }', '${executor.flavour.get("function")}' or '${executor.flavour.get("not")}'"
                 )
             )
         }
@@ -344,12 +341,12 @@ class Parser(val tokens: List<Token>) {
                         InvalidSyntaxError(
                             this.currentToken.start,
                             this.currentToken.end,
-                            "Expected ')', '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${
-                                Constants.get(
+                            "Expected ')', '${executor.flavour.get("var")}', '${executor.flavour.get("if")}', '${executor.flavour.get("for")}', '${
+                                executor.flavour.get(
                                     "while"
                                 )
-                            }', '${Constants.get("function")}', int, float, identifier, '+', '-', '(', or ''${
-                                Constants.get(
+                            }', '${executor.flavour.get("function")}', int, float, identifier, '+', '-', '(', or ''${
+                                executor.flavour.get(
                                     "not"
                                 )
                             }'"
@@ -392,7 +389,7 @@ class Parser(val tokens: List<Token>) {
 
             var child: Node? = null
 
-            while (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
+            while (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("accessor"))) {
                 if (child == null) {
                     child = atom as Node
                 }
@@ -447,7 +444,7 @@ class Parser(val tokens: List<Token>) {
 
         var child: Node? = null
 
-        while (this.currentToken.matches(TokenType.KEYWORD, Constants.get("accessor"))) {
+        while (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("accessor"))) {
             if (child == null) {
                 child = atom as Node
             }
@@ -502,7 +499,7 @@ class Parser(val tokens: List<Token>) {
                 val index = this.tokenIndex
                 skipNewLines(result)
 
-                if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("index splitter"))) {
+                if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("index splitter"))) {
                     result.registerAdvancement()
                     this.advance()
 
@@ -524,7 +521,7 @@ class Parser(val tokens: List<Token>) {
 
                     if (this.currentToken.type != TokenType.RIGHT_SQUARE) {
                         return result.failure(
-                            me.surge.lang.error.impl.ExpectedCharError(
+                            ExpectedCharError(
                                 this.currentToken.start,
                                 this.currentToken.end,
                                 "Expected ']', got ${this.currentToken}!"
@@ -652,7 +649,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(listExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("if"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("if"))) {
             val ifExpression = result.register(this.ifExpression())
 
             if (result.error != null) {
@@ -662,7 +659,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(ifExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("for"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("for"))) {
             val forExpression = result.register(this.forExpression())
 
             if (result.error != null) {
@@ -672,7 +669,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(forExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("while"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("while"))) {
             val whileExpression = result.register(this.whileExpression())
 
             if (result.error != null) {
@@ -682,7 +679,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(whileExpression as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("function"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("function"))) {
             val definition = result.register(this.methodDefinition())
 
             if (result.error != null) {
@@ -692,7 +689,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(definition as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("container"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("container"))) {
             val definition = result.register(this.containerDefinition())
 
             if (result.error != null) {
@@ -702,7 +699,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(definition as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("import"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("import"))) {
             val use = result.register(this.use())
 
             if (result.error != null) {
@@ -712,7 +709,7 @@ class Parser(val tokens: List<Token>) {
             return result.success(use as Node)
         }
 
-        else if (token.matches(TokenType.KEYWORD, Constants.get("enum"))) {
+        else if (token.matches(TokenType.KEYWORD, executor.flavour.get("enum"))) {
             val definition = result.register(this.enumDefinition())
 
             if (result.error != null) {
@@ -762,12 +759,12 @@ class Parser(val tokens: List<Token>) {
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected ']', '${Constants.get("var")}', '${Constants.get("if")}', '${Constants.get("for")}', '${
-                            Constants.get(
+                        "Expected ']', '${executor.flavour.get("var")}', '${executor.flavour.get("if")}', '${executor.flavour.get("for")}', '${
+                            executor.flavour.get(
                                 "while"
                             )
-                        }', ${Constants.get("function")}, int, float, identifier, '+', '-', '*', '/', '(', '[' or '${
-                            Constants.get(
+                        }', ${executor.flavour.get("function")}, int, float, identifier, '+', '-', '*', '/', '(', '[' or '${
+                            executor.flavour.get(
                                 "not"
                             )
                         }'"
@@ -819,7 +816,7 @@ class Parser(val tokens: List<Token>) {
 
     private fun ifExpression(): ParseResult {
         val result = ParseResult()
-        val allCases = result.register(this.ifExpressionCases(Constants.get("if")))
+        val allCases = result.register(this.ifExpressionCases(executor.flavour.get("if")))
 
         if (result.error != null) {
             return result
@@ -834,25 +831,25 @@ class Parser(val tokens: List<Token>) {
     }
 
     private fun ifExpressionB(): ParseResult {
-        return this.ifExpressionCases(Constants.get("elif"))
+        return this.ifExpressionCases(executor.flavour.get("elif"))
     }
 
     private fun ifExpressionC(): ParseResult {
         val result = ParseResult()
         var elseCase: BaseCase? = null
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("else"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("else"))) {
             result.registerAdvancement()
             this.advance()
 
             skipNewLines(result)
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+            if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
                 return result.failure(
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.get("then")}'"
+                        "Expected '${executor.flavour.get("then")}'"
                     )
                 )
             }
@@ -870,7 +867,7 @@ class Parser(val tokens: List<Token>) {
 
             elseCase = BaseCase(statements as Node, true)
 
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
                 result.registerAdvancement()
                 this.advance()
             } else {
@@ -878,7 +875,7 @@ class Parser(val tokens: List<Token>) {
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.get("end")}'"
+                        "Expected '${executor.flavour.get("end")}'"
                     )
                 )
             }
@@ -892,7 +889,7 @@ class Parser(val tokens: List<Token>) {
         var cases = arrayListOf<Case>()
         val elseCase: BaseCase?
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("elif"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("elif"))) {
             val allCases = result.register(this.ifExpressionB())
 
             if (result.error != null) {
@@ -938,7 +935,7 @@ class Parser(val tokens: List<Token>) {
 
         if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
             return result.failure(
-                me.surge.lang.error.impl.ExpectedCharError(
+                ExpectedCharError(
                     this.currentToken.start,
                     this.currentToken.end,
                     "Expected '('"
@@ -963,7 +960,7 @@ class Parser(val tokens: List<Token>) {
 
         if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
             return result.failure(
-                me.surge.lang.error.impl.ExpectedCharError(
+                ExpectedCharError(
                     this.currentToken.start,
                     this.currentToken.end,
                     "Expected ')'"
@@ -976,12 +973,12 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ${Constants.get("then")}"
+                    "Expected ${executor.flavour.get("then")}"
                 )
             )
         }
@@ -1001,12 +998,12 @@ class Parser(val tokens: List<Token>) {
 
         cases.add(Case(condition, statements, true))
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return result.failure(
-                me.surge.lang.error.impl.ExpectedCharError(
+                ExpectedCharError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("end")}'"
+                    "Expected '${executor.flavour.get("end")}'"
                 )
             )
         }
@@ -1018,7 +1015,7 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("elif")) || this.currentToken.matches(TokenType.KEYWORD, Constants.get("else"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("elif")) || this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("else"))) {
             val allCases = result.register(this.ifExpressionBorC())
 
             if (result.error != null) {
@@ -1044,12 +1041,12 @@ class Parser(val tokens: List<Token>) {
     private fun forExpression(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("for"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("for"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("for")}'"
+                    "Expected '${executor.flavour.get("for")}'"
                 )
             )
         }
@@ -1091,7 +1088,7 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("in"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("in"))) {
             result.registerAdvancement()
             this.advance()
 
@@ -1129,12 +1126,12 @@ class Parser(val tokens: List<Token>) {
 
             skipNewLines(result)
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+            if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
                 return result.failure(
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.get("then")}'"
+                        "Expected '${executor.flavour.get("then")}'"
                     )
                 )
             }
@@ -1150,12 +1147,12 @@ class Parser(val tokens: List<Token>) {
 
             body as Node
 
-            if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
                 return result.failure(
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected ${Constants.get("end")}"
+                        "Expected ${executor.flavour.get("end")}"
                     )
                 )
             }
@@ -1189,12 +1186,12 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("to"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("to"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("to")}'"
+                    "Expected '${executor.flavour.get("to")}'"
                 )
             )
         }
@@ -1218,7 +1215,7 @@ class Parser(val tokens: List<Token>) {
             result.registerAdvancement()
             this.advance()
 
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("step"))) {
+            if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("step"))) {
                 result.registerAdvancement()
                 this.advance()
 
@@ -1253,7 +1250,7 @@ class Parser(val tokens: List<Token>) {
                     InvalidSyntaxError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.get("step")}'"
+                        "Expected '${executor.flavour.get("step")}'"
                     )
                 )
             }
@@ -1274,12 +1271,12 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("then")}'"
+                    "Expected '${executor.flavour.get("then")}'"
                 )
             )
         }
@@ -1297,12 +1294,12 @@ class Parser(val tokens: List<Token>) {
 
         body as Node
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ${Constants.get("end")}"
+                    "Expected ${executor.flavour.get("end")}"
                 )
             )
         }
@@ -1316,12 +1313,12 @@ class Parser(val tokens: List<Token>) {
     private fun whileExpression(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("while"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("while"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("while")}'"
+                    "Expected '${executor.flavour.get("while")}'"
                 )
             )
         }
@@ -1333,7 +1330,7 @@ class Parser(val tokens: List<Token>) {
 
         if (this.currentToken.type != TokenType.LEFT_PARENTHESES) {
             return result.failure(
-                me.surge.lang.error.impl.ExpectedCharError(
+                ExpectedCharError(
                     this.currentToken.start,
                     this.currentToken.end,
                     "Expected '('"
@@ -1356,7 +1353,7 @@ class Parser(val tokens: List<Token>) {
 
         if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
             return result.failure(
-                me.surge.lang.error.impl.ExpectedCharError(
+                ExpectedCharError(
                     this.currentToken.start,
                     this.currentToken.end,
                     "Expected ')'"
@@ -1369,12 +1366,12 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("then")}'"
+                    "Expected '${executor.flavour.get("then")}'"
                 )
             )
         }
@@ -1390,12 +1387,12 @@ class Parser(val tokens: List<Token>) {
             return result
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("end")}'"
+                    "Expected '${executor.flavour.get("end")}'"
                 )
             )
         }
@@ -1409,12 +1406,12 @@ class Parser(val tokens: List<Token>) {
     private fun methodDefinition(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("function"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("function"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ${Constants.get("function")}"
+                    "Expected ${executor.flavour.get("function")}"
                 )
             )
         }
@@ -1525,12 +1522,12 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '->' or ${Constants.get("then")}, got $currentToken"
+                    "Expected '->' or ${executor.flavour.get("then")}, got $currentToken"
                 )
             )
         }
@@ -1546,12 +1543,12 @@ class Parser(val tokens: List<Token>) {
 
         body as Node
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Method Definition: Expected ${Constants.get("end")}, got $currentToken"
+                    "Method Definition: Expected ${executor.flavour.get("end")}, got $currentToken"
                 )
             )
         }
@@ -1571,12 +1568,12 @@ class Parser(val tokens: List<Token>) {
     private fun containerDefinition(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("container"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("container"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("container")}'"
+                    "Expected '${executor.flavour.get("container")}'"
                 )
             )
         }
@@ -1764,7 +1761,7 @@ class Parser(val tokens: List<Token>) {
 
         var body: Node? = null
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             bodied = true
 
             result.registerAdvancement()
@@ -1778,15 +1775,15 @@ class Parser(val tokens: List<Token>) {
 
             body = bodyStatements as Node
 
-            if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+            if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
                 result.registerAdvancement()
                 this.advance()
             } else {
                 return result.failure(
-                    me.surge.lang.error.impl.ExpectedCharError(
+                    ExpectedCharError(
                         this.currentToken.start,
                         this.currentToken.end,
-                        "Expected '${Constants.get("end")}'"
+                        "Expected '${executor.flavour.get("end")}'"
                     )
                 )
             }
@@ -1808,12 +1805,12 @@ class Parser(val tokens: List<Token>) {
     private fun enumDefinition(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("enum"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("enum"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("enum")}', got $currentToken"
+                    "Expected '${executor.flavour.get("enum")}', got $currentToken"
                 )
             )
         }
@@ -1850,12 +1847,12 @@ class Parser(val tokens: List<Token>) {
             }
         }
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("then"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("then"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected ${Constants.get("then")}, got $currentToken"
+                    "Expected ${executor.flavour.get("then")}, got $currentToken"
                 )
             )
         }
@@ -1865,7 +1862,7 @@ class Parser(val tokens: List<Token>) {
 
         skipNewLines(result)
 
-        if (this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             return result.success(
                 EnumDefinitionNode(
                     name,
@@ -2013,7 +2010,7 @@ class Parser(val tokens: List<Token>) {
 
         var body: Node? = null
 
-        if (this.currentToken.type == TokenType.KEYWORD && !this.currentToken.matches(TokenType.KEYWORD, Constants.get("end"))) {
+        if (this.currentToken.type == TokenType.KEYWORD && !this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("end"))) {
             val bodyStatements = result.register(this.statements())
 
             if (result.error != null) {
@@ -2176,12 +2173,12 @@ class Parser(val tokens: List<Token>) {
     private fun use(): ParseResult {
         val result = ParseResult()
 
-        if (!this.currentToken.matches(TokenType.KEYWORD, Constants.get("import"))) {
+        if (!this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("import"))) {
             return result.failure(
                 InvalidSyntaxError(
                     this.currentToken.start,
                     this.currentToken.end,
-                    "Expected '${Constants.get("import")}'"
+                    "Expected '${executor.flavour.get("import")}'"
                 )
             )
         }

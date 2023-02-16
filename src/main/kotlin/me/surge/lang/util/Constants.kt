@@ -16,7 +16,7 @@ object Constants {
         Pair("for", "for"),
         Pair("step", "step"),
         Pair("while", "while"),
-        Pair("function", "meth"), // short for method,
+        Pair("function", "meth"),
         Pair("return", "return"),
         Pair("continue", "continue"),
         Pair("break", "break"),

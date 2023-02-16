@@ -1,18 +1,15 @@
 package me.surge.lang.lexer
 
+import me.surge.api.Executor
 import me.surge.lang.error.Error
-import me.surge.lang.error.impl.ExpectedCharError
-import me.surge.lang.error.impl.IllegalCharError
 import me.surge.lang.lexer.position.Position
 import me.surge.lang.lexer.token.Token
 import me.surge.lang.lexer.token.TokenType.*
-import me.surge.lang.util.Constants.ALLOWED_SYMBOLS
 import me.surge.lang.util.Constants.DIGITS
 import me.surge.lang.util.Constants.LETTERS
 import me.surge.lang.util.Constants.LETTERS_DIGITS
-import me.surge.lang.util.Constants.isInKeywords
 
-class Lexer(val file: String, val text: String) {
+class Lexer(val file: String, val text: String, val executor: Executor) {
 
     private val position = Position(-1, 0, -1, file, text)
     private var currentChar: Char? = null
@@ -40,7 +37,7 @@ class Lexer(val file: String, val text: String) {
 
                 in DIGITS -> tokens.add(makeNumber())
                 in LETTERS -> tokens.add(makeIdentifier())
-                in ALLOWED_SYMBOLS -> tokens.add(makeSymbol())
+                in executor.flavour.ALLOWED_SYMBOLS -> tokens.add(makeSymbol())
 
                 '"' -> {
                     tokens.add(this.makeString())
@@ -124,8 +121,6 @@ class Lexer(val file: String, val text: String) {
             }
         }
 
-        //println(tokens)
-
         tokens.add(Token(EOF, start = this.position))
         return Pair(tokens, null)
     }
@@ -160,12 +155,12 @@ class Lexer(val file: String, val text: String) {
         var id = ""
         val start = this.position.clone()
 
-        while (this.currentChar != null && this.currentChar!! in LETTERS_DIGITS) {
+        while (this.currentChar != null && (this.currentChar!! in LETTERS_DIGITS || executor.flavour.matchesSpaces(id + this.currentChar!!))) {
             id += this.currentChar
             this.advance()
         }
 
-        val type = if (isInKeywords(id)) KEYWORD else IDENTIFIER
+        val type = if (executor.flavour.isInKeywords(id)) KEYWORD else IDENTIFIER
         return Token(type, id, start, this.position)
     }
 
@@ -173,7 +168,7 @@ class Lexer(val file: String, val text: String) {
         var id = ""
         val start = this.position.clone()
 
-        while (this.currentChar != null && this.currentChar!! in ALLOWED_SYMBOLS) {
+        while (this.currentChar != null && (this.currentChar!! in executor.flavour.ALLOWED_SYMBOLS || executor.flavour.matchesSpaces(id))) {
             id += this.currentChar
             this.advance()
         }
