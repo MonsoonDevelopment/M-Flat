@@ -3,21 +3,20 @@ package me.surge.test
 import me.surge.api.Executor
 import me.surge.api.flavour.flavours.Dots
 import me.surge.api.flavour.flavours.JavaScript
+import me.surge.api.flavour.flavours.MFlatDefault
 import me.surge.lang.value.ListValue
 import java.io.File
 import java.io.FileReader
 
 fun main(args: Array<String>) {
-    val executor = Executor(JavaScript)
+    val executor = Executor(MFlatDefault)
         .loadClass("testing", Testing::class.java)
         .loadClass("java_types", JavaTypesTesting::class.java)
         .loadClassAsContainer("TestInstantiationClass", TestInstantiationClass(null))
         .loadClassAsContainer("Second", TestSecondClass(""))
-        .loadEnum("KEnumTest", KEnumTest::class.java)
-        .loadEnum("JEnumTest", JEnumTest::class.java)
-        .loadClassAsContainer("EnumTester", EnumTester(KEnumTest.MEMBER_ONE))
+        .loadClassAsContainer("Multi", Multi(Multi.WowzaClass(5)), true)
 
-    val file = File("bleh.mfl")
+    val file = File("modules.mfl")
     val reader = FileReader(file)
 
     val result = executor.evaluate(file.name, reader.readText())

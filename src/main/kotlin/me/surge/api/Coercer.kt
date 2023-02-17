@@ -20,7 +20,7 @@ object Coercer {
             is Number -> coerceNumber(obj)
             is Boolean -> coerceBoolean(obj)
             is String -> coerceString(obj)
-            is ArrayList<*> -> coerceList(obj)
+            is List<*> -> coerceList(obj)
             null -> NullValue()
             else -> {
                 coerceObject(obj)

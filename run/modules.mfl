@@ -13,4 +13,12 @@ meth test() {
 meth main(args) {
     const cont = TestContainer(5)
     cont::test()
+
+    const t = Multi(WowzaClass(543))
+    t::yes()
+
+    std::println(t::wowza::a)
+
+    const w = WowzaClass(54386545)
+    std::println(w::a)
 }

@@ -158,8 +158,8 @@ class Executor(val flavour: Flavour = MFlatDefault) {
         return this
     }
 
-    fun loadClassAsContainer(identifier: String, any: Any): Executor {
-        LoadHelper.loadClassAsContainer(identifier, any, globalSymbolTable)
+    fun loadClassAsContainer(identifier: String, any: Any, loadFieldsIntoSymbols: Boolean = false): Executor {
+        LoadHelper.loadClassAsContainer(identifier, any, globalSymbolTable, loadFieldsIntoSymbols)
         return this
     }
 

@@ -128,7 +128,13 @@ object LoadHelper {
                     }
 
                     else -> {
-                        return@forEach
+                        val fieldInstance = field.get(instance)
+
+                        if (fieldInstance == null) {
+                            NullValue()
+                        } else {
+                            Coercer.coerceObject(field.get(instance))
+                        }
                     }
                 }
             }
@@ -147,7 +153,7 @@ object LoadHelper {
         }
     }
 
-    fun loadClassAsContainer(identifier: String, instance: Any, symbolTable: SymbolTable) {
+    fun loadClassAsContainer(identifier: String, instance: Any, symbolTable: SymbolTable, loadFieldsIntoSymbols: Boolean = false) {
         val constructors = hashMapOf<Int, List<BaseMethodValue.Argument>>()
 
         instance.javaClass.constructors.forEach { constructor ->
@@ -162,6 +168,32 @@ object LoadHelper {
             }
 
             constructors[list.size] = list
+        }
+
+        if (loadFieldsIntoSymbols) {
+            instance.javaClass.declaredFields.forEach { field ->
+                if (field.getAnnotation(ExcludeFromProcessing::class.java) != null || field.name == "INSTANCE") {
+                    return@forEach
+                }
+
+                field.isAccessible = true
+
+                val fieldValue = field.get(instance)
+
+                when (field.type) {
+                    Int::class.java, Float::class.java, Double::class.java, Long::class.java, Short::class.java, String::class.java, Boolean::class.java, List::class.java, ArrayList::class.java, null, Void::class.java, Nothing::class.java, Unit::class.java -> {}
+
+                    else -> {
+                        val fieldInstance = field.get(instance)
+
+                        if (fieldInstance == null) {
+                            NullValue()
+                        } else {
+                            loadClassAsContainer(fieldValue.javaClass.simpleName, fieldInstance, symbolTable, true)
+                        }
+                    }
+                }
+            }
         }
 
         symbolTable.set(identifier, JvmClassLinkValue(identifier, instance.javaClass, instance, constructors), SymbolTable.EntryData(instance.javaClass.getAnnotation(Mutable::class.java) == null, declaration = true, null, null, null))
