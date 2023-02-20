@@ -1435,7 +1435,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
             name = null
         }
 
-        val argumentNames = arrayListOf<Token>()
+        val argumentNames = arrayListOf<ArgumentToken>()
 
         if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
             result.registerAdvancement()
@@ -1444,12 +1444,51 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
             skipNewLines(result)
 
             if (this.currentToken.type == TokenType.IDENTIFIER) {
-                argumentNames.add(this.currentToken)
+                val name = this.currentToken
 
                 result.registerAdvancement()
                 this.advance()
 
                 skipNewLines(result)
+
+                var type: Token? = null
+
+                if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.IDENTIFIER) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected identifier, got $currentToken"
+                        ))
+                    }
+
+                    type = this.currentToken
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected ')', got $currentToken"
+                        ))
+                    }
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                }
+
+                argumentNames.add(ArgumentToken(name, null, true, type))
 
                 while (this.currentToken.type == TokenType.COMMA) {
                     result.registerAdvancement()
@@ -1467,7 +1506,46 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                         )
                     }
 
-                    argumentNames.add(this.currentToken)
+                    val name = this.currentToken
+
+                    var type: Token? = null
+
+                    if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        if (this.currentToken.type != TokenType.IDENTIFIER) {
+                            return result.failure(InvalidSyntaxError(
+                                this.currentToken.start,
+                                this.currentToken.end,
+                                "Expected identifier, got $currentToken"
+                            ))
+                        }
+
+                        type = this.currentToken
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                            return result.failure(InvalidSyntaxError(
+                                this.currentToken.start,
+                                this.currentToken.end,
+                                "Expected ')', got $currentToken"
+                            ))
+                        }
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+                    }
+
+                    argumentNames.add(ArgumentToken(name, null, true, type))
 
                     result.registerAdvancement()
                     this.advance()

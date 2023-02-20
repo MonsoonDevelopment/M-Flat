@@ -18,7 +18,13 @@ meth test() {
     std::println(":(")
 }
 
+meth anotherTest(a (number)) {
+    std::println(a)
+}
+
 meth main(args) {
+    anotherTest("test")
+
     const cont = TestContainer(Other(3))
     cont::test()
 

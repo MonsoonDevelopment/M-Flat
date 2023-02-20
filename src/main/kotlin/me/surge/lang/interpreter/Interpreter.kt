@@ -271,7 +271,7 @@ class Interpreter(val executor: Executor? = null) {
         val argumentNames = arrayListOf<BaseMethodValue.Argument>()
 
         for (argumentName in node.argumentTokens) {
-            argumentNames.add(BaseMethodValue.Argument(argumentName.value as String, null, true))
+            argumentNames.add(BaseMethodValue.Argument(argumentName.token.value as String, null, true, if (argumentName.type == null) "value" else argumentName.type.value as String))
         }
 
         val functionValue = DefinedMethodValue(name, node.body, argumentNames, node.shouldReturnNull)
