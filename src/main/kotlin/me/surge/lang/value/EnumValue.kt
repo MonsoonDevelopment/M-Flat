@@ -19,7 +19,7 @@ class EnumValue(identifier: String, members: LinkedHashMap<String, Value>) : Val
     }
 
     override fun stringValue(): String {
-        return "<enum $identifier>"
+        return super.overriddenString() ?: "<enum $identifier>"
     }
 
 }

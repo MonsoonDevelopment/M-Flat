@@ -52,7 +52,7 @@ class ListValue(identifier: String, val elements: MutableList<Value>) : Value(id
     }
 
     override fun stringValue(): String {
-        return this.elements.toString()
+        return super.overriddenString() ?: this.elements.toString()
     }
 
     private class CompanionBuiltIns(val instance: ListValue) {

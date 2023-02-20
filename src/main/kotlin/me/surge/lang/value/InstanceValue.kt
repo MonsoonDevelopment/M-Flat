@@ -13,7 +13,7 @@ class InstanceValue(identifier: String, table: SymbolTable, val parent: Value?) 
     }
 
     override fun stringValue(): String {
-        return "<instance $identifier>"
+        return super.overriddenString() ?: this.parent?.overriddenString() ?: "<instance $identifier>"
     }
 
     override fun isOfType(type: String): Boolean {

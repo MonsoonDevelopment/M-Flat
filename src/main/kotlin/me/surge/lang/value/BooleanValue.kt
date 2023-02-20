@@ -46,7 +46,7 @@ class BooleanValue(identifier: String, val value: Boolean) : Value(identifier, "
     }
 
     override fun stringValue(): String {
-        return value.toString()
+        return super.overriddenString() ?: value.toString()
     }
 
     private class CompanionBuiltIns(val instance: BooleanValue) {

@@ -2,6 +2,10 @@ $ "maths" -> m
 
 container Other(mut a) {
 
+    meth str() {
+        return a
+    }
+
 }
 
 container TestContainer(mut a (Other)) {

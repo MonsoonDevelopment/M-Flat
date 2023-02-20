@@ -7,6 +7,7 @@ import me.surge.lang.lexer.position.Position
 import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.symbol.SymbolTable
 import me.surge.lang.util.Constants
+import me.surge.lang.value.method.BaseMethodValue
 
 open class Value(val identifier: String, var name: String) {
 
@@ -57,6 +58,20 @@ open class Value(val identifier: String, var name: String) {
     }
 
     open fun type(): String = name
+
+    fun overriddenString(): String? {
+        val method = symbols.get("str")
+
+        if (method != null && method is BaseMethodValue) {
+            val result = method.execute(arrayListOf())
+
+            if (result.value != null) {
+                return result.value!!.stringValue()
+            }
+        }
+
+        return null
+    }
 
     fun setPosition(start: Position?, end: Position?): Value {
         this.start = start

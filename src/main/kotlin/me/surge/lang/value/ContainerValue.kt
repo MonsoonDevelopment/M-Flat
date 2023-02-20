@@ -113,7 +113,7 @@ open class ContainerValue(identifier: String, val constructors: HashMap<Int, Lis
     }
 
     override fun stringValue(): String {
-        return "<container $identifier>"
+        return super.overriddenString() ?: "<container $identifier>"
     }
 
 }
