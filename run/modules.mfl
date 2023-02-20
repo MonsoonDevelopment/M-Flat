@@ -1,6 +1,6 @@
 $ "maths" -> m
 
-container TestContainer(a) {
+container TestContainer(mut a) {
     meth test() {
         std::println(a)
     }
@@ -13,6 +13,11 @@ meth test() {
 meth main(args) {
     const cont = TestContainer(5)
     cont::test()
+
+    cont::a = 4
+    cont::test()
+
+    std::println(std::checkType(cont, TestContainer))
 
     const t = Multi(WowzaClass(543))
     t::yes()

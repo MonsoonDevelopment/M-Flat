@@ -271,7 +271,7 @@ class Interpreter(val executor: Executor? = null) {
         val argumentNames = arrayListOf<BaseMethodValue.Argument>()
 
         for (argumentName in node.argumentTokens) {
-            argumentNames.add(BaseMethodValue.Argument(argumentName.value as String, null)) // TODO: default values
+            argumentNames.add(BaseMethodValue.Argument(argumentName.value as String, null, true))
         }
 
         val functionValue = DefinedMethodValue(name, node.body, argumentNames, node.shouldReturnNull)
@@ -555,7 +555,12 @@ class Interpreter(val executor: Executor? = null) {
 
             if (node.child is VarAssignNode) {
                 node.child as VarAssignNode
-                value.symbols.set((node.child!! as VarAssignNode).name.value as String, child!!, SymbolTable.EntryData(immutable = (node.child!! as VarAssignNode).final, declaration = (node.child!! as VarAssignNode).declaration, node.start, node.end, childContext))
+
+                val error = value.symbols.set((node.child!! as VarAssignNode).name.value as String, child!!, SymbolTable.EntryData(immutable = (node.child!! as VarAssignNode).final, declaration = (node.child!! as VarAssignNode).declaration, node.start, node.end, childContext))
+
+                if (error != null) {
+                    return result.failure(error)
+                }
             }
 
             value = child!!
@@ -753,14 +758,14 @@ class Interpreter(val executor: Executor? = null) {
                 constructors[size] = arrayListOf()
             }
 
-            for (token in tokens) {
-                val value = token.defaultValue?.let { result.register(this.visit(it, context)) }
+            for (argumentNode in tokens) {
+                val value = argumentNode.defaultValue?.let { result.register(this.visit(it, context)) }
 
                 if (result.shouldReturn()) {
                     return result
                 }
 
-                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(token.token.value as String, value))
+                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(argumentNode.token.value as String, value, argumentNode.final))
             }
         }
 
@@ -812,7 +817,7 @@ class Interpreter(val executor: Executor? = null) {
                     default = defaultValue
                 }
 
-                args.add(BaseMethodValue.Argument(parameter.token.value as String, default))
+                args.add(BaseMethodValue.Argument(parameter.token.value as String, default, true))
             }
 
             val container = ContainerValue(nameToken.value as String, hashMapOf(Pair(args.size, args)))

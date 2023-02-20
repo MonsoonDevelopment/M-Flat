@@ -55,7 +55,7 @@ object Coercer {
     }
 
     @JvmStatic
-    fun coerceMethod(instance: Any?, method: Method): JvmLinkMethod {
+    fun coerceMethod(instance: Any?, method: Method): JvmMethodLink {
         method.isAccessible = true
 
         val name = if (method.isAnnotationPresent(OverrideName::class.java)) {
@@ -64,7 +64,7 @@ object Coercer {
             method.name
         }
 
-        val function = JvmLinkMethod(
+        val function = JvmMethodLink(
             name,
 
             { functionData ->
@@ -88,7 +88,7 @@ object Coercer {
                 val result = method.invoke(instance, *arguments.toTypedArray())
 
                 if (result is RuntimeResult) {
-                    return@JvmLinkMethod result
+                    return@JvmMethodLink result
                 }
 
                 when (result) {
@@ -132,7 +132,7 @@ object Coercer {
 
         LoadHelper.loadClass(obj, table)
 
-        return InstanceValue(container.identifier, table)
+        return InstanceValue(container.identifier, table, container)
     }
 
     @JvmStatic

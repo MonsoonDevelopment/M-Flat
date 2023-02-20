@@ -5,10 +5,12 @@ import me.surge.lang.error.context.Context
 import me.surge.lang.error.impl.JvmLinkError
 import me.surge.lang.error.impl.RuntimeError
 import me.surge.lang.parse.RuntimeResult
+import me.surge.lang.util.Link
 import me.surge.lang.value.*
 import me.surge.lang.value.method.BaseMethodValue
 
-class JvmClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "JVM CLASS LINK") {
+class JvmClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "JVM CLASS LINK"),
+    Link {
 
     init {
         LoadHelper.loadClass(instance, this.symbols)

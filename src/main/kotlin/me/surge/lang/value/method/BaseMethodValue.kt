@@ -1,5 +1,6 @@
 package me.surge.lang.value.method
 
+import me.surge.lang.error.Error
 import me.surge.lang.error.context.Context
 import me.surge.lang.error.impl.RuntimeError
 import me.surge.lang.parse.RuntimeResult
@@ -44,19 +45,30 @@ open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : V
         return result.success(null)
     }
 
-    fun populateArguments(argumentNames: List<Argument>, arguments: List<Value>, context: Context) {
+    fun populateArguments(argumentNames: List<Argument>, arguments: List<Value>, context: Context): Error? {
         arguments.forEachIndexed { index, value ->
             val arg = argumentNames[index]
             val argValue = arguments[index]
             argValue.setContext(context)
-            context.symbolTable!!.set(arg.name, argValue, SymbolTable.EntryData(immutable = true, declaration = true, start = this.start, end = this.end, context = context, forced = true))
+
+            val error = context.symbolTable!!.set(arg.name, argValue, SymbolTable.EntryData(immutable = argumentNames[index].final, declaration = true, start = this.start, end = this.end, context = context))
+
+            if (error != null) {
+                return error
+            }
         }
 
         argumentNames.forEach {
             if (!context.symbolTable!!.symbols.any { symbol -> symbol.identifier == it.name } && it.defaultValue != null) {
-                context.symbolTable!!.set(it.name, it.defaultValue, SymbolTable.EntryData(immutable = true, declaration = true, start = this.start, end = this.end, context = context, forced = true))
+                val error = context.symbolTable!!.set(it.name, it.defaultValue, SymbolTable.EntryData(immutable = it.final, declaration = true, start = this.start, end = this.end, context = context))
+
+                if (error != null) {
+                    return error
+                }
             }
         }
+
+        return null
     }
 
     fun checkAndPopulateArguments(argumentNames: List<Argument>, arguments: List<Value>, context: Context): RuntimeResult {
@@ -68,12 +80,16 @@ open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : V
             return result
         }
 
-        this.populateArguments(argumentNames, arguments, context)
+        val error = this.populateArguments(argumentNames, arguments, context)
+
+        if (error != null) {
+            return result.failure(error)
+        }
 
         return result.success(null)
     }
 
-    data class Argument(val name: String, val defaultValue: Value? = null) {
+    data class Argument(val name: String, val defaultValue: Value? = null, val final: Boolean = false) {
         override fun toString(): String {
             return "<$name, $defaultValue>"
         }

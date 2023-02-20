@@ -39,6 +39,15 @@ class SymbolTable(val parent: SymbolTable? = null) {
             )
         }
 
+        if (existingValue != null && existingValue.immutable && !entry.forced) {
+            return RuntimeError(
+                entry.start!!,
+                entry.end!!,
+                "'$identifier' is immutable!",
+                entry.context!!
+            )
+        }
+
         if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null && !entry.top) {
             return this.parent.set(identifier, value, entry)
         }

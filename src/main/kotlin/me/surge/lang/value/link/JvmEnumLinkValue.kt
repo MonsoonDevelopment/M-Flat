@@ -2,10 +2,11 @@ package me.surge.lang.value.link
 
 import me.surge.api.LoadHelper
 import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.util.Link
 import me.surge.lang.value.NumberValue
 import me.surge.lang.value.Value
 
-class JvmEnumLinkValue(identifier: String, val enum: Class<Enum<*>>) : Value(identifier, "JVM ENUM") {
+class JvmEnumLinkValue(identifier: String, val enum: Class<Enum<*>>) : Value(identifier, "JVM ENUM"), Link {
 
     init {
         enum.enumConstants.forEach { member ->

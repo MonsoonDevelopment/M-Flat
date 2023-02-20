@@ -3,9 +3,8 @@ package me.surge.library
 import me.surge.api.result.Failure
 import me.surge.api.result.Result
 import me.surge.api.result.Success
-import me.surge.lang.error.impl.RuntimeError
 import me.surge.lang.value.*
-import me.surge.lang.value.link.JvmLinkMethod
+import me.surge.lang.value.link.JvmMethodLink
 import kotlin.system.exitProcess
 
 object Standard {
@@ -78,26 +77,15 @@ object Standard {
     }
 
     fun isMethod(value: Value): Result {
-        return Success(BooleanValue("<anonymous is method>", value is  JvmLinkMethod))
+        return Success(BooleanValue("<anonymous is method>", value is  JvmMethodLink))
     }
 
     fun isList(value: Value): Result {
         return Success(BooleanValue("<anonymous is list>", value is ListValue))
     }
 
-    fun matchesContainer(functionData: FunctionData, containerValue: Value, parent: Value) {
-        if (parent !is ContainerValue) {
-            Failure(
-                me.surge.lang.error.impl.RuntimeError(
-                    functionData.start!!,
-                    functionData.end!!,
-                    "Second argument of 'matchesContainer' must be a container!",
-                    functionData.context!!
-                )
-            )
-        }
-
-        //return Success(BooleanValue("<anonymous matches>", containerValue.parent!!.name == parent.name))
+    fun checkType(functionData: FunctionData, instance: InstanceValue, parent: Value): Result {
+        return Success(BooleanValue("<anonymous check>", instance.parent == parent))
     }
 
     fun stringToNumber(value: Value): Result {

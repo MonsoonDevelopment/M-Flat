@@ -1,9 +1,10 @@
 package me.surge.lang.value.link
 
 import me.surge.api.LoadHelper
+import me.surge.lang.util.Link
 import me.surge.lang.value.Value
 
-class JvmClassInstanceValue<T : Any>(identifier: String, val instance: T) : Value(identifier, "JVM CLASS INSTANCE") {
+class JvmClassInstanceValue<T : Any>(identifier: String, val instance: T) : Value(identifier, "JVM CLASS INSTANCE"), Link {
 
     init {
         LoadHelper.loadClass(instance, this.symbols)

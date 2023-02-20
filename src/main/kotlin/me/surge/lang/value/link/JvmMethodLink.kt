@@ -2,11 +2,12 @@ package me.surge.lang.value.link
 
 import me.surge.lang.error.context.Context
 import me.surge.lang.parse.RuntimeResult
+import me.surge.lang.util.Link
 import me.surge.lang.value.FunctionData
 import me.surge.lang.value.Value
 import me.surge.lang.value.method.BaseMethodValue
 
-class JvmLinkMethod(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD") {
+class JvmMethodLink(identifier: String, val invoke: (functionData: FunctionData) -> RuntimeResult, val argumentNames: List<Argument>) : BaseMethodValue(identifier, "JVM METHOD"), Link {
 
     override fun execute(args: List<Value>, context: Context): RuntimeResult {
         val result = RuntimeResult()
@@ -31,7 +32,7 @@ class JvmLinkMethod(identifier: String, val invoke: (functionData: FunctionData)
     }
 
     override fun clone(): Value {
-        return JvmLinkMethod(this.identifier, this.invoke, this.argumentNames)
+        return JvmMethodLink(this.identifier, this.invoke, this.argumentNames)
             .setPosition(this.start, this.end)
             .setContext(this.context)
     }

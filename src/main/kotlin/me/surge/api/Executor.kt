@@ -13,6 +13,7 @@ import me.surge.lang.node.Node
 import me.surge.lang.parse.Parser
 import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.util.Link
 import me.surge.lang.value.InstanceValue
 import me.surge.lang.value.Value
 import me.surge.lang.value.method.BaseMethodValue
@@ -89,7 +90,7 @@ class Executor(val flavour: Flavour = MFlatDefault) {
 
         globalSymbolTable.set(
             identifier,
-            InstanceValue(identifier, context.symbolTable!!),
+            InstanceValue(identifier, context.symbolTable!!, null),
             SymbolTable.EntryData(
                 immutable = true,
                 declaration = true,
@@ -141,7 +142,7 @@ class Executor(val flavour: Flavour = MFlatDefault) {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        val value = InstanceValue(identifier, symbolTable)
+        val value = InstanceValue(identifier, symbolTable, null)
 
         globalSymbolTable.set(identifier, value, SymbolTable.EntryData(immutable = true, declaration = true, null, null, null))
 
@@ -153,7 +154,7 @@ class Executor(val flavour: Flavour = MFlatDefault) {
 
         LoadHelper.loadClass(any, symbolTable)
 
-        silentContainers[identifier] = InstanceValue(identifier, symbolTable)
+        silentContainers[identifier] = InstanceValue(identifier, symbolTable, null)
 
         return this
     }
@@ -166,6 +167,10 @@ class Executor(val flavour: Flavour = MFlatDefault) {
     fun loadEnum(identifier: String, clazz: Class<*>): Executor {
         LoadHelper.loadEnum(identifier, clazz as Class<Enum<*>>, globalSymbolTable)
         return this
+    }
+
+    fun reset() {
+        globalSymbolTable.symbols.removeIf { it.value !is Link }
     }
 
     fun getFunction(identifier: String): BaseMethodValue? {

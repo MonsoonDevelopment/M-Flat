@@ -1616,7 +1616,24 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
 
             skipNewLines(result)
 
-            if (this.currentToken.type == TokenType.IDENTIFIER) {
+            if (this.currentToken.type == TokenType.KEYWORD) {
+                val final = if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("var"))) {
+                    false
+                } else if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("val"))) {
+                    true
+                } else {
+                    return result.failure(InvalidSyntaxError(
+                        this.currentToken.start,
+                        this.currentToken.end,
+                        "Expected '${executor.flavour.get("var")}' or '${executor.flavour.get("val")}', got $currentToken"
+                    ))
+                }
+
+                result.registerAdvancement()
+                this.advance()
+
+                skipNewLines(result)
+
                 var optionals = false
 
                 val name = this.currentToken
@@ -1646,9 +1663,26 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                     skipNewLines(result)
                 }
 
-                constructor.add(ArgumentToken(name, defaultValue))
+                constructor.add(ArgumentToken(name, defaultValue, final))
 
                 while (this.currentToken.type == TokenType.COMMA) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    val final = if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("var"))) {
+                        false
+                    } else if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("val"))) {
+                        true
+                    } else {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected '${executor.flavour.get("var")}' or '${executor.flavour.get("val")}', got $currentToken"
+                        ))
+                    }
+
                     result.registerAdvancement()
                     this.advance()
 
@@ -1701,7 +1735,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                         skipNewLines(result)
                     }
 
-                    constructor.add(ArgumentToken(name, defaultValue))
+                    constructor.add(ArgumentToken(name, defaultValue, final))
 
                     skipNewLines(result)
                 }
@@ -2285,6 +2319,6 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
         }
     }
     class Case(val node: Node, token: Node, shouldReturnNull: Boolean) : BaseCase(token, shouldReturnNull)
-    class ArgumentToken(val token: Token, val defaultValue: Node?)
+    class ArgumentToken(val token: Token, val defaultValue: Node?, val final: Boolean = false)
 
 }
