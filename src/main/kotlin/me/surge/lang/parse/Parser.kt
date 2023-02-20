@@ -1,6 +1,7 @@
 package me.surge.lang.parse
 
 import me.surge.api.Executor
+import me.surge.lang.error.impl.DualConstructorError
 import me.surge.lang.error.impl.ExpectedCharError
 import me.surge.lang.error.impl.InvalidSyntaxError
 import me.surge.lang.node.*
@@ -1644,6 +1645,43 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
 
                 skipNewLines(result)
 
+                var type: Token? = null
+
+                if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.IDENTIFIER) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected identifier, got $currentToken"
+                        ))
+                    }
+
+                    type = this.currentToken
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+
+                    if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                        return result.failure(InvalidSyntaxError(
+                            this.currentToken.start,
+                            this.currentToken.end,
+                            "Expected ')', got $currentToken"
+                        ))
+                    }
+
+                    result.registerAdvancement()
+                    this.advance()
+
+                    skipNewLines(result)
+                }
+
                 if (this.currentToken.type == TokenType.EQUALS) {
                     optionals = true
 
@@ -1663,7 +1701,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                     skipNewLines(result)
                 }
 
-                constructor.add(ArgumentToken(name, defaultValue, final))
+                constructor.add(ArgumentToken(name, defaultValue, final, type))
 
                 while (this.currentToken.type == TokenType.COMMA) {
                     result.registerAdvancement()
@@ -1706,6 +1744,43 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
 
                     skipNewLines(result)
 
+                    var type: Token? = null
+
+                    if (this.currentToken.type == TokenType.LEFT_PARENTHESES) {
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        if (this.currentToken.type != TokenType.IDENTIFIER) {
+                            return result.failure(InvalidSyntaxError(
+                                this.currentToken.start,
+                                this.currentToken.end,
+                                "Expected identifier, got $currentToken"
+                            ))
+                        }
+
+                        type = this.currentToken
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+
+                        if (this.currentToken.type != TokenType.RIGHT_PARENTHESES) {
+                            return result.failure(InvalidSyntaxError(
+                                this.currentToken.start,
+                                this.currentToken.end,
+                                "Expected ')', got $currentToken"
+                            ))
+                        }
+
+                        result.registerAdvancement()
+                        this.advance()
+
+                        skipNewLines(result)
+                    }
+
                     if (optionals && this.currentToken.type != TokenType.EQUALS) {
                         return result.failure(
                             InvalidSyntaxError(
@@ -1735,7 +1810,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                         skipNewLines(result)
                     }
 
-                    constructor.add(ArgumentToken(name, defaultValue, final))
+                    constructor.add(ArgumentToken(name, defaultValue, final, type))
 
                     skipNewLines(result)
                 }
@@ -1777,7 +1852,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
 
             if (argumentNames[constructor.size] != null) {
                 return result.failure(
-                    me.surge.lang.error.impl.DualConstructorError(
+                    DualConstructorError(
                         start.start,
                         this.currentToken.end,
                         "Constructor with ${constructor.size} arguments was already defined for container '${name.value as String}'"
@@ -2319,6 +2394,6 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
         }
     }
     class Case(val node: Node, token: Node, shouldReturnNull: Boolean) : BaseCase(token, shouldReturnNull)
-    class ArgumentToken(val token: Token, val defaultValue: Node?, val final: Boolean = false)
+    class ArgumentToken(val token: Token, val defaultValue: Node?, val final: Boolean = false, val type: Token? = null)
 
 }

@@ -52,6 +52,12 @@ open class Value(val identifier: String, var name: String) {
         throw IllegalStateException("`Value#stringValue` was not overridden!")
     }
 
+    open fun isOfType(type: String): Boolean {
+        return this.name == type || type == "value"
+    }
+
+    open fun type(): String = name
+
     fun setPosition(start: Position?, end: Position?): Value {
         this.start = start
         this.end = end
@@ -83,8 +89,7 @@ open class Value(val identifier: String, var name: String) {
             this.end!!,
             message,
             this.context!!
-        )
-        )
+        ))
     }
 
 }

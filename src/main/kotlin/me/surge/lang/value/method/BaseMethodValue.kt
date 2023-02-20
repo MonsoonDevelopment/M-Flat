@@ -5,6 +5,7 @@ import me.surge.lang.error.context.Context
 import me.surge.lang.error.impl.RuntimeError
 import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.value.InstanceValue
 import me.surge.lang.value.Value
 
 open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : Value(identifier, name) {
@@ -51,6 +52,15 @@ open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : V
             val argValue = arguments[index]
             argValue.setContext(context)
 
+            if (!argValue.isOfType(arg.type)) {
+                return RuntimeError(
+                    value.start!!,
+                    value.end!!,
+                    "${argValue.name} (${argValue.identifier}) is not of type ${arg.type}",
+                    context
+                )
+            }
+
             val error = context.symbolTable!!.set(arg.name, argValue, SymbolTable.EntryData(immutable = argumentNames[index].final, declaration = true, start = this.start, end = this.end, context = context))
 
             if (error != null) {
@@ -89,7 +99,7 @@ open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : V
         return result.success(null)
     }
 
-    data class Argument(val name: String, val defaultValue: Value? = null, val final: Boolean = false) {
+    data class Argument(val name: String, val defaultValue: Value? = null, val final: Boolean = false, val type: String = "value") {
         override fun toString(): String {
             return "<$name, $defaultValue>"
         }

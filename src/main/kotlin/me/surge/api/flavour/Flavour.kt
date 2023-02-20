@@ -6,7 +6,7 @@ package me.surge.api.flavour
  */
 open class Flavour {
 
-    open val ALLOWED_SYMBOLS = ":&?{}!>$"
+    open val ALLOWED_SYMBOLS = ":&?{}!>$>"
 
     val getters = hashMapOf(
         Pair("var") { mutable() },
@@ -32,13 +32,13 @@ open class Flavour {
         Pair("end") { end() },
         Pair("accessor") { accessor() },
         Pair("index splitter") { index() },
-        Pair("import") { import() },
+        Pair("import") { import() }
     )
 
     val TOKENS = hashMapOf<String, String>()
 
     init {
-        getters.forEach { name, supplier ->
+        getters.forEach { (name, supplier) ->
             TOKENS[name] = supplier()
         }
     }

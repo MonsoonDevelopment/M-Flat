@@ -16,4 +16,16 @@ class InstanceValue(identifier: String, table: SymbolTable, val parent: Value?) 
         return "<instance $identifier>"
     }
 
+    override fun isOfType(type: String): Boolean {
+        if (parent != null) {
+            if (type == this.parent.identifier) {
+                return true
+            }
+        }
+
+        return super.isOfType(type)
+    }
+
+    override fun type(): String = this.parent?.identifier ?: this.identifier
+
 }

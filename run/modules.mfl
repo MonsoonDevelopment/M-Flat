@@ -1,6 +1,10 @@
 $ "maths" -> m
 
-container TestContainer(mut a) {
+container Other(mut a) {
+
+}
+
+container TestContainer(mut a (Other)) {
     meth test() {
         std::println(a)
     }
@@ -11,10 +15,10 @@ meth test() {
 }
 
 meth main(args) {
-    const cont = TestContainer(5)
+    const cont = TestContainer(Other(3))
     cont::test()
 
-    cont::a = 4
+    cont::a = Other(5)
     cont::test()
 
     std::println(std::checkType(cont, TestContainer))

@@ -48,6 +48,15 @@ class SymbolTable(val parent: SymbolTable? = null) {
             )
         }
 
+        if (existingValue != null && !existingValue.value.isOfType(entry.type)) {
+            return RuntimeError(
+                entry.start!!,
+                entry.end!!,
+                "'$identifier' is not of type ${entry.type}!",
+                entry.context!!
+            )
+        }
+
         if (existingValue != null && !this.symbols.any { it.identifier == identifier } && parent != null && !entry.top) {
             return this.parent.set(identifier, value, entry)
         }
@@ -138,7 +147,7 @@ class SymbolTable(val parent: SymbolTable? = null) {
         return table
     }
 
-    data class Symbol(val identifier: String, var value: Value, val immutable: Boolean)
-    data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false, val top: Boolean = false)
+    data class Symbol(val identifier: String, var value: Value, val immutable: Boolean, val type: String = "value")
+    data class EntryData(val immutable: Boolean, val declaration: Boolean, val start: Position?, val end: Position?, val context: Context?, val forced: Boolean = false, val top: Boolean = false, val type: String = "value")
 
 }

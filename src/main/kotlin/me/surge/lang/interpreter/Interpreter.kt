@@ -659,7 +659,16 @@ class Interpreter(val executor: Executor? = null) {
             }
         }
 
-        val error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(immutable = node.final, declaration = node.declaration, start = node.start, end = node.end, context = context))
+        if (original != null && !original.isOfType(newValue!!.identifier)) {
+            return result.failure(RuntimeError(
+                newValue.start!!,
+                newValue.end!!,
+                "'${newValue}' is not of type ${original.type()}!",
+                newValue.context!!
+            ))
+        }
+
+        val error = context.symbolTable?.set(name, newValue!!, SymbolTable.EntryData(immutable = node.final, declaration = node.declaration, start = node.start, end = node.end, context = context, type = original?.name ?: "value"))
 
         if (error != null) {
             return result.failure(error)
@@ -765,7 +774,7 @@ class Interpreter(val executor: Executor? = null) {
                     return result
                 }
 
-                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(argumentNode.token.value as String, value, argumentNode.final))
+                (constructors[size] as ArrayList<BaseMethodValue.Argument>).add(BaseMethodValue.Argument(argumentNode.token.value as String, value, argumentNode.final, if (argumentNode.type == null) "value" else argumentNode.type.value as String))
             }
         }
 
