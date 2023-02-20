@@ -3,7 +3,7 @@ $ "maths" -> m
 container Other(mut a) {
 
     meth str() {
-        return a
+        return a + "wow"
     }
 
 }

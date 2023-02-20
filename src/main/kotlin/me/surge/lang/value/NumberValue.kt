@@ -15,7 +15,7 @@ class NumberValue(identifier: String, val value: Number) : Value(identifier, "nu
             return Pair(NumberValue(identifier, if (this.value is Float || other.value is Float) this.value.toFloat() + other.value.toFloat() else this.value.toInt() + other.value.toInt()), null)
         }
 
-        return super.addedTo(other)
+        return Pair(StringValue(identifier, this.value.toString() + other.stringValue()), null)
     }
 
     override fun subbedBy(other: Value): Pair<Value?, Error?> {
