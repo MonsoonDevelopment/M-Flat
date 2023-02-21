@@ -13,6 +13,7 @@ import me.surge.lang.node.Node
 import me.surge.lang.parse.Parser
 import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.symbol.SymbolTable
+import me.surge.lang.util.Constants
 import me.surge.lang.util.Link
 import me.surge.lang.value.InstanceValue
 import me.surge.lang.value.Value
@@ -36,6 +37,7 @@ class Executor(val flavour: Flavour = MFlatDefault) {
     }
 
     fun evaluate(file: String, text: String): Pair<Any?, Error?> {
+        Constants.KEYWORDS = flavour.TOKENS
         val lexer = Lexer(file, text, this)
         val tokens = lexer.makeTokens()
 

@@ -8,6 +8,7 @@ import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.symbol.SymbolTable
 import me.surge.lang.util.Constants
 import me.surge.lang.value.method.BaseMethodValue
+import me.surge.lang.value.method.DefinedMethodValue
 
 open class Value(val identifier: String, var name: String) {
 
@@ -62,7 +63,7 @@ open class Value(val identifier: String, var name: String) {
     fun overriddenString(): String? {
         val method = symbols.get("str")
 
-        if (method != null && method is BaseMethodValue) {
+        if (method != null && method is DefinedMethodValue && method.returnType == "string") {
             val result = method.execute(arrayListOf())
 
             if (result.value != null) {

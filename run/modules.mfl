@@ -2,7 +2,7 @@ $ "maths" -> m
 
 container Other(mut a) {
 
-    meth str() {
+    meth str(): string {
         return a + "wow"
     }
 
@@ -18,12 +18,13 @@ meth test() {
     std::println(":(")
 }
 
-meth anotherTest(a (number)) {
+meth anotherTest(a (number)): number {
     std::println(a)
+    return 3
 }
 
 meth main(args) {
-    anotherTest("test")
+    std::println(anotherTest(4))
 
     const cont = TestContainer(Other(3))
     cont::test()

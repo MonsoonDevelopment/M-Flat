@@ -7,7 +7,9 @@ object Constants {
     const val LETTERS_DIGITS = LETTERS + DIGITS
     const val ALLOWED_SYMBOLS = ":&?{}!>$"
 
-    private val KEYWORDS = hashMapOf(
+    // holds current flavour
+
+    var KEYWORDS = hashMapOf(
         Pair("var", "mut"),
         Pair("val", "const"),
         Pair("if", "if"),
@@ -23,10 +25,7 @@ object Constants {
         Pair("in", "in"),
         Pair("container", "container"),
         Pair("to", "to"),
-        Pair("enum", "enum")
-    )
-
-    private val SYMBOLS = hashMapOf(
+        Pair("enum", "enum"),
         Pair("and", "&"),
         Pair("or", "?"),
         Pair("not", "!"),
@@ -38,11 +37,7 @@ object Constants {
     )
 
     fun get(identifier: String): String {
-        return (if (KEYWORDS.containsKey(identifier)) KEYWORDS[identifier] else SYMBOLS[identifier])!!
-    }
-
-    fun isInKeywords(identifier: String): Boolean {
-        return KEYWORDS.containsValue(identifier)
+        return KEYWORDS[identifier]!!
     }
 
 }

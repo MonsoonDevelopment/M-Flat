@@ -11,7 +11,7 @@ import me.surge.lang.value.Value
 open class BaseMethodValue(identifier: String = "<anonymous>", name: String) : Value(identifier, name) {
 
     fun generateContext(): Context {
-        val new = Context(this.name, this.context, this.start)
+        val new = Context(this.identifier, this.context, this.start)
         new.symbolTable = SymbolTable(parent = new.parent?.symbolTable)
         return new
     }

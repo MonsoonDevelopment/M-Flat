@@ -500,7 +500,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                 val index = this.tokenIndex
                 skipNewLines(result)
 
-                if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("index splitter"))) {
+                if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("index"))) {
                     result.registerAdvancement()
                     this.advance()
 
@@ -1580,6 +1580,22 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
             skipNewLines(result)
         }
 
+        var returnType: Token? = null
+
+        if (this.currentToken.matches(TokenType.KEYWORD, executor.flavour.get("index"))) {
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+
+            returnType = this.currentToken
+
+            result.registerAdvancement()
+            this.advance()
+
+            skipNewLines(result)
+        }
+
         if (this.currentToken.type == TokenType.ARROW) {
             result.registerAdvancement()
             this.advance()
@@ -1595,7 +1611,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
                 argumentNames,
                 this.currentToken,
                 body as Node,
-                true
+                returnType
             ))
         }
 
@@ -1640,7 +1656,7 @@ class Parser(val tokens: List<Token>, val executor: Executor) {
             argumentNames,
             this.currentToken,
             body,
-            false
+            returnType
         ))
     }
 

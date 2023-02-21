@@ -274,7 +274,7 @@ class Interpreter(val executor: Executor? = null) {
             argumentNames.add(BaseMethodValue.Argument(argumentName.token.value as String, null, true, if (argumentName.type == null) "value" else argumentName.type.value as String))
         }
 
-        val functionValue = DefinedMethodValue(name, node.body, argumentNames, node.shouldReturnNull)
+        val functionValue = DefinedMethodValue(name, node.body, argumentNames, node.returnType == null, (node.returnType?.value ?: "") as String)
             .setContext(context)
             .setPosition(node.start, node.end)
 

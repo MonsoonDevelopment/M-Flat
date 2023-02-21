@@ -31,7 +31,7 @@ open class Flavour {
         Pair("then") { then() },
         Pair("end") { end() },
         Pair("accessor") { accessor() },
-        Pair("index splitter") { index() },
+        Pair("index") { index() },
         Pair("import") { import() }
     )
 
