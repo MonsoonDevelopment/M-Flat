@@ -1,6 +1,9 @@
 package me.surge.lang.util
 
 import me.surge.lang.lexer.position.Position
+import me.surge.lang.value.number.FloatValue
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 
 fun arrows(text: String, start: Position, end: Position): String {
     var result = ""
@@ -70,4 +73,12 @@ fun List<*>.firstIndexed(predicate: (index: Int, element: Any?) -> Boolean): Any
     }
 
     return null
+}
+
+fun Any.inferNumberValue(name: String, value: Number): NumberValue<*> {
+    return if (value is Int) {
+        IntValue(name, value)
+    } else {
+        FloatValue(name, value.toFloat())
+    }
 }

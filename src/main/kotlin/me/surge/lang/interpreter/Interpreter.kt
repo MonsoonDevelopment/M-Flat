@@ -11,6 +11,9 @@ import me.surge.lang.symbol.SymbolTable
 import me.surge.lang.util.Constants
 import me.surge.lang.value.*
 import me.surge.lang.value.method.*
+import me.surge.lang.value.number.FloatValue
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 import java.lang.IllegalStateException
 
 class Interpreter(val executor: Executor? = null) {
@@ -96,7 +99,7 @@ class Interpreter(val executor: Executor? = null) {
             return result
         }
 
-        start as NumberValue
+        start as NumberValue<*>
 
         val end = result.register(this.visit(node.endValue, context))
 
@@ -104,18 +107,18 @@ class Interpreter(val executor: Executor? = null) {
             return result
         }
 
-        end as NumberValue
+        end as NumberValue<*>
 
-        val step: NumberValue = if (node.step != null) {
+        val step: NumberValue<*> = if (node.step != null) {
             val s = result.register(this.visit(node.step, context))
 
             if (result.shouldReturn()) {
                 return result
             }
 
-            s as NumberValue
+            s as NumberValue<*>
         } else {
-            NumberValue(node.name.value.toString() + "step", 1)
+            IntValue(node.name.value.toString() + "step", 1)
         }
 
         var i = start.value.toFloat()
@@ -130,7 +133,7 @@ class Interpreter(val executor: Executor? = null) {
         forLoopContext.symbolTable = SymbolTable(context.symbolTable)
 
         while (condition()) {
-            forLoopContext.symbolTable!!.set(node.name.value as String, NumberValue(node.name.value.toString(), i), SymbolTable.EntryData(immutable = true, declaration = true, start = node.start, end = node.end, context = context, forced = true))
+            forLoopContext.symbolTable!!.set(node.name.value as String, if (step is IntValue) IntValue(node.name.value.toString(), i.toInt()) else FloatValue(node.name.value.toString(), i), SymbolTable.EntryData(immutable = true, declaration = true, start = node.start, end = node.end, context = context, forced = true))
 
             i += step.value.toFloat()
 
@@ -212,8 +215,8 @@ class Interpreter(val executor: Executor? = null) {
 
         val list = context.symbolTable!!.get(node.list.value as String) as ListValue
 
-        val start = NumberValue(node.name.value as String + "start", 0)
-        val end = NumberValue(node.name.value + "end", list.elements.size)
+        val start = IntValue(node.name.value as String + "start", 0)
+        val end = IntValue(node.name.value + "end", list.elements.size)
 
         var i = start.value.toFloat()
 
@@ -336,12 +339,12 @@ class Interpreter(val executor: Executor? = null) {
                     return result
                 }
 
-                if (index !is NumberValue) {
+                if (index !is IntValue) {
                     return result.failure(
                         RuntimeError(
                             node.index.start,
                             node.index.end,
-                            "Value isn't a number!",
+                            "Value isn't an int!",
                             context
                         )
                     )
@@ -385,14 +388,21 @@ class Interpreter(val executor: Executor? = null) {
     fun visitNumberNode(node: Node, context: Context): RuntimeResult {
         node as NumberNode
 
-        return RuntimeResult().success(
-            NumberValue(node.toString(), node.token.value as Number)
+        return RuntimeResult().success(if (node.token.type == TokenType.INT) {
+            IntValue(node.toString(), node.token.value as Int)
                 .setContext(context)
                 .setPosition(
                     node.start,
                     node.end
                 )
-        )
+        } else {
+            FloatValue(node.toString(), node.token.value as Float)
+                .setContext(context)
+                .setPosition(
+                    node.start,
+                    node.end
+                )
+        })
     }
 
     fun visitStringNode(node: Node, context: Context): RuntimeResult {
@@ -418,10 +428,28 @@ class Interpreter(val executor: Executor? = null) {
                     return result
                 }
 
-                (endValue as NumberValue).value.toInt()
+                if (endValue !is IntValue) {
+                    return result.failure(RuntimeError(
+                        endValue!!.start!!,
+                        endValue.end!!,
+                        "End wasn't an int!",
+                        context
+                    ))
+                }
+
+                endValue.value
             }
 
-            val start = (startValue as NumberValue).value.toInt()
+            if (startValue !is IntValue) {
+                return result.failure(RuntimeError(
+                    startValue!!.start!!,
+                    startValue.end!!,
+                    "Start wasn't an int!",
+                    context
+                ))
+            }
+
+            val start = startValue.value
 
             if (end == start) {
                 end++
@@ -503,7 +531,7 @@ class Interpreter(val executor: Executor? = null) {
         var error: Error? = null
 
         if (node.token.type == TokenType.MINUS) {
-            val transform = number.multedBy(NumberValue("", -1))
+            val transform = number.multedBy(IntValue("", -1))
             number = transform.first!!
             error = transform.second
         } else if (node.token.matches(TokenType.KEYWORD, Constants.get("not"))) {
@@ -574,18 +602,18 @@ class Interpreter(val executor: Executor? = null) {
                     return result
                 }
 
-                if (index !is NumberValue) {
+                if (index !is IntValue) {
                     return result.failure(
                         RuntimeError(
                             node.index!!.start,
                             node.index!!.end,
-                            "Value isn't a number!",
+                            "Value isn't an int!",
                             context
                         )
                     )
                 }
 
-                val indexValue = index.value.toInt()
+                val indexValue = index.value
 
                 if (indexValue >= value.elements.size || indexValue < 0) {
                     return result.failure(
@@ -635,7 +663,7 @@ class Interpreter(val executor: Executor? = null) {
         val original = context.symbolTable?.get(name)
         var newValue = value
 
-        if (original != null && original is NumberValue) {
+        if (original != null && original is NumberValue<*>) {
             when (node.mutate) {
                 null -> {}
 

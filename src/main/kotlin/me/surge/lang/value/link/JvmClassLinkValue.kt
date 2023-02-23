@@ -8,6 +8,7 @@ import me.surge.lang.parse.RuntimeResult
 import me.surge.lang.util.Link
 import me.surge.lang.value.*
 import me.surge.lang.value.method.BaseMethodValue
+import me.surge.lang.value.number.NumberValue
 
 class JvmClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, val constructors: HashMap<Int, List<Argument>>) : BaseMethodValue(identifier, "JVM CLASS LINK"),
     Link {
@@ -39,7 +40,7 @@ class JvmClassLinkValue(identifier: String, val clazz: Class<*>, instance: Any, 
                 is ListValue -> it.elements
                 is NullValue -> null
 
-                is NumberValue -> {
+                is NumberValue<*> -> {
                     if (it.value is Int) {
                         it.value.toInt()
                     } else {

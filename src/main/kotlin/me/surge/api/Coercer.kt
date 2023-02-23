@@ -9,6 +9,9 @@ import me.surge.lang.symbol.SymbolTable
 import me.surge.lang.value.*
 import me.surge.lang.value.link.*
 import me.surge.lang.value.method.*
+import me.surge.lang.value.number.FloatValue
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 import java.lang.reflect.Method
 
 object Coercer {
@@ -29,8 +32,12 @@ object Coercer {
     }
 
     @JvmStatic
-    fun coerceNumber(number: Number): NumberValue {
-        return NumberValue("number", number)
+    fun coerceNumber(number: Number): NumberValue<*> {
+        return if (number.toString().contains('.')) {
+            FloatValue("number", number.toFloat())
+        } else {
+            IntValue("number", number.toInt())
+        }
     }
 
     @JvmStatic
@@ -105,7 +112,11 @@ object Coercer {
                     }
 
                     is Number -> {
-                        RuntimeResult().success(NumberValue(name, result))
+                        RuntimeResult().success(if (result.toString().contains('.')) {
+                            FloatValue("number", result.toFloat())
+                        } else {
+                            IntValue("number", result.toInt())
+                        })
                     }
 
                     is String -> {

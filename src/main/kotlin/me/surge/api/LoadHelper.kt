@@ -7,6 +7,9 @@ import me.surge.lang.symbol.SymbolTable
 import me.surge.lang.value.*
 import me.surge.lang.value.link.*
 import me.surge.lang.value.method.*
+import me.surge.lang.value.number.FloatValue
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 import java.lang.IllegalStateException
 
 object LoadHelper {
@@ -40,11 +43,11 @@ object LoadHelper {
                     elements.add(
                         when (it) {
                             is Int -> {
-                                NumberValue(array.size.toString(), it)
+                                IntValue(array.size.toString(), it)
                             }
 
                             is Number -> {
-                                NumberValue(array.size.toString(), it.toString().toFloat())
+                                FloatValue(array.size.toString(), it.toString().toFloat())
                             }
 
                             is String -> {
@@ -79,7 +82,7 @@ object LoadHelper {
                         if (fieldValue == null) {
                             NullValue()
                         } else {
-                            NumberValue(name, fieldValue as Int)
+                            IntValue(name, fieldValue as Int)
                         }
                     }
 
@@ -87,7 +90,7 @@ object LoadHelper {
                         if (fieldValue == null) {
                             NullValue()
                         } else {
-                            NumberValue(name, fieldValue.toString().toFloat())
+                            FloatValue(name, fieldValue.toString().toFloat())
                         }
                     }
 
@@ -231,7 +234,7 @@ object LoadHelper {
         }
 
         when (value) {
-            is NumberValue -> {
+            is NumberValue<*> -> {
                 when (clazz) {
                     Int::class.java -> {
                         return value.stringValue().toInt()

@@ -3,8 +3,12 @@ package me.surge.library
 import me.surge.api.result.Failure
 import me.surge.api.result.Result
 import me.surge.api.result.Success
+import me.surge.lang.error.impl.RuntimeError
 import me.surge.lang.value.*
 import me.surge.lang.value.link.JvmMethodLink
+import me.surge.lang.value.number.FloatValue
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 import kotlin.system.exitProcess
 
 object Standard {
@@ -30,12 +34,12 @@ object Standard {
         list.elements.add(value)
     }
 
-    fun remove(functionData: FunctionData, list: ListValue, index: NumberValue): Result {
+    fun remove(functionData: FunctionData, list: ListValue, index: IntValue): Result {
         try {
             list.elements.removeAt(index.value.toInt())
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
-                me.surge.lang.error.impl.RuntimeError(
+                RuntimeError(
                     functionData.start!!,
                     functionData.end!!,
                     "Index out of bounds: $index",
@@ -47,12 +51,12 @@ object Standard {
         return Success()
     }
 
-    fun get(functionData: FunctionData, list: ListValue, index: NumberValue): Result {
+    fun get(functionData: FunctionData, list: ListValue, index: IntValue): Result {
         val value = try {
-            list.elements[index.value.toInt()]
+            list.elements[index.value]
         } catch (exception: IndexOutOfBoundsException) {
             return Failure(
-                me.surge.lang.error.impl.RuntimeError(
+                RuntimeError(
                     functionData.start!!,
                     functionData.end!!,
                     "Index out of bounds: $index",
@@ -69,7 +73,7 @@ object Standard {
     }
 
     fun isNumber(value: Value): Result {
-        return Success(BooleanValue("<anonymous is number>", value is NumberValue))
+        return Success(BooleanValue("<anonymous is number>", value is NumberValue<*>))
     }
 
     fun isString(value: Value): Result {
@@ -88,11 +92,17 @@ object Standard {
         return Success(BooleanValue("<anonymous check>", instance.parent == parent))
     }
 
-    fun stringToNumber(value: Value): Result {
-        return Success(NumberValue("<anonymous cast>", value.stringValue().toFloat()))
+    fun stringToNumber(value: StringValue): Result {
+        val string = value.stringValue()
+
+        return if (string.contains('.')) {
+            Success(FloatValue("<anonymous cast>", string.toFloat()))
+        } else {
+            Success(IntValue("<anonymous cast>", string.toInt()))
+        }
     }
 
-    fun stringToBool(value: Value): Result {
+    fun stringToBool(value: StringValue): Result {
         return Success(BooleanValue("<anonymous cast>", value.stringValue().lowercase() == "true"))
     }
 
@@ -106,8 +116,8 @@ object Standard {
         return Success()
     }
 
-    fun exit(status: NumberValue): Result {
-        exitProcess(status.value.toInt())
+    fun exit(status: IntValue): Result {
+        exitProcess(status.value)
     }
 
     fun type(value: Value): Result {

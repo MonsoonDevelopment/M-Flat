@@ -1,6 +1,7 @@
 package me.surge.api
 
 import me.surge.lang.value.*
+import me.surge.lang.value.number.NumberValue
 import java.lang.IllegalStateException
 
 object JavaCoercer {
@@ -8,7 +9,7 @@ object JavaCoercer {
     @JvmStatic
     fun coerce(obj: Value): Any? {
         return when (obj) {
-            is NumberValue -> coerceNumber(obj)
+            is NumberValue<*> -> coerceNumber(obj)
             is BooleanValue -> coerceBoolean(obj)
             is StringValue -> coerceString(obj)
             is ListValue -> coerceList(obj)
@@ -20,7 +21,7 @@ object JavaCoercer {
     }
 
     @JvmStatic
-    fun coerceNumber(number: NumberValue): Number {
+    fun coerceNumber(number: NumberValue<*>): Number {
         return number.value
     }
 

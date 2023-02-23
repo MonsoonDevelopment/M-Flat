@@ -12,22 +12,28 @@ container TestContainer(mut a (Other)) {
     meth test() {
         std::println(a)
     }
+
+    meth thisRet() {
+        return this
+    }
 }
 
 meth test() {
     std::println(":(")
 }
 
-meth anotherTest(a (number)): number {
+meth anotherTest(a (float)): int {
     std::println(a)
     return 3
 }
 
 meth main(args) {
-    std::println(anotherTest(4))
+    std::println(anotherTest(4.0))
 
     const cont = TestContainer(Other(3))
     cont::test()
+
+    std::println(cont::thisRet())
 
     cont::a = Other(5)
     cont::test()

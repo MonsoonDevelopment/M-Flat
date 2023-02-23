@@ -5,6 +5,8 @@ import me.surge.api.result.Result
 import me.surge.api.result.Success
 import me.surge.lang.error.Error
 import me.surge.lang.util.multiply
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 
 class StringValue(identifier: String, var value: String) : Value(identifier, "string") {
 
@@ -17,8 +19,8 @@ class StringValue(identifier: String, var value: String) : Value(identifier, "st
     }
 
     override fun multedBy(other: Value): Pair<Value?, Error?> {
-        return if (other is NumberValue) {
-            Pair(StringValue(name, this.value.multiply(other.value.toInt())).setContext(this.context), null)
+        return if (other is IntValue) {
+            Pair(StringValue(name, this.value.multiply(other.value)).setContext(this.context), null)
         } else {
             super.addedTo(other)
         }

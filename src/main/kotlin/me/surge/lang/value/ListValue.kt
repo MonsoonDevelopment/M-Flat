@@ -2,6 +2,8 @@ package me.surge.lang.value
 
 import me.surge.api.LoadHelper
 import me.surge.lang.error.Error
+import me.surge.lang.value.number.IntValue
+import me.surge.lang.value.number.NumberValue
 
 class ListValue(identifier: String, val elements: MutableList<Value>) : Value(identifier, "list") {
 
@@ -61,7 +63,7 @@ class ListValue(identifier: String, val elements: MutableList<Value>) : Value(id
             instance.elements.add(value)
         }
 
-        fun remove(index: NumberValue) {
+        fun remove(index: IntValue) {
             instance.elements.removeAt(index.value.toInt())
         }
 
